@@ -17,7 +17,8 @@
 #include <openssl/hmac.h>
 #include <stdio.h>
 #include <limits.h>
-#include <string>
+#include <string.h>
+#include <strings.h>
 #include <sstream>
 #include <iomanip>
 #include <sys/types.h>
