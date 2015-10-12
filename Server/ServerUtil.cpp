@@ -63,12 +63,12 @@ long double unpack754(uint64_t i, unsigned bits, unsigned expbits)
     
     // deal with the exponent
     bias = (1<<(expbits-1)) - 1;
-    shift = ((i> >significandbits)&((1LL<<expbits)-1)) - bias;
+    shift = ((i>>significandbits)&((1LL<<expbits)-1)) - bias;
     while(shift > 0) { result *= 2.0; shift--; }
     while(shift < 0) { result /= 2.0; shift++; }
     
     // sign it
-    result *= (i> >(bits-1))&1? -1.0: 1.0;
+    result *= (i>>(bits-1))&1? -1.0: 1.0;
     
     return result;
 }

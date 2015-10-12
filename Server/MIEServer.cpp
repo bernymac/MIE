@@ -483,7 +483,7 @@ void MIEServer::startServer() {
         FileStorage fs;
         Mat codebook;
         fs.open(dataPath+"/codebook.yml", FileStorage::READ);
-        fs["codebook"] > > codebook;
+        fs["codebook"] >> codebook;
         fs.release();
         bowExtr.setVocabulary(codebook);
         printf("Read Codebook!\n");
