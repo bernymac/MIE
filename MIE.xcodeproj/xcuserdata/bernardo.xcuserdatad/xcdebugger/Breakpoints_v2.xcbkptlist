@@ -175,7 +175,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "116"
             endingLineNumber = "116"
-            landmarkName = "CashClient::addDocs(const char* imgDataset, const char* textDataset, bool firstUpdate, int first, int last, int prefix)"
+            landmarkName = "CashClient::addDocs(const char* imgDataset, const char* textDataset, int first, int last, int prefix)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -191,7 +191,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "119"
             endingLineNumber = "119"
-            landmarkName = "CashClient::addDocs(const char* imgDataset, const char* textDataset, bool firstUpdate, int first, int last, int prefix)"
+            landmarkName = "CashClient::addDocs(const char* imgDataset, const char* textDataset, int first, int last, int prefix)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -207,7 +207,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "133"
             endingLineNumber = "133"
-            landmarkName = "CashClient::addDocs(const char* imgDataset, const char* textDataset, bool firstUpdate, int first, int last, int prefix)"
+            landmarkName = "CashClient::addDocs(const char* imgDataset, const char* textDataset, int first, int last, int prefix)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -223,7 +223,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "143"
             endingLineNumber = "143"
-            landmarkName = "CashClient::addDocs(const char* imgDataset, const char* textDataset, bool firstUpdate, int first, int last, int prefix)"
+            landmarkName = "CashClient::addDocs(const char* imgDataset, const char* textDataset, int first, int last, int prefix)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -239,7 +239,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "139"
             endingLineNumber = "139"
-            landmarkName = "CashClient::addDocs(const char* imgDataset, const char* textDataset, bool firstUpdate, int first, int last, int prefix)"
+            landmarkName = "CashClient::addDocs(const char* imgDataset, const char* textDataset, int first, int last, int prefix)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -255,7 +255,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "154"
             endingLineNumber = "154"
-            landmarkName = "CashClient::addDocs(const char* imgDataset, const char* textDataset, bool firstUpdate, int first, int last, int prefix)"
+            landmarkName = "CashClient::addDocs(const char* imgDataset, const char* textDataset, int first, int last, int prefix)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -271,7 +271,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "163"
             endingLineNumber = "163"
-            landmarkName = "CashClient::addDocs(const char* imgDataset, const char* textDataset, bool firstUpdate, int first, int last, int prefix)"
+            landmarkName = "CashClient::addDocs(const char* imgDataset, const char* textDataset, int first, int last, int prefix)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -287,7 +287,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "188"
             endingLineNumber = "188"
-            landmarkName = "CashClient::addDocs(const char* imgDataset, const char* textDataset, bool firstUpdate, int first, int last, int prefix)"
+            landmarkName = "CashClient::addDocs(const char* imgDataset, const char* textDataset, int first, int last, int prefix)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -319,7 +319,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "193"
             endingLineNumber = "193"
-            landmarkName = "CashClient::addDocs(const char* imgDataset, const char* textDataset, bool firstUpdate, int first, int last, int prefix)"
+            landmarkName = "CashClient::addDocs(const char* imgDataset, const char* textDataset, int first, int last, int prefix)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -415,7 +415,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "239"
             endingLineNumber = "239"
-            landmarkName = "CashClient::search(int id)"
+            landmarkName = "CashClient::search(const char* imgDataset, const char* textDataset, int id)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -431,7 +431,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "254"
             endingLineNumber = "254"
-            landmarkName = "CashClient::search(int id)"
+            landmarkName = "CashClient::search(const char* imgDataset, const char* textDataset, int id)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -447,7 +447,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "273"
             endingLineNumber = "273"
-            landmarkName = "CashClient::search(int id)"
+            landmarkName = "CashClient::search(const char* imgDataset, const char* textDataset, int id)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -463,7 +463,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "278"
             endingLineNumber = "278"
-            landmarkName = "CashClient::search(int id)"
+            landmarkName = "CashClient::search(const char* imgDataset, const char* textDataset, int id)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -479,7 +479,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "284"
             endingLineNumber = "284"
-            landmarkName = "CashClient::search(int id)"
+            landmarkName = "CashClient::search(const char* imgDataset, const char* textDataset, int id)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -495,7 +495,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "295"
             endingLineNumber = "295"
-            landmarkName = "CashClient::search(int id)"
+            landmarkName = "CashClient::search(const char* imgDataset, const char* textDataset, int id)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -703,7 +703,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "267"
             endingLineNumber = "267"
-            landmarkName = "CashClient::search(int id)"
+            landmarkName = "CashClient::search(const char* imgDataset, const char* textDataset, int id)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -719,7 +719,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "282"
             endingLineNumber = "282"
-            landmarkName = "CashClient::search(int id)"
+            landmarkName = "CashClient::search(const char* imgDataset, const char* textDataset, int id)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -815,7 +815,23 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "308"
             endingLineNumber = "308"
-            landmarkName = "CashClient::search(int id)"
+            landmarkName = "CashClient::search(const char* imgDataset, const char* textDataset, int id)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "MIE/CashClient.cpp"
+            timestampString = "466436559.667855"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "96"
+            endingLineNumber = "96"
+            landmarkName = "CashClient::addDocs(const char* imgDataset, const char* textDataset, int first, int last, int prefix)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>

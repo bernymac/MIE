@@ -41,8 +41,8 @@ public:
     CashClient();
     ~CashClient();
     void train();
-    void addDocs(const char* imgDataset, const char* textDataset, bool firstUpdate, int first, int last, int prefix);
-    vector<QueryResult> search(int id);
+    void addDocs(const char* imgDataset, const char* textDataset, int first, int last, int prefix);
+    vector<QueryResult> search(const char* imgDataset, const char* textDataset, int id);
     string printTime();
 };
 

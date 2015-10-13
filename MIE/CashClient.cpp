@@ -13,7 +13,6 @@
 
 
 #define CLUSTERS 1000
-#define DOCS 1000
 
 CashClient::CashClient() {
     cryptoTime = 0;
@@ -58,7 +57,7 @@ void CashClient::train() {
         RNG& rng = theRNG();
         char* fname = (char*)malloc(120);
         if (fname == NULL) pee("malloc error in CashClient::train()");
-        for (unsigned i = 0; i < DOCS; i++) {
+        for (unsigned i = 0; i < 1000; i++) {
             if (rng.uniform(0.f,1.f) <= 0.1f) {
                 bzero(fname, 120);
                 sprintf(fname, "%s/wang/%d.jpg", datasetsPath, i);
@@ -83,7 +82,7 @@ void CashClient::train() {
     }
 }
 
-void CashClient::addDocs(const char* imgDataset, const char* textDataset, bool firstUpdate, int first, int last, int prefix) {
+void CashClient::addDocs(const char* imgDataset, const char* textDataset, int first, int last, int prefix) {
     map<vector<unsigned char>,vector<unsigned char> > encImgIndex;
     map<vector<unsigned char>,vector<unsigned char> > encTextIndex;
     int sockfd = -1;
@@ -94,7 +93,7 @@ void CashClient::addDocs(const char* imgDataset, const char* textDataset, bool f
     if (fname == NULL) pee("malloc error in CashClient::addDocs fname");
     for (unsigned i=first; i<=last; i++) {
         bzero(fname, 120);
-        sprintf(fname, "%s/%s/%d.jpg", datasetsPath, imgDataset, i);
+        sprintf(fname, "%s/%s/im%d.jpg", datasetsPath, imgDataset, i);
         Mat image = imread(fname);
         vector<KeyPoint> keypoints;
         Mat bowDesc;
@@ -118,7 +117,7 @@ void CashClient::addDocs(const char* imgDataset, const char* textDataset, bool f
     //index text
     for (unsigned i=first; i<=last; i++) {
         bzero(fname, 120);
-        sprintf(fname, "%s/%s/tags%d.txt", datasetsPath, textDataset, i+1);
+        sprintf(fname, "%s/%s/tags%d.txt", datasetsPath, textDataset, i);
         vector<string> keywords = analyzer->extractFile(fname);
         start = getTime();     //start index benchmark
         map<string,int> textTfs;
@@ -223,11 +222,11 @@ void CashClient::encryptAndIndex(void* keyword, int keywordSize, int counter, in
 }
 
 
-vector<QueryResult> CashClient::search(int id) {
+vector<QueryResult> CashClient::search(const char* imgDataset, const char* textDataset, int id) {
     //process img object
     map<int,int> vws;
     char* fname = (char*)malloc(120);
-    sprintf(fname, "%s/wang/%d.jpg", datasetsPath, id);
+    sprintf(fname, "%s/%s/im%d.jpg", datasetsPath, imgDataset, id);
     Mat image = imread(fname);
     vector<KeyPoint> keypoints;
     Mat bowDesc;
@@ -244,7 +243,7 @@ vector<QueryResult> CashClient::search(int id) {
     //process text object
     map<string,int> kws;
     bzero(fname, 120);
-    sprintf(fname, "%s/docs/tags%d.txt", datasetsPath, id+1);
+    sprintf(fname, "%s/%s/tags%d.txt", datasetsPath, textDataset, id);
     vector<string> keywords = analyzer->extractFile(fname);
     start = getTime();                               //start index time benchmark
     for (int j = 0; j < keywords.size(); j++) {

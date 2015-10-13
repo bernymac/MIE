@@ -94,7 +94,7 @@ void SSEClient::addDocs(const char* imgDataset, const char* textDataset, bool fi
     if (fname == NULL) pee("malloc error in SSEClient::addDocs fname");
     for (unsigned i=first; i<=last; i++) {
         bzero(fname, 120);
-        sprintf(fname, "%s/%s/%d.jpg", datasetsPath, imgDataset, i);
+        sprintf(fname, "%s/%s/im%d.txt.jpg", datasetsPath, imgDataset, i);
         Mat image = imread(fname);
         vector<KeyPoint> keypoints;
         Mat bowDesc;
@@ -113,7 +113,7 @@ void SSEClient::addDocs(const char* imgDataset, const char* textDataset, bool fi
     //index text
     for (unsigned i=first; i<=last; i++) {
         bzero(fname, 120);
-        sprintf(fname, "%s/%s/tags%d.txt", datasetsPath, textDataset, i+1);
+        sprintf(fname, "%s/%s/tags%d.txt", datasetsPath, textDataset, i);
         vector<string> keywords = analyzer->extractFile(fname);
         for (int j = 0; j < keywords.size(); j++) {
             timespec start = getTime();     //start crypto benchmark

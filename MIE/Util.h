@@ -35,13 +35,13 @@
 
 //desktop
 static const char* dataPath = "/Users/bernardo/Data";
-static const char* datasetsPath = "/Users/bernardo/Dropbox/WorkspacePHD/MUSE/datasets";
+static const char* datasetsPath = "/Users/bernardo/Datasets";
 static const char* serverIP = "52.30.61.162"; //"127.0.0.1";
 #define  LOGI(...)  fprintf(stdout,__VA_ARGS__)
 //mobile
 //static const char* dataPath = "/sdcard/Data";
-//static const char* datasetsPath = "/sdcard";
-//static const char* serverIP = "10.171.239.42";
+//static const char* datasetsPath = "/sdcard/Datasets";
+//static const char* serverIP = "52.30.61.162"; //"10.171.239.42";
 //#include <android/log.h>
 //#define  LOGI(...)  __android_log_print(ANDROID_LOG_INFO,"nonfree_jni_demo",__VA_ARGS__)
 

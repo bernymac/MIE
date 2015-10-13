@@ -45,7 +45,7 @@ void MIEClient::processDoc(int id, const char* imgDataset, const char* textDatas
     char* fname = (char*)malloc(120);
     if (fname == NULL) pee("malloc error in MIEClient::processDoc");
     bzero(fname, 120);
-    sprintf(fname, "%s/%s/%d.jpg", datasetsPath, imgDataset, id);
+    sprintf(fname, "%s/%s/im%d.jpg", datasetsPath, imgDataset, id);
     Mat image = imread(fname);
     vector<KeyPoint> keypoints;
     Mat descriptors;
@@ -54,7 +54,7 @@ void MIEClient::processDoc(int id, const char* imgDataset, const char* textDatas
     
     //extract text features
     bzero(fname, 120);
-    sprintf(fname, "%s/%s/tags%d.txt", datasetsPath, textDataset, id+1);
+    sprintf(fname, "%s/%s/tags%d.txt", datasetsPath, textDataset, id);
     vector<string> keywords = analyzer->extractFile(fname);
     
     timespec start = getTime();     //start crypto benchmark
