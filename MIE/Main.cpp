@@ -47,7 +47,7 @@ void runSSEClient() {
     LOGI("%s\n",sse.printTime().c_str());
     printQueryResults(queryResults);
 }
-
+
 void runCashClient() {
     LOGI("begin Cash SSE!\n");
     int first = 1;
