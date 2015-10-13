@@ -1,5 +1,5 @@
 Server : Main.o MIEServer.o SSEServer.o ServerUtil.o CashServer.o
-    g++ `pkg-config --libs zlib` `pkg-config --libs opencv` `pkg-config --libs openssl` -ldl -o Server Main.o MIEServer.o SSEServer.o ServerUtil.o CashServer.o
+    g++ -o Server Main.o MIEServer.o SSEServer.o ServerUtil.o CashServer.o `pkg-config --libs zlib` `pkg-config --libs opencv` `pkg-config --libs openssl` -ldl
 
 Main.o : Main.cpp
     g++ -std=c++11 -I /usr/local/ssl/include -c Main.cpp
