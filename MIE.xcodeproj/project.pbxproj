@@ -214,6 +214,9 @@
 		D19DE84F1AC16FF500235D38 /* ServerUtil.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ServerUtil.cpp; sourceTree = "<group>"; };
 		D19DE85A1AC1724000235D38 /* libcrypto.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcrypto.a; path = /usr/local/ssl/macosx/lib/libcrypto.a; sourceTree = "<absolute>"; };
 		D19DE85B1AC1724000235D38 /* libssl.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libssl.a; path = /usr/local/ssl/macosx/lib/libssl.a; sourceTree = "<absolute>"; };
+		D1A697CA1BCCF239008635D6 /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
+		D1A697CC1BCCF285008635D6 /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
+		D1A697CE1BCCF310008635D6 /* Makefile */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
 		D1D788031AEFBF3700EB7B27 /* SSEClient.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SSEClient.cpp; sourceTree = "<group>"; };
 		D1D788041AEFBF3700EB7B27 /* SSEClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSEClient.h; sourceTree = "<group>"; };
 		D1D788061AF2228C00EB7B27 /* SSECrypt.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SSECrypt.cpp; sourceTree = "<group>"; };
@@ -287,6 +290,7 @@
 		D19DE8211AC16F3400235D38 = {
 			isa = PBXGroup;
 			children = (
+				D1A697CE1BCCF310008635D6 /* Makefile */,
 				D19DE85E1AC1727B00235D38 /* lib */,
 				D19DE82C1AC16F3400235D38 /* Client */,
 				D19DE8391AC16F8F00235D38 /* Server */,
@@ -306,6 +310,7 @@
 		D19DE82C1AC16F3400235D38 /* Client */ = {
 			isa = PBXGroup;
 			children = (
+				D1A697CC1BCCF285008635D6 /* Makefile */,
 				D19DE83F1AC16FB100235D38 /* EnglishAnalyzer.cpp */,
 				D19DE8401AC16FB100235D38 /* EnglishAnalyzer.h */,
 				D19DE8431AC16FB100235D38 /* SBE.cpp */,
@@ -335,6 +340,7 @@
 		D19DE8391AC16F8F00235D38 /* Server */ = {
 			isa = PBXGroup;
 			children = (
+				D1A697CA1BCCF239008635D6 /* Makefile */,
 				D19DE84E1AC16FF500235D38 /* MIEServer.cpp */,
 				D1D7880F1AF4DC6700EB7B27 /* MIEServer.h */,
 				D1D788091AF2706100EB7B27 /* SSEServer.cpp */,
