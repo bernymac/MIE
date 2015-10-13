@@ -47,15 +47,17 @@ void runSSEClient() {
     LOGI("%s\n",sse.printTime().c_str());
     printQueryResults(queryResults);
 }
-
+
 void runCashClient() {
     LOGI("begin Cash SSE!\n");
+    int first = 1;
+    int last = 1000;
     CashClient cash;
-    cash.train();
+    cash.train("flickr_imgs",first,last);
     
-    cash.addDocs("flickr_imgs","flickr_tags",1,1000,0);
+    cash.addDocs("flickr_imgs","flickr_tags",first,last,0);
 //    for (int i = 0; i < 100; i++)
-//        cash.addDocs("flickr_imgs", "flickr_tags", false,1+i*10,10+i*10,1000);
+//        cash.addDocs("flickr_imgs", "flickr_tags", first+i*10, 10+i*10, last);
 //    vector<QueryResult> queryResults = cash.search("flickr_imgs","flickr_tags",1);
     LOGI("%s\n",cash.printTime().c_str());
 //    printQueryResults(queryResults);

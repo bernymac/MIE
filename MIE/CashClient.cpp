@@ -38,7 +38,7 @@ CashClient::~CashClient() {
     free(textDcount);
 }
 
-void CashClient::train() {
+void CashClient::train(const char* dataset, int first, int last) {
     string s = dataPath;
     s += "/Cash/dictionary.yml";
     if ( access(s.c_str(), F_OK ) != -1 ) {
@@ -57,10 +57,10 @@ void CashClient::train() {
         RNG& rng = theRNG();
         char* fname = (char*)malloc(120);
         if (fname == NULL) pee("malloc error in CashClient::train()");
-        for (unsigned i = 0; i < 1000; i++) {
+        for (unsigned i = first; i < last; i++) {
             if (rng.uniform(0.f,1.f) <= 0.1f) {
                 bzero(fname, 120);
-                sprintf(fname, "%s/wang/%d.jpg", datasetsPath, i);
+                sprintf(fname, "%s/%s/%imd.jpg", datasetsPath, dataset, i);
                 Mat image = imread(fname);
                 vector<KeyPoint> keypoints;
                 Mat descriptors;
