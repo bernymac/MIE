@@ -30,23 +30,17 @@ class CashClient {
     Ptr<BOWImgDescriptorExtractor> bowExtractor;
     EnglishAnalyzer* analyzer;
     CashCrypt* crypto;
+    
     vector<int>* imgDcount;
     map<string,int>* textDcount;
     
     void encryptAndIndex(void* keyword, int keywordSize, int counter, int docId, int tf,
                          map<vector<unsigned char>, vector<unsigned char> >* index);
-//    void processDoc(int id, vector< vector<float> >* features, vector< vector<unsigned char> >* encKeywords);
-//    map<int,int> decryptPostingList(unsigned char* encPostingList, int size);
-//    void retrieveIndex(vector< map<int,int> >* imgIndex, map<vector<unsigned char>,map<int,int> >* textIndex);
-//    void receivePostingLists(int sockfd, vector<map<int,int> >* imgPostingLists, map<vector<unsigned char>,map<int,int> >* textPostingLists);
-//    set<QueryResult,cmp_QueryResult> calculateQueryResults(int sockfd, map<int,int>* vws, map<vector<unsigned char>,int>* encKeywords);
-//    set<QueryResult,cmp_QueryResult> mergeSearchResults(set<QueryResult,cmp_QueryResult>* imgResults,                                                                   set<QueryResult,cmp_QueryResult>* textResults);
     
 public:
     CashClient();
     ~CashClient();
     void train();
-    //    void addDocs();
     void addDocs(const char* imgDataset, const char* textDataset, bool firstUpdate, int first, int last, int prefix);
     vector<QueryResult> search(int id);
     string printTime();

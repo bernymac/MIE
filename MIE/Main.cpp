@@ -63,7 +63,7 @@ void runCashClient() {
  
 int main(int argc, const char * argv[]) {
 //    runMIEClient();
-    runSSEClient();
-//    runCashClient();
+//    runSSEClient();
+    runCashClient();
 }
 

@@ -28,15 +28,14 @@ class CashCrypt {
     
 public:
     
-    static const unsigned int Ksize = 20;
+    static const unsigned int Ksize = 20; //hmac sha1 key and output size
     
     CashCrypt();
     ~CashCrypt();
     vector<unsigned char> encCounter (unsigned char* key, unsigned char* data, int dataSize);
     void deriveKey (void* append, int appendSize, void* data, int dataSize, unsigned char* md);
     vector<unsigned char> encData (unsigned char* key, unsigned char* data, int size);
-    //    vector<unsigned char> decrypt (unsigned char* data, int size);
-//    int dec (unsigned char* ciphertext, int ciphertextSize, unsigned char* plaintext);
+//    int decData (unsigned char* key, unsigned char* ciphertext, int ciphertextSize, unsigned char* plaintext);
 
     
 };
