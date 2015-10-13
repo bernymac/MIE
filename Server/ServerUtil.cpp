@@ -299,11 +299,16 @@ void sendQueryResponse(int newsockfd, std::set<QueryResult,cmp_QueryResult>* mer
     bzero(buff,size);
     int pos = 0;
     addIntToArr (resultsSize, buff, &pos);
+    int i = 1;
     for (std::set<QueryResult,cmp_QueryResult>::iterator it = mergedResults->begin(); it != mergedResults->end(); ++it) {
         int docId = it->docId;
         float score = it->score;
         addIntToArr(docId, buff, &pos);
         addFloatToArr(score, buff, &pos);
+        if (i == 20)      //Should be parameter k, number of query results
+            break;
+        else
+            i++;
     }
     socketSend (newsockfd, buff, size);
     printf("Search Network Traffic part 2: %ld\n",size);
