@@ -11,8 +11,8 @@
 #include "CashServer.hpp"
 
 int main(int argc, const char * argv[]) {
-//    MIEServer server;
+    MIEServer server;
 //    SSEServer server;
-    CashServer server;
+//    CashServer server;
 }
 
