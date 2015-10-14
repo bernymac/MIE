@@ -292,8 +292,11 @@ std::set<QueryResult,cmp_QueryResult> mergeSearchResults(std::set<QueryResult,cm
     return sort(queryResults);
 }
 
+//mudar isto para k como deve ser!
 void sendQueryResponse(int newsockfd, std::set<QueryResult,cmp_QueryResult>* mergedResults) {
-    int resultsSize = (int)mergedResults->size();
+    int resultsSize = 20;               //Should be parameter k, number of query results
+    if (mergedResults->size() < 20)
+        resultsSize = (int)mergedResults->size();
     long size = sizeof(int) + resultsSize * (sizeof(int) + sizeof(uint64_t));
     char* buff = (char*)malloc(size);
     bzero(buff,size);
@@ -305,7 +308,7 @@ void sendQueryResponse(int newsockfd, std::set<QueryResult,cmp_QueryResult>* mer
         float score = it->score;
         addIntToArr(docId, buff, &pos);
         addFloatToArr(score, buff, &pos);
-        if (i == 20)      //Should be parameter k, number of query results
+        if (i == resultsSize)
             break;
         else
             i++;

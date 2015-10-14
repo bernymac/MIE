@@ -63,7 +63,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "356"
             endingLineNumber = "356"
-            landmarkName = "f(unsigned char* key, int keySize, unsigned char* data, int dataSize)"
+            landmarkName = "receiveAndUnzip(int newsockfd, char* data, unsigned long* dataSize, unsigned long zipSize)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
