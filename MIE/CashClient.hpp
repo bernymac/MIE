@@ -24,7 +24,7 @@ using namespace std;
 using namespace cv;
 
 class CashClient {
-    double cryptoTime, cloudTime, indexTime, trainTime;
+    double featureTime, cryptoTime, cloudTime, indexTime, trainTime;
     Ptr<FeatureDetector> detector;
     Ptr<DescriptorExtractor> extractor;
     Ptr<BOWImgDescriptorExtractor> bowExtractor;

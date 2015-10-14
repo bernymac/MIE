@@ -9,8 +9,10 @@
 #include "MIEClient.h"
 
 MIEClient::MIEClient() {
-    cryptoTime = 0.;
-    cloudTime = 0.;
+    featureTime = 0;
+    indexTime = 0;
+    cryptoTime = 0;
+    cloudTime = 0;
     detector = FeatureDetector::create( /*"Dense"*/ "PyramidDense" );
     extractor = DescriptorExtractor::create( "SURF" );
     analyzer = new EnglishAnalyzer;
@@ -42,6 +44,7 @@ void MIEClient::addDocs(const char* imgDataset, const char* textDataset, int fir
 
 void MIEClient::processDoc(int id, const char* imgDataset, const char* textDataset, vector< vector<float> >* features, vector<vector<unsigned char> >* encKeywords) {
     //extract img features
+    timespec start = getTime();                     //start feature benchmark
     char* fname = (char*)malloc(120);
     if (fname == NULL) pee("malloc error in MIEClient::processDoc");
     bzero(fname, 120);
@@ -50,15 +53,20 @@ void MIEClient::processDoc(int id, const char* imgDataset, const char* textDatas
     vector<KeyPoint> keypoints;
     Mat descriptors;
     detector->detect(image, keypoints);
+    featureTime += diffSec(start, getTime());       //end benchmark
+    start = getTime();                              //start index benchmark
     extractor->compute(image, keypoints, descriptors);
+    indexTime += diffSec(start, getTime());         //end benchmark
     
     //extract text features
+    start = getTime();                              //start feature benchmark
     bzero(fname, 120);
     sprintf(fname, "%s/%s/tags%d.txt", datasetsPath, textDataset, id);
     vector<string> keywords = analyzer->extractFile(fname);
+    featureTime += diffSec(start, getTime());       //end benchmark
     
     //encrypt img features
-    timespec start = getTime();     //start crypto benchmark
+    start = getTime();                              //start crypto benchmark
     features->resize(descriptors.rows);
     for (int i = 0; i < descriptors.rows; i++) {
         vector<float> feature;
@@ -71,7 +79,7 @@ void MIEClient::processDoc(int id, const char* imgDataset, const char* textDatas
     encKeywords->resize(keywords.size());
     for (int i = 0; i < keywords.size(); i++)
         (*encKeywords)[i] = textCrypto->encode(keywords[i]);
-    cryptoTime += diffSec(start, getTime());     //end crypto benchmark
+    cryptoTime += diffSec(start, getTime());        //end crypto benchmark
     free(fname);
 }
 
@@ -159,7 +167,7 @@ vector<QueryResult> MIEClient::search(int id, const char* imgDataset, const char
 
 string MIEClient::printTime() {
     char char_time[120];
-    sprintf(char_time, "cryptoTime: %f cloudTime: %f", cryptoTime, cloudTime);
+    sprintf(char_time, "featureTime: %f indexTime: %f cryptoTime: %f cloudTime: %f", featureTime, indexTime, cryptoTime, cloudTime);
     string time = char_time;
     return time;
 }

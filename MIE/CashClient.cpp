@@ -15,6 +15,7 @@
 #define CLUSTERS 1000
 
 CashClient::CashClient() {
+    featureTime = 0;
     cryptoTime = 0;
     cloudTime = 0;
     indexTime = 0;
@@ -92,34 +93,36 @@ void CashClient::addDocs(const char* imgDataset, const char* textDataset, int fi
     char* fname = (char*)malloc(120);
     if (fname == NULL) pee("malloc error in CashClient::addDocs fname");
     for (unsigned i=first; i<=last; i++) {
+        start = getTime();                          //start feature extraction benchmark
         bzero(fname, 120);
         sprintf(fname, "%s/%s/im%d.jpg", datasetsPath, imgDataset, i);
         Mat image = imread(fname);
         vector<KeyPoint> keypoints;
         Mat bowDesc;
         detector->detect( image, keypoints );
-        start = getTime();     //start index benchmark
+        featureTime += diffSec(start, getTime());   //end benchmark
+        start = getTime();                          //start index benchmark
         bowExtractor->compute( image, keypoints, bowDesc );
+        indexTime += diffSec(start, getTime());     //end benchmark
+        start = getTime();                          //start crypto benchmark
         for (int j=0; j<CLUSTERS; j++) {
             int val = denormalize(bowDesc.at<float>(j),(int)keypoints.size());
             if (val > 0) {
-                indexTime += diffSec(start, getTime()); //end benchmark
-                start = getTime();     //start crypto benchmark
                 int c = (*imgDcount)[j];
                 encryptAndIndex(&j, sizeof(int), c, i+prefix, val, &encImgIndex);
                 (*imgDcount)[j] = ++c;
-                cryptoTime += diffSec(start, getTime()); //end benchmark
-                start = getTime();     //start index benchmark
             }
         }
-        indexTime += diffSec(start, getTime()); //end benchmark
+        cryptoTime += diffSec(start, getTime());    //end benchmark
     }
     //index text
     for (unsigned i=first; i<=last; i++) {
+        start = getTime();                          //start feature extraction benchmark
         bzero(fname, 120);
         sprintf(fname, "%s/%s/tags%d.txt", datasetsPath, textDataset, i);
         vector<string> keywords = analyzer->extractFile(fname);
-        start = getTime();     //start index benchmark
+        featureTime += diffSec(start, getTime());   //end benchmark
+        start = getTime();                          //start index benchmark
         map<string,int> textTfs;
         for (int j = 0; j < keywords.size(); j++) {
             string keyword = keywords[j];
@@ -129,8 +132,8 @@ void CashClient::addDocs(const char* imgDataset, const char* textDataset, int fi
             else
                 it->second++;
         }
-        indexTime += diffSec(start, getTime());         //end benchmark
-        start = getTime();     //start crypto benchmark
+        indexTime += diffSec(start, getTime());     //end benchmark
+        start = getTime();                          //start crypto benchmark
         for (map<string,int>::iterator it=textTfs.begin(); it!=textTfs.end(); ++it) {
             int c = 0;
             map<string,int>::iterator counterIt = textDcount->find(it->first);
@@ -140,6 +143,7 @@ void CashClient::addDocs(const char* imgDataset, const char* textDataset, int fi
             (*textDcount)[it->first] = ++c;
         }
         cryptoTime += diffSec(start, getTime()); //end benchmark
+        
 //            start = getTime();               //start index benchmark
 //            map<int,int>* postingList = &textIndex[encKeyword];
 //            map<int,int>::iterator posting = postingList->find(i+prefix);
@@ -224,6 +228,7 @@ void CashClient::encryptAndIndex(void* keyword, int keywordSize, int counter, in
 
 vector<QueryResult> CashClient::search(const char* imgDataset, const char* textDataset, int id) {
     //process img object
+    timespec start = getTime();                     //start feature extraction benchmark
     map<int,int> vws;
     char* fname = (char*)malloc(120);
     sprintf(fname, "%s/%s/im%d.jpg", datasetsPath, imgDataset, id);
@@ -231,7 +236,8 @@ vector<QueryResult> CashClient::search(const char* imgDataset, const char* textD
     vector<KeyPoint> keypoints;
     Mat bowDesc;
     detector->detect( image, keypoints );
-    timespec start = getTime();              //start index time benchmark
+    featureTime += diffSec(start, getTime());       //end benchmark
+    start = getTime();                              //start index time benchmark
     bowExtractor->compute( image, keypoints, bowDesc );
     for (unsigned i=0; i<CLUSTERS; i++) {
         const int queryTf = denormalize(bowDesc.at<float>(i),(int)keypoints.size());
@@ -239,13 +245,15 @@ vector<QueryResult> CashClient::search(const char* imgDataset, const char* textD
             vws[i] = queryTf;
         }
     }
-    indexTime += diffSec(start, getTime());   //end benchmark
+    indexTime += diffSec(start, getTime());         //end benchmark
     //process text object
+    start = getTime();                              //start feature extraction benchmark
     map<string,int> kws;
     bzero(fname, 120);
     sprintf(fname, "%s/%s/tags%d.txt", datasetsPath, textDataset, id);
     vector<string> keywords = analyzer->extractFile(fname);
-    start = getTime();                               //start index time benchmark
+    featureTime += diffSec(start, getTime());       //end benchmark
+    start = getTime();                              //start index time benchmark
     for (int j = 0; j < keywords.size(); j++) {
         map<string,int>::iterator queryTf = kws.find(keywords[j]);
         if (queryTf == kws.end())
@@ -253,11 +261,11 @@ vector<QueryResult> CashClient::search(const char* imgDataset, const char* textD
         else
             queryTf->second++;
     }
-    indexTime += diffSec(start, getTime());          //end benchmark
+    indexTime += diffSec(start, getTime());         //end benchmark
     free(fname);
     
     //mandar para a cloud
-    start = getTime();                      //start cloud time benchmark
+    start = getTime();                              //start cloud time benchmark
     long buffSize = 1 + 3*sizeof(int) + vws.size()*(2*CashCrypt::Ksize+sizeof(int)) + kws.size()*(2*CashCrypt::Ksize+sizeof(int));
     char* buff = (char*)malloc(buffSize);
     if (buff == NULL) pee("malloc error in CashClient::search sendCloud");
@@ -266,8 +274,8 @@ vector<QueryResult> CashClient::search(const char* imgDataset, const char* textD
     addIntToArr ((int)vws.size(), buff, &pos);
     addIntToArr ((int)kws.size(), buff, &pos);
     addIntToArr (CashCrypt::Ksize, buff, &pos);
-    cloudTime += diffSec(start, getTime());          //end benchmark
-    start = getTime();                               //start crypto time benchmark
+    cloudTime += diffSec(start, getTime());         //end benchmark
+    start = getTime();                              //start crypto time benchmark
     for (map<int,int>::iterator it=vws.begin(); it!=vws.end(); ++it) {
         int vw = it->first;
         int append = 1;
@@ -296,8 +304,8 @@ vector<QueryResult> CashClient::search(const char* imgDataset, const char* textD
         addToArr(k2, CashCrypt::Ksize * sizeof(unsigned char), buff, &pos);
         addIntToArr (it->second, buff, &pos);
     }
-    cryptoTime += diffSec(start, getTime());          //end benchmark
-    start = getTime();                                //start cloud time benchmark
+    cryptoTime += diffSec(start, getTime());        //end benchmark
+    start = getTime();                              //start cloud time benchmark
     int sockfd = connectAndSend(buff, buffSize);
     //    const int x = (int)encKeywords.size()*TextCrypt::keysize+2*sizeof(int);
     //    LOGI("Text Search network traffic part 1: %d\n",x);
@@ -305,13 +313,15 @@ vector<QueryResult> CashClient::search(const char* imgDataset, const char* textD
     free(buff);
     vector<QueryResult> queryResults = receiveQueryResults(sockfd);
     cloudTime += diffSec(start, getTime());            //end benchmark
+    
     socketReceiveAck(sockfd);
     return queryResults;
 }
 
 string CashClient::printTime() {
     char char_time[120];
-    sprintf(char_time, "cryptoTime:%f trainTime:%f indexTime:%f cloudTime:%f", cryptoTime, trainTime, indexTime, cloudTime);
+    sprintf(char_time, "featureTime:%f cryptoTime:%f trainTime:%f indexTime:%f cloudTime:%f",
+            featureTime, cryptoTime, trainTime, indexTime, cloudTime);
     string time = char_time;
     return time;
 }

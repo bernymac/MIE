@@ -29,7 +29,7 @@ using namespace std;
 using namespace cv;
 
 class MIEClient {
-    double cryptoTime, cloudTime;
+    double featureTime, indexTime, cryptoTime, cloudTime;
     Ptr<FeatureDetector> detector;
     Ptr<DescriptorExtractor> extractor;
     EnglishAnalyzer* analyzer;
