@@ -29,17 +29,17 @@ void runMIEClient() {
     
     mie.addDocs("flickr_imgs","flickr_tags",1,1000,0);
 //    mie.addDocs("flickr_imgs", "flickr_tags",1,10,1000);
-    mie.index();
-    vector<QueryResult> queryResults = mie.search(0, "wang", "docs");
+//    mie.index();
+//    vector<QueryResult> queryResults = mie.search(0, "wang", "docs");
     LOGI("%s\n",mie.printTime().c_str());
-    printQueryResults(queryResults);
+//    printQueryResults(queryResults);
 }
 
 void runSSEClient() {
     LOGI("begin SSE!\n");
     SSEClient sse;
     sse.train();
-    
+
     sse.addDocs("flickr_imgs","flickr_tags",true,1,1000,0);
 //    for (int i = 0; i < 100; i++)
 //        sse.addDocs("flickr_imgs", "flickr_tags", false,1+i*10,10+i*10,1000);
@@ -51,21 +51,21 @@ void runSSEClient() {
 void runCashClient() {
     LOGI("begin Cash SSE!\n");
     int first = 1;
-    int last = 1000;
+    int last = 3000;
     CashClient cash;
     cash.train("flickr_imgs",first,last);
     
-    cash.addDocs("flickr_imgs","flickr_tags",first,last,0);
+//    cash.addDocs("flickr_imgs","flickr_tags",first,last,0);
 //    for (int i = 0; i < 100; i++)
 //        cash.addDocs("flickr_imgs", "flickr_tags", first+i*10, 10+i*10, last);
-//    vector<QueryResult> queryResults = cash.search("flickr_imgs","flickr_tags",1);
+    vector<QueryResult> queryResults = cash.search("flickr_imgs","flickr_tags",1);
     LOGI("%s\n",cash.printTime().c_str());
-//    printQueryResults(queryResults);
+    printQueryResults(queryResults);
 }
  
 int main(int argc, const char * argv[]) {
-//    runMIEClient();
+    runMIEClient();
 //    runSSEClient();
-    runCashClient();
+//    runCashClient();
 }
 

@@ -41,7 +41,7 @@ void MIEClient::addDocs(const char* imgDataset, const char* textDataset, int fir
 }
 
 void MIEClient::processDoc(int id, const char* imgDataset, const char* textDataset, vector< vector<float> >* features, vector<vector<unsigned char> >* encKeywords) {
-    //extract text features
+    //extract img features
     char* fname = (char*)malloc(120);
     if (fname == NULL) pee("malloc error in MIEClient::processDoc");
     bzero(fname, 120);
@@ -57,8 +57,8 @@ void MIEClient::processDoc(int id, const char* imgDataset, const char* textDatas
     sprintf(fname, "%s/%s/tags%d.txt", datasetsPath, textDataset, id);
     vector<string> keywords = analyzer->extractFile(fname);
     
+    //encrypt img features
     timespec start = getTime();     //start crypto benchmark
-    //encrypt image features
     features->resize(descriptors.rows);
     for (int i = 0; i < descriptors.rows; i++) {
         vector<float> feature;

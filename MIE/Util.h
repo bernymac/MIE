@@ -36,7 +36,7 @@
 //desktop
 static const char* dataPath = "/Users/bernardo/Data";
 static const char* datasetsPath = "/Users/bernardo/Datasets";
-static const char* serverIP = "52.16.45.159"; //"127.0.0.1";
+static const char* serverIP = "52.16.45.159"; //"127.0.0.1"; 
 #define  LOGI(...)  fprintf(stdout,__VA_ARGS__)
 //mobile
 //static const char* dataPath = "/sdcard/Data";
