@@ -37,9 +37,6 @@ void CashServer::startServer() {
             case 'a':
                 receiveDocs(newsockfd);
                 break;
-//            case 'd':
-//                returnIndex(newsockfd);
-//                break;
             case 's':
                 search(newsockfd);
                 break;
@@ -62,19 +59,7 @@ void CashServer::receiveDocs(int newsockfd) {
     const int textIndexSize = readIntFromArr(buffer, &pos);
     const int Ksize = readIntFromArr(buffer, &pos);
     int postingSize = readIntFromArr(buffer, &pos);
-//    encImgIndex->resize(imgIndexSize);
     for (int i = 0; i < imgIndexSize; i++) {
-/*        vector<unsigned char> encPosting;
-        encPosting.resize(postingSize);
-        buffSize = postingSize*sizeof(unsigned char) + sizeof(int);
-        char* buff = (char*)malloc(buffSize);
-        pos = 0;
-        receiveAll(newsockfd, buff, buffSize);
-        for (int j = 0; j < postingSize; j++)
-            readFromArr(&encPosting[j], sizeof(unsigned char), buff, &pos);
-        postingSize = readIntFromArr(buff, &pos);
-        (*encImgIndex)[i] = postingList;
-        free(buff);*/
         vector<unsigned char> vw;
         vw.resize(Ksize);
         vector<unsigned char> posting;
@@ -120,10 +105,6 @@ void CashServer::receiveDocs(int newsockfd) {
 
 void CashServer::search(int newsockfd) {
     //initialize and read variables
-    //    map<int, vector<unsigned char> > imgPostingLists;
-//    vector<vector<unsigned char> > imgPostingLists;
-//    imgPostingLists.resize(encImgIndex->size());
-//    map<vector<unsigned char>, vector<unsigned char> > textPostingLists;
     long buffSize = 3*sizeof(int);
     char buffer[buffSize];
     if (read(newsockfd,buffer,buffSize) < 0) pee("CashServer::search error reading from socket");
@@ -142,48 +123,8 @@ void CashServer::search(int newsockfd) {
     free(buff);
     set<QueryResult,cmp_QueryResult> mergedResults = mergeSearchResults(&imgQueryResults, &textQueryResults);
     sendQueryResponse(newsockfd, &mergedResults);
-
-/*        map<vector<unsigned char>,vector<unsigned char> >::iterator it = encImgIndex->find(vw);
-        if (it != encTextIndex->end())
-            textPostingLists[encKeyword] = it->second;
-        
-        const int vw = readIntFromArr(buff, &pos);
-        vector<unsigned char> encPostingList = (*encImgIndex)[vw];
-        if (encPostingList.size() > 0)
-            imgPostingLists[vw] = encPostingList;
- 
-    }*/
-//    free(buff);
-    
-    //receive keywords and fetch text posting lists
-//    buffSize = encKeywordsSize*keywordSize;
-//    buff = (char*)malloc(buffSize);
-//    if (buff == NULL) pee("malloc error in CashServer::search receive keywords");
-//    receiveAll(newsockfd, buff, buffSize);
-//    pos = 0;
-/*    for (int i = 0; i < encKeywordsSize; i++) {
-        vector<unsigned char> encKeyword;
-        encKeyword.resize(keywordSize);
-        for (int j = 0; j < keywordSize; j++) {
-            unsigned char x;
-            readFromArr(&x, sizeof(unsigned char), buff, &pos);
-            encKeyword[j] = x;
-        }
-        map<vector<unsigned char>,vector<unsigned char> >::iterator it = encTextIndex->find(encKeyword);
-        if (it != encTextIndex->end())
-            textPostingLists[encKeyword] = it->second;
-    }
-    free(buff);*/
-    
-    //send posting lists
-//    sendPostingLists(newsockfd, &imgPostingLists, &textPostingLists);
-    
 }
 
-/*void CashServer::returnIndex(int newsockfd) {
-    sendPostingLists(newsockfd, encImgIndex, encTextIndex);
-    //    receiveDocs(newsockfd);
-}*/
     
 set<QueryResult,cmp_QueryResult> CashServer::calculateQueryResults(int kwsSize, int Ksize, char* buff, int* pos,
                                                  map<vector<unsigned char>,vector<unsigned char> >* index) {
@@ -235,60 +176,3 @@ set<QueryResult,cmp_QueryResult> CashServer::calculateQueryResults(int kwsSize, 
     }
     return sort(queryResults);
 }
-
-
-/*void CashServer::sendPostingLists(int newsockfd, vector<vector<unsigned char> >* imgPostingLists, map<vector<unsigned char>, vector<unsigned char> >* textPostingLists) {
-    long buffSize = 2*sizeof(int);
-    //    int textSize = sizeof(int);
-    //    for (map<int, vector<unsigned char> >::iterator it=imgPostingLists.begin(); it!=imgPostingLists.end(); ++it)
-    //        buffSize += 2*sizeof(int) + it->second.size()*sizeof(unsigned char);
-    int nImgPostingLists = 0;
-    for (int i = 0; i < imgPostingLists->size(); i++) {
-        const int postingListSize = (int)(*imgPostingLists)[i].size();
-        if (postingListSize > 0) {
-            buffSize += 2*sizeof(int) + postingListSize*sizeof(unsigned char);
-            nImgPostingLists++;
-        }
-    }
-    for (map<vector<unsigned char>, vector<unsigned char> >::iterator it=textPostingLists->begin(); it!=textPostingLists->end(); ++it) {
-        buffSize += it->first.size()*sizeof(unsigned char) + sizeof(int) + it->second.size()*sizeof(unsigned char);
-        //        textSize += it->first.size()*sizeof(unsigned char) + sizeof(int) + it->second.size()*sizeof(unsigned char);
-    }
-    //    textSize += sizeof(int);
-    //    printf("Text Search Network Traffic part 2: %d\n",textSize);
-    char* buff = (char*)malloc(buffSize);
-    if (buff == NULL) pee("malloc error in CashServer::search send posting lists");
-    int pos = 0;
-    //    addIntToArr((int)imgPostingLists->size(), buff, &pos);
-    addIntToArr(nImgPostingLists, buff, &pos);
-    addIntToArr((int)textPostingLists->size(), buff, &pos);
-    
-    /*    for (map<int, vector<unsigned char> >::iterator it=imgPostingLists.begin(); it!=imgPostingLists.end(); ++it) {
-     addIntToArr((int)it->second.size(), buff, &pos);
-     addIntToArr(it->first, buff, &pos);
-     for (int i = 0; i < it->second.size(); i++)
-     addToArr(&it->second[i], sizeof(unsigned char), buff, &pos);
-     } */
-
-/*    for (int i = 0; i < imgPostingLists->size(); i++) {
-        const int postingListSize = (int)(*imgPostingLists)[i].size();
-        if (postingListSize > 0) {
-            addIntToArr(postingListSize, buff, &pos);
-            addIntToArr(i, buff, &pos);
-            for (int j = 0; j < postingListSize; j++)
-                addToArr(&(*imgPostingLists)[i][j], sizeof(unsigned char), buff, &pos);
-        }
-    }
-    for (map<vector<unsigned char>,vector<unsigned char> >::iterator it=textPostingLists->begin(); it!=textPostingLists->end(); ++it) {
-        addIntToArr((int)it->second.size(), buff, &pos);
-        for (int i = 0; i < it->first.size(); i++) {
-            unsigned char x = it->first[i];
-            addToArr(&x, sizeof(unsigned char), buff, &pos);
-        }
-        for (int i = 0; i < it->second.size(); i++)
-            addToArr(&it->second[i], sizeof(unsigned char), buff, &pos);
-    }
-    socketSend (newsockfd, buff, buffSize);
-    //    printf("Search Network Traffic part 2: %ld\n",buffSize);
-    free(buff);
-}*/

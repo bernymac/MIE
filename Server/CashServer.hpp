@@ -21,11 +21,15 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
+//#include <atomic>
+//#include <thread>
 #include "ServerUtil.h"
 
 using namespace std;
 
 class CashServer {
+//    atomic<map<vector<unsigned char>,vector<unsigned char> > >* encImgIndex;
+//    atomic<map<vector<unsigned char>,vector<unsigned char> > >* encTextIndex;
     map<vector<unsigned char>,vector<unsigned char> >* encImgIndex;
     map<vector<unsigned char>,vector<unsigned char> >* encTextIndex;
     int nDocs;
