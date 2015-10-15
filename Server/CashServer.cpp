@@ -43,7 +43,8 @@ void CashServer::startServer() {
             default:
                 pee("unkonwn command!\n");
         }
-        ack(newsockfd);
+//        ack(newsockfd);
+        close(newsockfd);
     }
 }
 

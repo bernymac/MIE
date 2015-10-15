@@ -195,7 +195,8 @@ void CashClient::addDocs(const char* imgDataset, const char* textDataset, int fi
     free(buff);
     cloudTime += diffSec(start, getTime());                 //end benchmark
     
-    socketReceiveAck(sockfd);
+//    socketReceiveAck(sockfd);
+    close(sockfd);
 }
 
 
