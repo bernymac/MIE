@@ -11,6 +11,68 @@
 using namespace std;
 using namespace cv;
 
+
+MIEServer::MIEServer() {
+    startServer();
+}
+
+void MIEServer::startServer() {
+    map<int,Mat> imgFeatures;
+    map<int,vector<vector<unsigned char> > > textFeatures;
+    vector<map<int,int> > imgIndex;
+    imgIndex.resize(clusters);
+    map<vector<unsigned char>,map<int,int> > textIndex;
+    int nImgs = 0, nTextDocs = 0;
+    
+    BOWImgDescriptorExtractor bowExtr (DescriptorMatcher::create("BruteForce-L1"));
+    if ( access((dataPath+"/codebook.yml").c_str(), F_OK ) != -1 ) {
+        FileStorage fs;
+        Mat codebook;
+        fs.open(dataPath+"/codebook.yml", FileStorage::READ);
+        fs["codebook"] >> codebook;
+        fs.release();
+        bowExtr.setVocabulary(codebook);
+        printf("Read Codebook!\n");
+    }
+    
+    int sockfd = initServer();
+    printf("MIE server started!\n");
+    while (true) {
+        struct sockaddr_in cli_addr;
+        socklen_t clilen = sizeof(cli_addr);
+        int newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);
+        if (newsockfd < 0)
+            pee("ERROR on accept");
+        char buffer[1];
+        bzero(buffer,1);
+        if (read(newsockfd,buffer,1) < 0)
+            pee("ERROR reading from socket");
+        //        printf("received %c cmd",buffer[0]);
+        switch (buffer[0]) {
+            case 'a':
+                addDoc(newsockfd,&imgFeatures,&textFeatures);
+                break;
+            case 'i':
+                //try to read index from disk
+                if (!readIndex(dataPath, &imgIndex, &textIndex, &nImgs, &nTextDocs))
+                    //try to read features if not in memory, persist them otherwise
+                    if (readOrPersistFeatures(dataPath, &imgFeatures, &textFeatures)) {
+                        indexImgs(&imgFeatures, &imgIndex, &bowExtr, &nImgs);
+                        indexText(&textFeatures,&textIndex, &nTextDocs);
+                        persistIndex(dataPath, &imgIndex, &textIndex, nImgs, nTextDocs);
+                    }
+                break;
+            case 's':
+                search(newsockfd, &bowExtr, &imgIndex, &nImgs, &textIndex, &nTextDocs);
+                break;
+            default:
+                pee("unkonwn command!\n");
+        }
+        //ack(newsockfd);
+        close(newsockfd);
+    }
+}
+
 void MIEServer::receiveDoc(int newsockfd, int* id, Mat* mat, vector<vector<unsigned char> >* keywords) {
     //receive and unzip data
     char buff[2*sizeof(uint64_t)];
@@ -470,62 +532,3 @@ void MIEServer::search(int newsockfd, BOWImgDescriptorExtractor* bowExtr, vector
     sendQueryResponse(newsockfd, &mergedResults);
 }
 
-void MIEServer::startServer() {
-    map<int,Mat> imgFeatures;
-    map<int,vector<vector<unsigned char> > > textFeatures;
-    vector<map<int,int> > imgIndex;
-    imgIndex.resize(clusters);
-    map<vector<unsigned char>,map<int,int> > textIndex;
-    int nImgs = 0, nTextDocs = 0;
-    
-    BOWImgDescriptorExtractor bowExtr (DescriptorMatcher::create("BruteForce-L1"));
-    if ( access((dataPath+"/codebook.yml").c_str(), F_OK ) != -1 ) {
-        FileStorage fs;
-        Mat codebook;
-        fs.open(dataPath+"/codebook.yml", FileStorage::READ);
-        fs["codebook"] >> codebook;
-        fs.release();
-        bowExtr.setVocabulary(codebook);
-        printf("Read Codebook!\n");
-    }
-    
-    int sockfd = initServer();
-    printf("MIE server started!\n");
-    while (true) {
-        struct sockaddr_in cli_addr;
-        socklen_t clilen = sizeof(cli_addr);
-        int newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);
-        if (newsockfd < 0)
-            pee("ERROR on accept");
-        char buffer[1];
-        bzero(buffer,1);
-        if (read(newsockfd,buffer,1) < 0)
-            pee("ERROR reading from socket");
-        //        printf("received %c cmd",buffer[0]);
-        switch (buffer[0]) {
-            case 'a':
-                addDoc(newsockfd,&imgFeatures,&textFeatures);
-                break;
-            case 'i':
-                //try to read index from disk
-                if (!readIndex(dataPath, &imgIndex, &textIndex, &nImgs, &nTextDocs))
-                    //try to read features if not in memory, persist them otherwise
-                    if (readOrPersistFeatures(dataPath, &imgFeatures, &textFeatures)) {
-                        indexImgs(&imgFeatures, &imgIndex, &bowExtr, &nImgs);
-                        indexText(&textFeatures,&textIndex, &nTextDocs);
-                        persistIndex(dataPath, &imgIndex, &textIndex, nImgs, nTextDocs);
-                    }
-                break;
-            case 's':
-                search(newsockfd, &bowExtr, &imgIndex, &nImgs, &textIndex, &nTextDocs);
-                break;
-            default:
-                pee("unkonwn command!\n");
-        }
-        ack(newsockfd);
-    }
-}
-
-MIEServer::MIEServer() {
-    startServer();
-}

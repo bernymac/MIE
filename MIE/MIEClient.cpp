@@ -38,7 +38,8 @@ void MIEClient::addDocs(const char* imgDataset, const char* textDataset, int fir
         int sockfd = sendDoc('a', id+prefix, &imgFeatures, &encKeywords);
         cloudTime += diffSec(start, getTime());
         
-        socketReceiveAck(sockfd);
+//        socketReceiveAck(sockfd);
+        close(sockfd);
     }
 }
 
@@ -190,7 +191,8 @@ void MIEClient::index() {
     char buff[1];
     buff[0] = 'i';
     int sockfd = connectAndSend(buff, 1);
-    socketReceiveAck(sockfd);
+//    socketReceiveAck(sockfd);
+    close(sockfd);
 }
 
 vector<QueryResult> MIEClient::search(int id, const char* imgDataset, const char* textDataset) {
@@ -203,7 +205,8 @@ vector<QueryResult> MIEClient::search(int id, const char* imgDataset, const char
     vector<QueryResult> queryResults = receiveQueryResults(sockfd);
     cloudTime += diffSec(start, getTime()); //end
     
-    socketReceiveAck(sockfd);
+//    socketReceiveAck(sockfd);
+    close(sockfd);
     return queryResults;
 }
 

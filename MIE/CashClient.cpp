@@ -315,7 +315,8 @@ vector<QueryResult> CashClient::search(const char* imgDataset, const char* textD
     vector<QueryResult> queryResults = receiveQueryResults(sockfd);
     cloudTime += diffSec(start, getTime());            //end benchmark
     
-    socketReceiveAck(sockfd);
+//    socketReceiveAck(sockfd);
+    close(sockfd);
     return queryResults;
 }
 

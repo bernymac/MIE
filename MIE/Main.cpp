@@ -59,8 +59,8 @@ void runCashClient() {
     int last = 1000;
     int groupsize = 10;
     CashClient cash;
-    timespec start = getTime();
     cash.train("flickr_imgs",first,last);
+    timespec start = getTime();
     
     for (unsigned i=first; i<=last; i+=groupsize)
         cash.addDocs("flickr_imgs","flickr_tags",i,i+groupsize-1,0);
