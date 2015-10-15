@@ -28,12 +28,15 @@ void runMIEClient() {
     int first = 1;
     int last = 1000;
     MIEClient mie;
+    timespec start = getTime();
     
     mie.addDocs("flickr_imgs","flickr_tags",first,last,0);
 //    mie.addDocs("flickr_imgs", "flickr_tags",1,10,1000);
 //    mie.index();
 //    vector<QueryResult> queryResults = mie.search(0, "wang", "docs");
-    LOGI("%s\n",mie.printTime().c_str());
+    
+    double total_time = diffSec(start, getTime());
+    LOGI("%s total_time:%f.6\n",mie.printTime().c_str(),total_time);
 //    printQueryResults(queryResults);
 }
 
@@ -56,6 +59,7 @@ void runCashClient() {
     int last = 1000;
     int groupsize = 10;
     CashClient cash;
+    timespec start = getTime();
     cash.train("flickr_imgs",first,last);
     
     for (unsigned i=first; i<=last; i+=groupsize)
@@ -63,7 +67,9 @@ void runCashClient() {
 //    for (int i = 0; i < 100; i++)
 //        cash.addDocs("flickr_imgs", "flickr_tags", first+i*10, 10+i*10, last);
 //    vector<QueryResult> queryResults = cash.search("flickr_imgs","flickr_tags",1);
-    LOGI("%s\n",cash.printTime().c_str());
+    
+    double total_time = diffSec(start, getTime());
+    LOGI("%s total_time:%f.6\n",cash.printTime().c_str(),total_time);
 //    printQueryResults(queryResults);
 }
  
