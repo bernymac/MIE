@@ -75,15 +75,21 @@ SBE::SBE (int dimensions) {
 
 vector<float> SBE::encode (vector<float> x) {
         vector<float> encoded (m,0);
+    
         for (int i = 0; i < m; i++) {
+            
             for (int j = 0; j < k; j++)
                 encoded[i] += a[i][j] * x[j];			//multiply input with random matrix a
+            
             encoded[i] += w[i];						//add dither
+            
             encoded[i] /= delta;						// divide by delta
+            
             if (int(encoded[i]) % 2)
                 encoded[i] = 0;
             else
                 encoded[i] = 1;
+            
         }
         return encoded;
 }

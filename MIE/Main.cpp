@@ -25,9 +25,12 @@ void printQueryResults (set<QueryResult,cmp_QueryResult> queryResults) {
 
 void runMIEClient() {
     LOGI("begin MIE!\n");
+    int first = 1;
+    int last = 1000;
     MIEClient mie;
     
-    mie.addDocs("flickr_imgs","flickr_tags",1,1000,0);
+    for (unsigned i=first; i<=last; i+=100)
+        mie.addDocs("flickr_imgs","flickr_tags",i,i+99,0);
 //    mie.addDocs("flickr_imgs", "flickr_tags",1,10,1000);
 //    mie.index();
 //    vector<QueryResult> queryResults = mie.search(0, "wang", "docs");
@@ -55,7 +58,8 @@ void runCashClient() {
     CashClient cash;
     cash.train("flickr_imgs",first,last);
     
-//    cash.addDocs("flickr_imgs","flickr_tags",first,last,0);
+    for (unsigned i=first; i<=last; i+=100)
+        cash.addDocs("flickr_imgs","flickr_tags",i,i+99,0);
 //    for (int i = 0; i < 100; i++)
 //        cash.addDocs("flickr_imgs", "flickr_tags", first+i*10, 10+i*10, last);
 //    vector<QueryResult> queryResults = cash.search("flickr_imgs","flickr_tags",1);

@@ -23,12 +23,21 @@
 #include "EnglishAnalyzer.h"
 #include "SBE.h"
 #include "TextCrypt.h"
+#include <pthread.h>
 #include "Util.h"
 
 using namespace std;
 using namespace cv;
 
 class MIEClient {
+    
+    struct sbeThreadData{
+        SBE* sbe;
+        Mat* descriptors;
+        vector<vector<float> >* features;
+        int index;
+    };
+    
     double featureTime, indexTime, cryptoTime, cloudTime;
     Ptr<FeatureDetector> detector;
     Ptr<DescriptorExtractor> extractor;
@@ -38,8 +47,8 @@ class MIEClient {
     
     void processDoc(int id, const char* imgDataset, const char* textDataset, vector< vector<float> >* features, vector< vector<unsigned char> >* encKeywords);
     int sendDoc(char op, int id, vector< vector<float> >* features, vector< vector<unsigned char> >* encKeywords);
-//    int socketSend (char* buff, long size);
-//    vector<QueryResult> receiveQueryResults(int sockfd);
+    static void* sbeEncryptionThread(void* data);
+
     
 public:
     MIEClient();
@@ -47,8 +56,8 @@ public:
     void addDocs(const char* imgDataset, const char* textDataset, int first, int last, int prefix);
     void index();
     vector<QueryResult> search(int id, const char* imgDataset, const char* textDataset);
-//    void socketReceiveAck(int sockfd);
     string printTime();
+    
 };
 
 

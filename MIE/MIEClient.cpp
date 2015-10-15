@@ -64,23 +64,46 @@ void MIEClient::processDoc(int id, const char* imgDataset, const char* textDatas
     sprintf(fname, "%s/%s/tags%d.txt", datasetsPath, textDataset, id);
     vector<string> keywords = analyzer->extractFile(fname);
     featureTime += diffSec(start, getTime());       //end benchmark
+    free(fname);
     
     //encrypt img features
     start = getTime();                              //start crypto benchmark
     features->resize(descriptors.rows);
+//    for (int i = 0; i < descriptors.rows; i++) {
+//        vector<float> feature;
+//        feature.resize(descriptors.cols);
+//        for (int j = 0; j < descriptors.cols; j++)
+//            feature[j] = descriptors.at<float>(i, j);
+//        (*features)[i] = sbe->encode(feature);
+//    }
+    pthread_t sbeThreads[descriptors.rows];
+    struct sbeThreadData sbeThreadsData[descriptors.rows];
     for (int i = 0; i < descriptors.rows; i++) {
-        vector<float> feature;
-        feature.resize(descriptors.cols);
-        for (int j = 0; j < descriptors.cols; j++)
-            feature[j] = descriptors.at<float>(i, j);
-        (*features)[i] = sbe->encode(feature);
+        sbeThreadsData[i].index = i;
+        sbeThreadsData[i].descriptors = &descriptors;
+        sbeThreadsData[i].features = features;
+        sbeThreadsData[i].sbe = sbe;
+        if (pthread_create(&sbeThreads[i], NULL, sbeEncryptionThread, (void*)&sbeThreadsData[i]))
+            pee("Error: unable to create sbeEncryptionThread");
     }
     //encrypt text features
     encKeywords->resize(keywords.size());
     for (int i = 0; i < keywords.size(); i++)
         (*encKeywords)[i] = textCrypto->encode(keywords[i]);
+    //wait for sbe threads
+    for (int i = 0; i < descriptors.rows; i++)
+        if (pthread_join (sbeThreads[i], NULL)) pee("Error:unable to join thread");
     cryptoTime += diffSec(start, getTime());        //end crypto benchmark
-    free(fname);
+}
+
+void* MIEClient::sbeEncryptionThread(void* threadData) {
+    struct sbeThreadData* data = (struct sbeThreadData*) threadData;
+    vector<float> feature;
+    feature.resize(data->descriptors->cols);
+    for (int j = 0; j < data->descriptors->cols; j++)
+        feature[j] = data->descriptors->at<float>(data->index, j);
+    (*data->features)[data->index] = data->sbe->encode(feature);
+    pthread_exit(NULL);
 }
 
 int MIEClient::sendDoc(char op, int id, vector< vector<float> >* features, vector< vector<unsigned char> >* encKeywords) {
@@ -137,40 +160,9 @@ vector<QueryResult> MIEClient::search(int id, const char* imgDataset, const char
     return queryResults;
 }
 
-/*vector<QueryResult> MIEClient::receiveQueryResults(int sockfd) {
-    char buff[sizeof(int)];
-    socketReceive(sockfd, buff, sizeof(int));
-    int pos = 0;
-    int resultsSize = readIntFromArr(buff, &pos);
-    vector<QueryResult> queryResults;
-    queryResults.resize(resultsSize);
-    
-    int resultsBuffSize = resultsSize * (sizeof(int) + sizeof(uint64_t));
-    char* buff2 = (char*) malloc(resultsBuffSize);
-    if (buff2 == NULL) pee("malloc error in MIEClient::receiveQueryResults");
-    int r = 0;
-    while (r < resultsBuffSize) {
-        ssize_t n = read(sockfd,&buff2[r],resultsBuffSize-r);
-        if (n < 0) pee("ERROR reading from socket");
-        r+=n;
-    }
-    pos = 0;
-    for (int i = 0; i < resultsSize; i++) {
-        struct QueryResult qr;
-        qr.docId = readIntFromArr(buff2, &pos);
-        qr.score = readFloatFromArr(buff2, &pos);
-        queryResults[i] = qr;
-    }
-    free(buff2);
-    return queryResults;
-}*/
-
 string MIEClient::printTime() {
     char char_time[120];
     sprintf(char_time, "featureTime: %f indexTime: %f cryptoTime: %f cloudTime: %f", featureTime, indexTime, cryptoTime, cloudTime);
     string time = char_time;
     return time;
 }
-
-
-
