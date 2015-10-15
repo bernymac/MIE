@@ -35,7 +35,8 @@ class MIEClient {
         SBE* sbe;
         Mat* descriptors;
         vector<vector<float> >* features;
-        int index;
+        int first;
+        int last;
     };
     
     double featureTime, indexTime, cryptoTime, cloudTime;

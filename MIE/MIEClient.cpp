@@ -76,13 +76,22 @@ void MIEClient::processDoc(int id, const char* imgDataset, const char* textDatas
 //            feature[j] = descriptors.at<float>(i, j);
 //        (*features)[i] = sbe->encode(feature);
 //    }
-    pthread_t sbeThreads[descriptors.rows];
-    struct sbeThreadData sbeThreadsData[descriptors.rows];
-    for (int i = 0; i < descriptors.rows; i++) {
-        sbeThreadsData[i].index = i;
-        sbeThreadsData[i].descriptors = &descriptors;
-        sbeThreadsData[i].features = features;
-        sbeThreadsData[i].sbe = sbe;
+    const long numCPU = sysconf( _SC_NPROCESSORS_ONLN );
+    const int descPerCPU = ceil((float)descriptors.rows/(float)numCPU);
+    pthread_t sbeThreads[numCPU];
+    struct sbeThreadData sbeThreadsData[numCPU];
+    for (int i = 0; i < numCPU; i++) {
+        struct sbeThreadData data;
+        data.first = i * descPerCPU;
+        const int last = i*descPerCPU + descPerCPU-1;
+        if (last < descriptors.rows)
+            data.last = last;
+        else
+            data.last = descriptors.rows;
+        data.descriptors = &descriptors;
+        data.features = features;
+        data.sbe = sbe;
+        sbeThreadsData[i] = data;
         if (pthread_create(&sbeThreads[i], NULL, sbeEncryptionThread, (void*)&sbeThreadsData[i]))
             pee("Error: unable to create sbeEncryptionThread");
     }
@@ -91,18 +100,20 @@ void MIEClient::processDoc(int id, const char* imgDataset, const char* textDatas
     for (int i = 0; i < keywords.size(); i++)
         (*encKeywords)[i] = textCrypto->encode(keywords[i]);
     //wait for sbe threads
-    for (int i = 0; i < descriptors.rows; i++)
+    for (int i = 0; i < numCPU; i++)
         if (pthread_join (sbeThreads[i], NULL)) pee("Error:unable to join thread");
     cryptoTime += diffSec(start, getTime());        //end crypto benchmark
 }
 
 void* MIEClient::sbeEncryptionThread(void* threadData) {
     struct sbeThreadData* data = (struct sbeThreadData*) threadData;
-    vector<float> feature;
-    feature.resize(data->descriptors->cols);
-    for (int j = 0; j < data->descriptors->cols; j++)
-        feature[j] = data->descriptors->at<float>(data->index, j);
-    (*data->features)[data->index] = data->sbe->encode(feature);
+    for (int i = data->first; i < data->last; i++ ) {
+        vector<float> feature;
+        feature.resize(data->descriptors->cols);
+        for (int j = 0; j < data->descriptors->cols; j++)
+            feature[j] = data->descriptors->at<float>(i, j);
+        (*data->features)[i] = data->sbe->encode(feature);
+    }
     pthread_exit(NULL);
 }
 

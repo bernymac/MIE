@@ -23,6 +23,6 @@ int main(int argc, const char * argv[]) {
                 if (strcasecmp(argv[1], "Cash") == 0)
                     CashServer server;
                 else
-                    printf("Server command not recognized!\n");
+                    printf("Server command not recognized! Available Servers: \"MIE\", \"SSE\" and \"Cash\"\n");
 }
 
