@@ -38,6 +38,12 @@ class MIEClient {
         int first;
         int last;
     };
+    struct sendThreadData{
+        char op;
+        int id;
+        vector< vector<float> >* imgFeatures;
+        vector< vector<unsigned char> >* textFeatures;
+    };
     
     double featureTime, indexTime, cryptoTime, cloudTime;
     Ptr<FeatureDetector> detector;
@@ -48,8 +54,9 @@ class MIEClient {
     
     void processDoc(int id, const char* imgDataset, const char* textDataset, vector< vector<float> >* features, vector< vector<unsigned char> >* encKeywords);
     int sendDoc(char op, int id, vector< vector<float> >* features, vector< vector<unsigned char> >* encKeywords);
-    static void* sbeEncryptionThread(void* data);
-
+    static void* sbeEncryptionThread(void* threadData);
+    static void* sendThread(void* threadData);
+        
     
 public:
     MIEClient();

@@ -117,6 +117,42 @@ void* MIEClient::sbeEncryptionThread(void* threadData) {
     pthread_exit(NULL);
 }
 
+void* MIEClient::sendThread(void* threadData) {
+    struct sendThreadData* data = (struct sendThreadData*) threadData;
+    vector< vector<float> >* features = data->imgFeatures;
+    vector< vector<unsigned char> >* encKeywords = data->textFeatures;
+    
+    long size = 5*sizeof(int) + sizeof(int)*features->size()*(*features)[0].size() + encKeywords->size()*TextCrypt::keysize;
+    char* buff = (char*)malloc(size);
+    if (buff == NULL) pee("malloc error in MIEClient::sendDoc");
+    int pos = 0;
+    addIntToArr (data->id, buff, &pos);
+    addIntToArr (int(features->size()), buff, &pos);
+    addIntToArr (int((*features)[0].size()), buff, &pos);
+    addIntToArr (int(encKeywords->size()), buff, &pos);
+    addIntToArr (TextCrypt::keysize, buff, &pos);
+    for (int i = 0; i < features->size(); i++)
+        for (int j = 0; j < (*features)[i].size(); j++)
+            addIntToArr ((int)(*features)[i][j], buff, &pos);
+    //and text features
+    for (int i = 0; i < encKeywords->size(); i++) {
+        for (int j = 0; j < (*encKeywords)[i].size(); j++) {
+            unsigned char c = (*encKeywords)[i][j];
+            addToArr(&c, sizeof(unsigned char), buff, &pos);
+        }
+    }
+    //upload
+    char cmd[1];
+    cmd[0] = data->op;
+    int sockfd = connectAndSend(cmd, 1);
+    zipAndSend(sockfd, buff, size);
+    //    int sockfd = connectAndSend (buff, size) ;
+    //    LOGI("Search network traffic part 1: %ld\n",size);
+    free(buff);
+//    return sockfd;
+    pthread_exit(NULL);
+}
+
 int MIEClient::sendDoc(char op, int id, vector< vector<float> >* features, vector< vector<unsigned char> >* encKeywords) {
     long size = 5*sizeof(int) + sizeof(int)*features->size()*(*features)[0].size() + encKeywords->size()*TextCrypt::keysize;
     char* buff = (char*)malloc(size);
