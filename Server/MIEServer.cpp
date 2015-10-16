@@ -73,41 +73,6 @@ void MIEServer::startServer() {
     }
 }
 
-void MIEServer::receiveDoc(int newsockfd, int* id, Mat* mat, vector<vector<unsigned char> >* keywords) {
-    //receive and unzip data
-    char buff[2*sizeof(uint64_t)];
-    socketReceive(newsockfd, buff, 2*sizeof(uint64_t));
-    unsigned long zipSize, dataSize;
-    memcpy(&zipSize, buff, sizeof(uint64_t));
-    memcpy(&dataSize, buff + sizeof(uint64_t), sizeof(uint64_t));
-    zipSize = be64toh(zipSize);
-    dataSize = be64toh(dataSize);
-
-    char* data = (char*)malloc(dataSize);
-    receiveAndUnzip(newsockfd, data, &dataSize, zipSize);
-    int pos = 0;
-    *id = readIntFromArr(data, &pos);
-    int nFeatures = readIntFromArr(data, &pos);
-    int featureSize = readIntFromArr(data, &pos);
-    int nKeywords = readIntFromArr(data, &pos);
-    int keywordSize = readIntFromArr(data, &pos);
-    
-    //store img features
-    mat->create(nFeatures, featureSize, CV_32F);
-    for (int i = 0; i < nFeatures; i++)
-        for (int j = 0; j < featureSize; j++)
-            mat->at<float>(i,j) = float(readIntFromArr(data, &pos));
-    
-    //store text features
-    keywords->resize(nKeywords);
-    for (int i = 0; i < nKeywords; i++) {
-        (*keywords)[i].resize(keywordSize);
-        for (int j = 0; j < keywordSize; j++)
-            readFromArr(&(*keywords)[i][j], sizeof(unsigned char), data, &pos);
-    }
-    free(data);
-}
-
 void MIEServer::addDoc(int newsockfd, map<int,Mat>* imgFeatures,
             map<int,vector<vector<unsigned char> > >* textFeatures) {
     int id = -1;
@@ -117,6 +82,49 @@ void MIEServer::addDoc(int newsockfd, map<int,Mat>* imgFeatures,
     (*imgFeatures)[id] = mat;
     (*textFeatures)[id] = keywords;
 //    printf("received %d\n",id);
+}
+
+void MIEServer::receiveDoc(int newsockfd, int* id, Mat* mat, vector<vector<unsigned char> >* keywords) {
+    //receive and unzip data
+//    char buff[2*sizeof(uint64_t)];
+//    socketReceive(newsockfd, buff, 2*sizeof(uint64_t));
+//    unsigned long zipSize, dataSize;
+//    memcpy(&zipSize, buff, sizeof(uint64_t));
+//    memcpy(&dataSize, buff + sizeof(uint64_t), sizeof(uint64_t));
+//    zipSize = be64toh(zipSize);
+//    dataSize = be64toh(dataSize);
+    
+//    char* data = (char*)malloc(dataSize);
+//    receiveAndUnzip(newsockfd, data, &dataSize, zipSize);
+    
+    char data[5*sizeof(int)];
+    socketReceive(newsockfd, data, 5*sizeof(int));
+    
+    int pos = 0;
+    *id = readIntFromArr(data, &pos);
+    int nFeatures = readIntFromArr(data, &pos);
+    int featureSize = readIntFromArr(data, &pos);
+    int nKeywords = readIntFromArr(data, &pos);
+    int keywordSize = readIntFromArr(data, &pos);
+    
+    int dataSize = nFeatures*featureSize*sizeof(int) + nKeywords*keywordSize*sizeof(unsigned char);
+    char* buff = (char*)malloc(dataSize);
+    socketReceive(newsockfd, buff, dataSize);
+    
+    //store img features
+    mat->create(nFeatures, featureSize, CV_32F);
+    for (int i = 0; i < nFeatures; i++)
+        for (int j = 0; j < featureSize; j++)
+            mat->at<float>(i,j) = float(readIntFromArr(buff, &pos));
+    
+    //store text features
+    keywords->resize(nKeywords);
+    for (int i = 0; i < nKeywords; i++) {
+        (*keywords)[i].resize(keywordSize);
+        for (int j = 0; j < keywordSize; j++)
+            readFromArr(&(*keywords)[i][j], sizeof(unsigned char), buff, &pos);
+    }
+    free(buff);
 }
 
 bool MIEServer::readOrPersistFeatures(string dataPath, map<int,Mat>* imgFeatures,
