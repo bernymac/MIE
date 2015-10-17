@@ -78,6 +78,10 @@ void pee(const char *msg) {
     exit(0);
 }
 
+void LOGI(const char* msg) {
+    printf("%s",msg);
+    fflush(stdout);
+}
 
 int initServer() {
     int sockfd, portno;

@@ -76,6 +76,9 @@ uint64_t pack754(long double f, unsigned bits, unsigned expbits);
 
 long double unpack754(uint64_t i, unsigned bits, unsigned expbits);
 
+//#define  LOGI(...)  fprintf(stdout,__VA_ARGS__)
+void LOGI(const char* msg);
+
 int initServer();
 
 void ack(int newsockfd);

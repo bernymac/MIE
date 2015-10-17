@@ -12,8 +12,9 @@
 #include "CashServer.hpp"
 
 int main(int argc, const char * argv[]) {
-/*    if (argc != 2)
-        printf("Incorrect number of arguments. Please give a server name, e.g. \"MIE\", \"SSE\" or \"Cash\"\n");
+    setvbuf(stdout, NULL, _IONBF, 0);
+    if (argc != 2)
+        printf("Incorrect number of arguments. Please give a server name, e.g. \"MIE\", \"SSE\" or \"Cash\"");
     else if (strcasecmp(argv[1], "mie") == 0)
         MIEServer server;
     else if (strcasecmp(argv[1], "mieMT") == 0)
@@ -24,8 +25,5 @@ int main(int argc, const char * argv[]) {
         CashServer server;
     else
         printf("Server command not recognized! Available Servers: \"mie\", \"mieMT\", \"sse\" and \"Cash\"\n");
- */
-    
-    CashServer server;
 }
 
