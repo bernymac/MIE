@@ -23,8 +23,8 @@
 #include "EnglishAnalyzer.h"
 #include "SBE.h"
 #include "TextCrypt.h"
-#include <pthread.h>
 #include "Util.h"
+
 
 using namespace std;
 using namespace cv;
@@ -38,11 +38,14 @@ class MIEClient {
         int first;
         int last;
     };
+ 
     struct sendThreadData{
         char op;
         int id;
         vector< vector<float> >* imgFeatures;
         vector< vector<unsigned char> >* textFeatures;
+        double* cloudTime;
+//        pthread_mutex_t* lock;
     };
     
     double featureTime, indexTime, cryptoTime, cloudTime;
@@ -51,6 +54,7 @@ class MIEClient {
     EnglishAnalyzer* analyzer;
     SBE* sbe;
     TextCrypt* textCrypto;
+//    pthread_mutex_t lock;
     
     void processDoc(int id, const char* imgDataset, const char* textDataset, vector< vector<float> >* features, vector< vector<unsigned char> >* encKeywords);
     int sendDoc(char op, int id, vector< vector<float> >* features, vector< vector<unsigned char> >* encKeywords);

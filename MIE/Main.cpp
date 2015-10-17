@@ -26,7 +26,7 @@ void printQueryResults (set<QueryResult,cmp_QueryResult> queryResults) {
 void runMIEClient() {
     LOGI("begin MIE!\n");
     int first = 1;
-    int last = 1000;
+    int last = 3000;
     MIEClient mie;
     timespec start = getTime();
     
@@ -56,7 +56,7 @@ void runSSEClient() {
 void runCashClient() {
     LOGI("begin Cash SSE!\n");
     int first = 1;
-    int last = 1000;
+    int last = 3000;
     int groupsize = 10;
     CashClient cash;
     cash.train("flickr_imgs",first,last);

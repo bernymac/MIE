@@ -18,6 +18,7 @@ MIEClient::MIEClient() {
     analyzer = new EnglishAnalyzer;
     sbe = new SBE(extractor->descriptorSize());
     textCrypto = new TextCrypt;
+//    if (pthread_mutex_init(&lock, NULL) != 0) pee("mutex init failed\n");
 }
 
 MIEClient::~MIEClient() {
@@ -26,6 +27,7 @@ MIEClient::~MIEClient() {
     free(analyzer);
     free(sbe);
     free(textCrypto);
+//    pthread_mutex_destroy(&lock);
 }
 
 void MIEClient::addDocs(const char* imgDataset, const char* textDataset, int first, int last, int prefix) {
@@ -36,10 +38,20 @@ void MIEClient::addDocs(const char* imgDataset, const char* textDataset, int fir
         
         timespec start = getTime();
         int sockfd = sendDoc('a', id+prefix, &imgFeatures, &encKeywords);
-        cloudTime += diffSec(start, getTime());
-        
-//        socketReceiveAck(sockfd);
         close(sockfd);
+        cloudTime += diffSec(start, getTime());
+//        socketReceiveAck(sockfd);
+        
+//        pthread_t t;
+//        struct sendThreadData data;
+//        data.op = 'a';
+//        data.id = id+prefix;
+//        data.imgFeatures = &imgFeatures;
+//        data.textFeatures = &encKeywords;
+//        data.cloudTime = &cloudTime;
+//        data.lock = &lock;
+//        if (pthread_create(&t, NULL, sendThread, (void*)&data))
+//            pee("Error: unable to create sendThread");
     }
 }
 
@@ -70,14 +82,14 @@ void MIEClient::processDoc(int id, const char* imgDataset, const char* textDatas
     //encrypt img features
     start = getTime();                              //start crypto benchmark
     features->resize(descriptors.rows);
-//    for (int i = 0; i < descriptors.rows; i++) {
+//    for (int i = 0; i < descriptors.rows; i++) {          //single threaded
 //        vector<float> feature;
 //        feature.resize(descriptors.cols);
 //        for (int j = 0; j < descriptors.cols; j++)
 //            feature[j] = descriptors.at<float>(i, j);
 //        (*features)[i] = sbe->encode(feature);
 //    }
-    const long numCPU = sysconf( _SC_NPROCESSORS_ONLN );
+    const long numCPU = sysconf(_SC_NPROCESSORS_ONLN);    //hand made threads equal to cpus
     const int descPerCPU = ceil((float)descriptors.rows/(float)numCPU);
     pthread_t sbeThreads[numCPU];
     struct sbeThreadData sbeThreadsData[numCPU];
@@ -96,6 +108,7 @@ void MIEClient::processDoc(int id, const char* imgDataset, const char* textDatas
         if (pthread_create(&sbeThreads[i], NULL, sbeEncryptionThread, (void*)&sbeThreadsData[i]))
             pee("Error: unable to create sbeEncryptionThread");
     }
+    
     //encrypt text features
     encKeywords->resize(keywords.size());
     for (int i = 0; i < keywords.size(); i++)
@@ -103,6 +116,7 @@ void MIEClient::processDoc(int id, const char* imgDataset, const char* textDatas
     //wait for sbe threads
     for (int i = 0; i < numCPU; i++)
         if (pthread_join (sbeThreads[i], NULL)) pee("Error:unable to join thread");
+
     cryptoTime += diffSec(start, getTime());        //end crypto benchmark
 }
 
@@ -115,42 +129,6 @@ void* MIEClient::sbeEncryptionThread(void* threadData) {
             feature[j] = data->descriptors->at<float>(i, j);
         (*data->features)[i] = data->sbe->encode(feature);
     }
-    pthread_exit(NULL);
-}
-
-void* MIEClient::sendThread(void* threadData) {
-    struct sendThreadData* data = (struct sendThreadData*) threadData;
-    vector< vector<float> >* features = data->imgFeatures;
-    vector< vector<unsigned char> >* encKeywords = data->textFeatures;
-    
-    long size = 5*sizeof(int) + sizeof(int)*features->size()*(*features)[0].size() + encKeywords->size()*TextCrypt::keysize;
-    char* buff = (char*)malloc(size);
-    if (buff == NULL) pee("malloc error in MIEClient::sendDoc");
-    int pos = 0;
-    addIntToArr (data->id, buff, &pos);
-    addIntToArr (int(features->size()), buff, &pos);
-    addIntToArr (int((*features)[0].size()), buff, &pos);
-    addIntToArr (int(encKeywords->size()), buff, &pos);
-    addIntToArr (TextCrypt::keysize, buff, &pos);
-    for (int i = 0; i < features->size(); i++)
-        for (int j = 0; j < (*features)[i].size(); j++)
-            addIntToArr ((int)(*features)[i][j], buff, &pos);
-    //and text features
-    for (int i = 0; i < encKeywords->size(); i++) {
-        for (int j = 0; j < (*encKeywords)[i].size(); j++) {
-            unsigned char c = (*encKeywords)[i][j];
-            addToArr(&c, sizeof(unsigned char), buff, &pos);
-        }
-    }
-    //upload
-    char cmd[1];
-    cmd[0] = data->op;
-    int sockfd = connectAndSend(cmd, 1);
-    zipAndSend(sockfd, buff, size);
-    //    int sockfd = connectAndSend (buff, size) ;
-    //    LOGI("Search network traffic part 1: %ld\n",size);
-    free(buff);
-//    return sockfd;
     pthread_exit(NULL);
 }
 
@@ -180,12 +158,56 @@ int MIEClient::sendDoc(char op, int id, vector< vector<float> >* features, vecto
     char cmd[1];
     cmd[0] = op;
     int sockfd = connectAndSend(cmd, 1);
-    zipAndSend(sockfd, buff, size);
-//    int sockfd = connectAndSend (buff, size) ;
+//    socketSend(sockfd, buff, size);   //send without zip
+    zipAndSend(sockfd, buff, size);     //send zipped
+    
 //    LOGI("Search network traffic part 1: %ld\n",size);
     free(buff);
     return sockfd;
 }
+
+//not being used
+void* MIEClient::sendThread(void* threadData) {
+    timespec start = getTime();     //start cloud benchmark
+    struct sendThreadData* data = (struct sendThreadData*) threadData;
+    vector< vector<float> >* features = data->imgFeatures;
+    vector< vector<unsigned char> >* encKeywords = data->textFeatures;
+    
+    long size = 5*sizeof(int) + sizeof(int)*features->size()*(*features)[0].size() + encKeywords->size()*TextCrypt::keysize;
+    char* buff = (char*)malloc(size);
+    if (buff == NULL) pee("malloc error in MIEClient::sendDoc");
+    int pos = 0;
+    addIntToArr (data->id, buff, &pos);
+    addIntToArr (int(features->size()), buff, &pos);
+    addIntToArr (int((*features)[0].size()), buff, &pos);
+    addIntToArr (int(encKeywords->size()), buff, &pos);
+    addIntToArr (TextCrypt::keysize, buff, &pos);
+    for (int i = 0; i < features->size(); i++)
+        for (int j = 0; j < (*features)[i].size(); j++)
+            addIntToArr ((int)(*features)[i][j], buff, &pos);
+    for (int i = 0; i < encKeywords->size(); i++) {
+        for (int j = 0; j < (*encKeywords)[i].size(); j++) {
+            unsigned char c = (*encKeywords)[i][j];
+            addToArr(&c, sizeof(unsigned char), buff, &pos);
+        }
+    }
+    //upload
+    //    pthread_mutex_lock(data->lock);
+    char cmd[1];
+    cmd[0] = data->op;
+    int sockfd = connectAndSend(cmd, 1);
+    zipAndSend(sockfd, buff, size);
+    //    int sockfd = connectAndSend (buff, size) ;
+    //    LOGI("Search network traffic part 1: %ld\n",size);
+    free(buff);
+    close(sockfd);
+    timespec end = getTime();     //end benchmark
+    *(data->cloudTime) += diffSec(start, end);
+    //    pthread_mutex_unlock(data->lock);
+    
+    pthread_exit(NULL);
+}
+
 
 void MIEClient::index() {
     char buff[1];

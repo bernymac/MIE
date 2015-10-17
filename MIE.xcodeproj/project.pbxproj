@@ -13,6 +13,7 @@
 		D10C77571BC421F600BAAB0F /* CashServer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D10C77551BC421F500BAAB0F /* CashServer.cpp */; settings = {ASSET_TAGS = (); }; };
 		D11388201BC6B00F008CCA5D /* libcrypto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D19DE85A1AC1724000235D38 /* libcrypto.a */; };
 		D11388211BC6B00F008CCA5D /* libssl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D19DE85B1AC1724000235D38 /* libssl.a */; };
+		D144F5CD1BD1350400811024 /* MIEServerMT.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D144F5CB1BD1350400811024 /* MIEServerMT.cpp */; settings = {ASSET_TAGS = (); }; };
 		D1508DA71AC18387003D3387 /* libopencv_calib3d.2.4.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = D1508D971AC18387003D3387 /* libopencv_calib3d.2.4.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		D1508DA81AC18387003D3387 /* libopencv_contrib.2.4.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = D1508D981AC18387003D3387 /* libopencv_contrib.2.4.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		D1508DA91AC18387003D3387 /* libopencv_core.2.4.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = D1508D991AC18387003D3387 /* libopencv_core.2.4.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
@@ -161,6 +162,9 @@
 		D104E6E41B0513AF007E89B9 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
 		D10C77551BC421F500BAAB0F /* CashServer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CashServer.cpp; sourceTree = "<group>"; };
 		D10C77561BC421F600BAAB0F /* CashServer.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = CashServer.hpp; sourceTree = "<group>"; };
+		D144F5C91BD12E0700811024 /* ThreadPool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ThreadPool.h; sourceTree = "<group>"; };
+		D144F5CB1BD1350400811024 /* MIEServerMT.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MIEServerMT.cpp; sourceTree = "<group>"; };
+		D144F5CC1BD1350400811024 /* MIEServerMT.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MIEServerMT.h; sourceTree = "<group>"; };
 		D1508D971AC18387003D3387 /* libopencv_calib3d.2.4.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_calib3d.2.4.dylib; path = /usr/local/opencv/opencv2.4/lib/libopencv_calib3d.2.4.dylib; sourceTree = "<absolute>"; };
 		D1508D981AC18387003D3387 /* libopencv_contrib.2.4.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_contrib.2.4.dylib; path = /usr/local/opencv/opencv2.4/lib/libopencv_contrib.2.4.dylib; sourceTree = "<absolute>"; };
 		D1508D991AC18387003D3387 /* libopencv_core.2.4.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_core.2.4.dylib; path = /usr/local/opencv/opencv2.4/lib/libopencv_core.2.4.dylib; sourceTree = "<absolute>"; };
@@ -338,6 +342,8 @@
 		D19DE8391AC16F8F00235D38 /* Server */ = {
 			isa = PBXGroup;
 			children = (
+				D144F5CB1BD1350400811024 /* MIEServerMT.cpp */,
+				D144F5CC1BD1350400811024 /* MIEServerMT.h */,
 				D1A697CA1BCCF239008635D6 /* Makefile */,
 				D19DE84E1AC16FF500235D38 /* MIEServer.cpp */,
 				D1D7880F1AF4DC6700EB7B27 /* MIEServer.h */,
@@ -349,6 +355,7 @@
 				D104E6E31B05046B007E89B9 /* portable_endian.h */,
 				D10C77551BC421F500BAAB0F /* CashServer.cpp */,
 				D10C77561BC421F600BAAB0F /* CashServer.hpp */,
+				D144F5C91BD12E0700811024 /* ThreadPool.h */,
 			);
 			path = Server;
 			sourceTree = "<group>";
@@ -508,6 +515,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D1F63BFC1B00E4C900B2FCF1 /* ServerUtil.cpp in Sources */,
+				D144F5CD1BD1350400811024 /* MIEServerMT.cpp in Sources */,
 				D10C77571BC421F600BAAB0F /* CashServer.cpp in Sources */,
 				D1D788101AF4E09A00EB7B27 /* MIEServer.cpp in Sources */,
 				D1D788111AF4E09A00EB7B27 /* SSEServer.cpp in Sources */,
@@ -633,6 +641,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"$(inherited)",
@@ -657,6 +666,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,

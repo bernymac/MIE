@@ -6,81 +6,33 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            shouldBeEnabled = "No"
+            shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "MIE/MIEClient.cpp"
-            timestampString = "466605493.542421"
+            filePath = "Server/Main.cpp"
+            timestampString = "466777692.195901"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "79"
-            endingLineNumber = "79"
-            landmarkName = "MIEClient::processDoc(int id, const char* imgDataset, const char* textDataset, vector&lt; vector&lt;float&gt; &gt;* features, vector&lt;vector&lt;unsigned char&gt; &gt;* encKeywords)"
-            landmarkType = "5">
+            startingLineNumber = "19"
+            endingLineNumber = "19"
+            landmarkName = "main(int argc, const char * argv[])"
+            landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            shouldBeEnabled = "No"
+            shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "MIE/MIEClient.cpp"
-            timestampString = "466606283.607672"
+            filePath = "Server/ServerUtil.cpp"
+            timestampString = "466776066.34473"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "94"
-            endingLineNumber = "94"
-            landmarkName = "MIEClient::processDoc(int id, const char* imgDataset, const char* textDataset, vector&lt; vector&lt;float&gt; &gt;* features, vector&lt;vector&lt;unsigned char&gt; &gt;* encKeywords)"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "MIE/MIEClient.cpp"
-            timestampString = "466606283.607672"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "99"
-            endingLineNumber = "99"
-            landmarkName = "MIEClient::processDoc(int id, const char* imgDataset, const char* textDataset, vector&lt; vector&lt;float&gt; &gt;* features, vector&lt;vector&lt;unsigned char&gt; &gt;* encKeywords)"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "MIE/MIEClient.cpp"
-            timestampString = "466606283.262008"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "84"
-            endingLineNumber = "84"
-            landmarkName = "MIEClient::processDoc(int id, const char* imgDataset, const char* textDataset, vector&lt; vector&lt;float&gt; &gt;* features, vector&lt;vector&lt;unsigned char&gt; &gt;* encKeywords)"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "MIE/MIEClient.cpp"
-            timestampString = "466606323.869681"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "87"
-            endingLineNumber = "87"
-            landmarkName = "MIEClient::processDoc(int id, const char* imgDataset, const char* textDataset, vector&lt; vector&lt;float&gt; &gt;* features, vector&lt;vector&lt;unsigned char&gt; &gt;* encKeywords)"
-            landmarkType = "5">
+            startingLineNumber = "83"
+            endingLineNumber = "83"
+            landmarkName = "LOGI(const char* msg)"
+            landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>
