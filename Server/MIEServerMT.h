@@ -33,6 +33,15 @@ using namespace std;
 using namespace cv;
 
 class MIEServerMT {
+    
+    static map<int,Mat> imgFeatures;
+    static map<int,vector<vector<unsigned char> > > textFeatures;
+    static vector<map<int,int> > imgIndex;
+    static map<vector<unsigned char>,map<int,int> > textIndex;
+    static atomic<int> nImgs, nDocs;
+    static BOWImgDescriptorExtractor* bowExtr;
+    static mutex imgFeaturesLock,textFeaturesLock,imgIndexLock,textIndexLock;
+    
     void startServer();
     static void clientThread(int newsockfd);
     static void receiveDoc(int newsockfd, int* id, Mat* mat, vector<vector<unsigned char> >* keywords);
@@ -48,17 +57,10 @@ class MIEServerMT {
     static set<QueryResult,cmp_QueryResult> textSearch(vector<vector<unsigned char> >* keywords);
     static void search(int newsockfd);
     
-    static map<int,Mat> imgFeatures;
-    static map<int,vector<vector<unsigned char> > > textFeatures;
-    static vector<map<int,int> > imgIndex;
-    static map<vector<unsigned char>,map<int,int> > textIndex;
-    static int nImgs, nDocs;
-    static BOWImgDescriptorExtractor* bowExtr;
-    static mutex imgFeaturesLock,textFeaturesLock,imgIndexLock,textIndexLock;
-    
 public:
     MIEServerMT();
     ~MIEServerMT();
+    
 };
 
 #endif

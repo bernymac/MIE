@@ -41,12 +41,17 @@ void MIEServer::startServer() {
         struct sockaddr_in cli_addr;
         socklen_t clilen = sizeof(cli_addr);
         int newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);
-        if (newsockfd < 0)
-            pee("ERROR on accept");
+        if (newsockfd < 0) {
+            printf("ERROR on accept\n");
+            continue;
+        }
         char buffer[1];
         bzero(buffer,1);
-        if (read(newsockfd,buffer,1) < 0)
-            pee("ERROR reading from socket");
+        if (read(newsockfd,buffer,1) < 0) {
+            printf("ERROR reading from socket\n");
+            close(newsockfd);
+            continue;
+        }
         //        printf("received %c cmd",buffer[0]);
         switch (buffer[0]) {
             case 'a':
@@ -66,7 +71,7 @@ void MIEServer::startServer() {
                 search(newsockfd, &bowExtr, &imgIndex, &nImgs, &textIndex, &nTextDocs);
                 break;
             default:
-                pee("unkonwn command!\n");
+                printf("unkonwn command!\n");
         }
         //ack(newsockfd);
         close(newsockfd);

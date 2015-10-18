@@ -16,7 +16,7 @@ map<int,Mat> MIEServerMT::imgFeatures;
 map<int,vector<vector<unsigned char> > > MIEServerMT::textFeatures;
 vector<map<int,int> > MIEServerMT::imgIndex;
 map<vector<unsigned char>,map<int,int> > MIEServerMT::textIndex;
-int MIEServerMT::nImgs, MIEServerMT::nDocs;
+atomic<int> MIEServerMT::nImgs, MIEServerMT::nDocs;
 BOWImgDescriptorExtractor* MIEServerMT::bowExtr;
 mutex MIEServerMT::imgFeaturesLock, MIEServerMT::textFeaturesLock, MIEServerMT::imgIndexLock, MIEServerMT::textIndexLock;
 
@@ -44,8 +44,8 @@ void MIEServerMT::startServer() {
     }
     
     int sockfd = initServer();
-    printf("mieMT server started!\n");
     ThreadPool pool(sysconf(_SC_NPROCESSORS_ONLN));
+    printf("mieMT server started!\n");
     while (true) {
         struct sockaddr_in cli_addr;
         socklen_t clilen = sizeof(cli_addr);
@@ -213,11 +213,12 @@ bool MIEServerMT::readOrPersistFeatures(string dataPath) {
         readFromArr(&nDocs, sizeof(int), buff, &pos);
         readFromArr(&keywordSize, sizeof(int), buff, &pos);
         readFromArr(&nKeywords, sizeof(int), buff, &pos);
-        textFeaturesLock.lock();
         for (int i = 0; i < nDocs; i++) {
             vector<vector<unsigned char> > aux2;
             aux2.resize(nKeywords);
+            textFeaturesLock.lock();
             textFeatures[i] = aux2;
+            textFeaturesLock.unlock();
             size_t buffSize = nKeywords*keywordSize*sizeof(unsigned char) + sizeof(int);
             char* buff2 = (char*)malloc(buffSize);
             bzero(buff2,buffSize);
@@ -226,14 +227,15 @@ bool MIEServerMT::readOrPersistFeatures(string dataPath) {
             for (int j = 0; j < nKeywords; j++) {
                 vector<unsigned char> aux3;
                 aux3.resize(keywordSize);
+                textFeaturesLock.lock();
                 textFeatures[i][j] = aux3;
                 for (int k = 0; k < keywordSize; k++)
                     readFromArr(&textFeatures[i][j][k], sizeof(unsigned char), buff2, &pos);
+                textFeaturesLock.unlock();
             }
             readFromArr(&nKeywords, sizeof(int), buff2, &pos);
             free(buff2);
         }
-        textFeaturesLock.unlock();
     } else if (nDocs > 0) {
         textFeaturesLock.lock();
         int keywordSize = (int)textFeatures[0][0].size();
@@ -296,18 +298,19 @@ void MIEServerMT::indexImgs() {
     }
     //index images
     imgFeaturesLock.lock();
-    imgIndexLock.lock();
     for (map<int,Mat>::iterator it=imgFeatures.begin(); it!=imgFeatures.end(); ++it) {
         Mat bowDesc;
         bowExtr->compute(it->second,bowDesc);
         for (int i = 0; i < clusters; i++) {
             int val = denormalize(bowDesc.at<float>(i),it->second.rows);
-            if (val > 0)
+            if (val > 0) {
+                imgIndexLock.lock();
                 imgIndex[i][it->first] = val;
+                imgIndexLock.unlock();
+            }
         }
     }
     imgFeaturesLock.unlock();
-    imgIndexLock.unlock();
 }
 
 void MIEServerMT::indexText() {
@@ -358,7 +361,7 @@ void MIEServerMT::persistImgIndex(string dataPath) {
         free(buff2);
     }
     fclose(f);
-    imgIndexLock.lock();
+    imgIndexLock.unlock();
 }
 
 void MIEServerMT::persistTextIndex(string dataPath) {
@@ -406,7 +409,6 @@ bool MIEServerMT::readIndex(string dataPath) {
     if (f1==NULL || f2==NULL)
         return false;
     if (f1 != NULL) {
-        imgIndexLock.lock();
         char buff[3*sizeof(int)];
         fread (buff, 1, 3*sizeof(int), f1);
         int indexSize=0, postingListSize=0, pos=0;
@@ -415,7 +417,9 @@ bool MIEServerMT::readIndex(string dataPath) {
         readFromArr(&postingListSize, sizeof(int), buff, &pos);
         for (int i = 0; i < indexSize; i++) {
             map<int,int> aux;
+            imgIndexLock.lock();
             imgIndex[i] = aux;
+            imgIndexLock.unlock();
             size_t buffSize = postingListSize * 2 * sizeof(int) + sizeof(int);
             char* buff2 = (char*)malloc(buffSize);
             bzero(buff2, buffSize);
@@ -425,16 +429,17 @@ bool MIEServerMT::readIndex(string dataPath) {
                 int docId=0, score=0;
                 readFromArr(&docId, sizeof(int), buff2, &pos);
                 readFromArr(&score, sizeof(int), buff2, &pos);
+                imgIndexLock.lock();
                 imgIndex[i][docId] = score;
+                imgIndexLock.unlock();
             }
             readFromArr(&postingListSize, sizeof(int), buff2, &pos);
             free(buff2);
         }
         fclose(f1);
-        imgIndexLock.unlock();
     }
     if (f2 != NULL) {
-        textIndexLock.lock();
+
         char buff[4*sizeof(int)];
         fread (buff, 1, 4*sizeof(int), f2);
         int indexSize=0, postingListSize=0, keywordSize=0, pos=0;
@@ -459,12 +464,14 @@ bool MIEServerMT::readIndex(string dataPath) {
                 readFromArr(&score, sizeof(int), buff2, &pos);
                 aux[docId] = score;
             }
+            textIndexLock.lock();
             textIndex[key] = aux;
+            textIndexLock.unlock();
             readFromArr(&postingListSize, sizeof(int), buff2, &pos);
             free(buff2);
         }
         fclose(f2);
-        textIndexLock.unlock();
+
     }
     return true;
 }
@@ -472,12 +479,13 @@ bool MIEServerMT::readIndex(string dataPath) {
 set<QueryResult,cmp_QueryResult> MIEServerMT::imgSearch (Mat* features) {
     map<int,float> queryResults;
     Mat bowDesc;
-    imgIndexLock.lock();
     bowExtr->compute(*features,bowDesc);
     for (int i = 0; i < clusters; i++) {
         int queryTf = denormalize(bowDesc.at<float>(i),features->rows);
         if (queryTf > 0) {
+            imgIndexLock.lock();
             map<int,int> postingList = imgIndex[i];
+            imgIndexLock.unlock();
             float idf = getIdf(nImgs, postingList.size());
             for (map<int,int>::iterator it=postingList.begin(); it!=postingList.end(); ++it) {
                 float score = getTfIdf(queryTf, it->second, idf);
@@ -488,7 +496,6 @@ set<QueryResult,cmp_QueryResult> MIEServerMT::imgSearch (Mat* features) {
             }
         }
     }
-    imgIndexLock.unlock();
     return sort(queryResults);
 }
 
@@ -501,9 +508,10 @@ set<QueryResult,cmp_QueryResult> MIEServerMT::textSearch(vector<vector<unsigned 
             query[(*keywords)[i]]++;
     }
     map<int,float> queryResults;
-    textIndexLock.lock();
     for (map<vector<unsigned char>,int>::iterator queryTerm = query.begin(); queryTerm != query.end(); ++queryTerm) {
+        textIndexLock.lock();
         map<int,int> postingList = textIndex[queryTerm->first];
+        textIndexLock.unlock();
         float idf = getIdf(nDocs, postingList.size());
         for (map<int,int>::iterator posting = postingList.begin(); posting != postingList.end(); ++posting) {
             //float score = bm25L(posting->second, queryTerm->second, idf, docLength, avgDocLength);
@@ -514,7 +522,6 @@ set<QueryResult,cmp_QueryResult> MIEServerMT::textSearch(vector<vector<unsigned 
                 queryResults[posting->first] += score;
         }
     }
-    textIndexLock.unlock();
     return sort(queryResults);
 }
 
