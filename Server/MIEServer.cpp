@@ -34,6 +34,8 @@ void MIEServer::startServer() {
         bowExtr.setVocabulary(codebook);
         printf("Read Codebook!\n");
     }
+    if (readIndex(dataPath, &imgIndex, &textIndex, &nImgs, &nTextDocs))
+        printf("Read Index!\n");
     
     int sockfd = initServer();
     printf("MIE server started!\n");
@@ -59,16 +61,21 @@ void MIEServer::startServer() {
                 break;
             case 'i':
                 //try to read index from disk
-                if (!readIndex(dataPath, &imgIndex, &textIndex, &nImgs, &nTextDocs))
+                if (!readIndex(dataPath, &imgIndex, &textIndex, &nImgs, &nTextDocs)) {
                     //try to read features if not in memory, persist them otherwise
                     if (readOrPersistFeatures(dataPath, &imgFeatures, &textFeatures)) {
                         indexImgs(&imgFeatures, &imgIndex, &bowExtr, &nImgs);
                         indexText(&textFeatures,&textIndex, &nTextDocs);
                         persistIndex(dataPath, &imgIndex, &textIndex, nImgs, nTextDocs);
-                        printf("finished indexing!\n");
+                    } else {
+                        printf("no features to index!\n");
+                        break;
                     }
+                }
+                printf("finished indexing!\n");
                 break;
             case 's':
+                //print error message if index empty?
                 search(newsockfd, &bowExtr, &imgIndex, &nImgs, &textIndex, &nTextDocs);
                 break;
             default:
