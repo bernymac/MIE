@@ -136,83 +136,92 @@ bool MIEServer::readOrPersistFeatures(string dataPath, map<int,Mat>* imgFeatures
     // read/persist images
     FILE* f = fopen((dataPath+"/imgFeatures").c_str(), "rb");
     if (imgFeatures->size() == 0 && f != NULL) {
-        char buff[3*sizeof(int)];
-        fread (buff, 1, 3*sizeof(int), f);
-        int nImgs=0, nFeatures=0, featureSize=0, pos = 0;
-        readFromArr(&nImgs, sizeof(int), buff, &pos);
-        readFromArr(&nFeatures, sizeof(int), buff, &pos);
-        readFromArr(&featureSize, sizeof(int), buff, &pos);
+        char buff[2*sizeof(int)];
+        fread (buff, 1, 2*sizeof(int), f);
+        int pos = 0;
+        const int nImgs = readIntFromArr(buff, &pos);
+        const int featureSize = readIntFromArr(buff, &pos);
         size_t buffSize = featureSize*sizeof(float);
-        char* buff2 = (char*)malloc(buffSize);
-        bzero(buff2,buffSize);
+        char* featureBuff = (char*)malloc(buffSize);
         for (int i = 0; i < nImgs; i++) {
+            char imgIdBuff[2*sizeof(int)];    //read imgId
+            fread (imgIdBuff, 1, 2*sizeof(int), f);
+            pos = 0;
+            const int imgId = readIntFromArr(imgIdBuff, &pos);
+            const int nFeatures = readIntFromArr(imgIdBuff, &pos);
             Mat aux2(nFeatures,featureSize,CV_32F);
-            (*imgFeatures)[i] = aux2;
             for (int j = 0; j < nFeatures; j++) {
-                fread (buff2, 1, buffSize, f);
+                fread (featureBuff, 1, buffSize, f);
                 pos = 0;
                 for (int k = 0; k < featureSize; k++)
-                    readFromArr(&(*imgFeatures)[i].at<float>(j,k), sizeof(float), buff2, &pos);
+                    readFromArr(&(aux2.at<float>(j,k)), sizeof(float), featureBuff, &pos);
             }
+            (*imgFeatures)[imgId] = aux2;
         }
-        free(buff2);
+        free(featureBuff);
     } else if (imgFeatures->size() > 0) {
         if (f != NULL)
             fclose(f);
         f = fopen((dataPath+"/imgFeatures").c_str(), "wb");
         int nImgs = (int)imgFeatures->size();
-        int nFeatures = (*imgFeatures)[0].rows;
-        int featureSize = (*imgFeatures)[0].cols;
-        char buff[3*sizeof(int)];
+        int featureSize = imgFeatures->begin()->second.cols;
+        char buff[2*sizeof(int)];
         int pos = 0;
-        addToArr(&nImgs, sizeof(int), buff, &pos);
-        addToArr(&nFeatures, sizeof(int), buff, &pos);
-        addToArr(&featureSize, sizeof(int), buff, &pos);
-        fwrite(buff, 1, 3*sizeof(int), f);
+        addIntToArr(nImgs, buff, &pos);
+        addIntToArr(featureSize, buff, &pos);
+        fwrite(buff, 1, 2*sizeof(int), f);
         size_t buffSize = featureSize*sizeof(float);
-        char* buff2 = (char*)malloc(buffSize);
-        bzero(buff2,buffSize);
-        for (int i = 0; i < nImgs; i++)
-            for (int j = 0; j < nFeatures; j++) {
+        char* featureBuff = (char*)malloc(buffSize);
+        for (map<int,Mat>::iterator it=imgFeatures->begin(); it!=imgFeatures->end(); ++it) {
+            char imgIdBuff[2*sizeof(int)];
+            pos = 0;
+            addIntToArr(it->first, imgIdBuff, &pos);
+            addIntToArr(it->second.rows, imgIdBuff, &pos);
+            fwrite(imgIdBuff, 1, 2*sizeof(int), f);
+            for (int j = 0; j < it->second.rows; j++) {
                 pos = 0;
                 for (int k = 0; k < featureSize; k++)
-                    addToArr(&(*imgFeatures)[i].at<float>(j,k), sizeof(float), buff2, &pos);
-                fwrite(buff2, 1, buffSize, f);
+                    addToArr(&(it->second.at<float>(j,k)), sizeof(float), featureBuff, &pos);
+                fwrite(featureBuff, 1, buffSize, f);
             }
-        free(buff2);
+        }
+        free(featureBuff);
     }
     fclose(f);
     // read/persist text
     f = fopen((dataPath+"/textFeatures").c_str(), "rb");
     if (textFeatures->size() == 0 && f != NULL) {
-        int nDocs=0, nKeywords=0, keywordSize=0, pos=0;
-        char buff[3*sizeof(int)];
-        fread(buff, 1, 3*sizeof(int), f);
+        int nDocs, keywordSize, pos=0;
+        char buff[2*sizeof(int)];
+        fread(buff, 1, 2*sizeof(int), f);
         readFromArr(&nDocs, sizeof(int), buff, &pos);
         readFromArr(&keywordSize, sizeof(int), buff, &pos);
-        readFromArr(&nKeywords, sizeof(int), buff, &pos);
         for (int i = 0; i < nDocs; i++) {
+            char docIdBuff[2*sizeof(int)];
+            fread(docIdBuff, 1, 2*sizeof(int), f);
+            pos = 0;
+            const int docId = readIntFromArr(docIdBuff, &pos);
+            const int nKeywords = readIntFromArr(docIdBuff, &pos);
             vector<vector<unsigned char> > aux2;
             aux2.resize(nKeywords);
-            (*textFeatures)[i] = aux2;
-            size_t buffSize = nKeywords*keywordSize*sizeof(unsigned char) + sizeof(int);
+            size_t buffSize = nKeywords*keywordSize*sizeof(unsigned char);
             char* buff2 = (char*)malloc(buffSize);
-            bzero(buff2,buffSize);
+//            bzero(buff2,buffSize);
             fread(buff2, 1, buffSize, f);
             pos = 0;
             for (int j = 0; j < nKeywords; j++) {
                 vector<unsigned char> aux3;
                 aux3.resize(keywordSize);
-                (*textFeatures)[i][j] = aux3;
                 for (int k = 0; k < keywordSize; k++)
-                    readFromArr(&(*textFeatures)[i][j][k], sizeof(unsigned char), buff2, &pos);
+                    readFromArr(&aux3[k], sizeof(unsigned char), buff2, &pos);
+                aux2[j] = aux3;
             }
-            readFromArr(&nKeywords, sizeof(int), buff2, &pos);
+            (*textFeatures)[docId] = aux2;
             free(buff2);
         }
     } else if (textFeatures->size() > 0) {
         int nDocs = (int)textFeatures->size();
-        int keywordSize = (int)(*textFeatures)[0][0].size();
+        int keywordSize = (int)textFeatures->begin()->second[0].size();
         char buff[2*sizeof(int)];
         int pos = 0;
         addToArr(&nDocs, sizeof(int), buff, &pos);
@@ -221,16 +230,17 @@ bool MIEServer::readOrPersistFeatures(string dataPath, map<int,Mat>* imgFeatures
             fclose(f);
         f = fopen((dataPath+"/textFeatures").c_str(), "wb");
         fwrite(buff, 1, 2*sizeof(int), f);
-        for (int i = 0; i < nDocs; i++) {
-            int nKeywords = (int)(*textFeatures)[i].size();
-            size_t buffSize = sizeof(int) + nKeywords*keywordSize*sizeof(unsigned char);
+        for (map<int,vector<vector<unsigned char> > >::iterator it=textFeatures->begin(); it!=textFeatures->end(); ++it) {
+            int nKeywords = (int)it->second.size();
+            size_t buffSize = 2*sizeof(int) + nKeywords*keywordSize*sizeof(unsigned char);
             char* buff2 = (char*)malloc(buffSize);
-            bzero(buff2,buffSize);
+//            bzero(buff2,buffSize);
             pos = 0;
-            addToArr(&nKeywords, sizeof(int), buff2, &pos);
+            addIntToArr(it->first, buff2, &pos);
+            addIntToArr(nKeywords, buff2, &pos);
             for (int j = 0; j < nKeywords; j++)
                 for (int k = 0; k < keywordSize; k++)
-                    addToArr(&(*textFeatures)[i][j][k], sizeof(unsigned char), buff2, &pos);
+                    addToArr(&it->second[j][k], sizeof(unsigned char), buff2, &pos);
             fwrite(buff2, 1, buffSize, f);
             free(buff2);
         }
@@ -249,10 +259,9 @@ void MIEServer::indexImgs(map<int,Mat>* imgFeatures, vector<map<int,int> >* imgI
         terminate_criterion.epsilon = FLT_EPSILON;
         BOWKMeansTrainer bowTrainer (clusters, terminate_criterion, 3, KMEANS_PP_CENTERS );
         RNG& rng = theRNG();
-        for (int i = 0; i < imgFeatures->size(); i++)
-            if (rng.uniform(0.f,1.f) <= 0.1f) {
-                bowTrainer.add((*imgFeatures)[i]);
-            }
+        for (map<int,Mat>::iterator it=imgFeatures->begin(); it!=imgFeatures->end(); ++it)
+            if (rng.uniform(0.f,1.f) <= 0.1f)
+                bowTrainer.add(it->second);
         printf("build codebook with %d descriptors!\n",bowTrainer.descriptorsCount());
         Mat codebook = bowTrainer.cluster();
         FileStorage fs;
@@ -469,68 +478,6 @@ set<QueryResult,cmp_QueryResult> MIEServer::textSearch(vector<vector<unsigned ch
     }
     return sort(queryResults);
 }
-
-/*set<QueryResult,cmp_QueryResult> MIEServer::mergeSearchResults(set<QueryResult,cmp_QueryResult>* imgResults,
-                                                         set<QueryResult,cmp_QueryResult>* textResults) {
-    const float sigma = 0.01f;
-    //prepare ranks
-    map<int,Rank> ranks;
-    if (textResults != NULL) {
-        int i = 1;
-        for (set<QueryResult,cmp_QueryResult>::iterator it=textResults->begin(); it!=textResults->end(); ++it) {
-            struct Rank qr;
-            qr.textRank = i++;
-            qr.imgRank = 0;
-            ranks[it->docId] = qr;
-        }
-    }
-    if (imgResults != NULL) {
-        int i = 1;
-        for (set<QueryResult,cmp_QueryResult>::iterator it=imgResults->begin(); it!=imgResults->end(); ++it) {
-            map<int,Rank>::iterator rank = ranks.find(it->docId);
-            if (rank == ranks.end()) {
-                struct Rank qr;
-                qr.textRank = 0;
-                qr.imgRank = i++;
-                ranks[it->docId] = qr;
-            } else
-                rank->second.imgRank = i++;
-        }
-    }
-    map<int,float> queryResults;
-    for (map<int,Rank>::iterator it=ranks.begin(); it!=ranks.end(); ++it) {
-        float score = 0.f, df = 0.f;
-        if (it->second.textRank > 0) {
-            score =  1 / pow(it->second.textRank,2);
-            df++;
-        }
-        if (it->second.imgRank > 0) {
-            score +=  1 / pow(it->second.imgRank,2);
-            df++;
-        }
-        score *= log(df+sigma);
-        queryResults[it->first] = score;
-    }
-    return sort(queryResults);
-}*/
-
-/*void MIEServer::sendQueryResponse(int newsockfd, set<QueryResult,cmp_QueryResult>* mergedResults) {
-    int resultsSize = (int)mergedResults->size();
-    long size = sizeof(int) + resultsSize * (sizeof(int) + sizeof(uint64_t));
-    char* buff = (char*)malloc(size);
-    bzero(buff,size);
-    int pos = 0;
-    addIntToArr (resultsSize, buff, &pos);
-    for (set<QueryResult,cmp_QueryResult>::iterator it = mergedResults->begin(); it != mergedResults->end(); ++it) {
-        int docId = it->docId;
-        float score = it->score;
-        addIntToArr(docId, buff, &pos);
-        addFloatToArr(score, buff, &pos);
-    }
-    socketSend (newsockfd, buff, size);
-    printf("Search Network Traffic part 2: %ld\n",size);
-    free(buff);
-}*/
 
 void MIEServer::search(int newsockfd, BOWImgDescriptorExtractor* bowExtr, vector<map<int,int> >* imgIndex,
             int* nImgs, map<vector<unsigned char>,map<int,int> >* textIndex, int* nTextDocs) {
