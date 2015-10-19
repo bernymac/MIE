@@ -65,6 +65,7 @@ void MIEServer::startServer() {
                         indexImgs(&imgFeatures, &imgIndex, &bowExtr, &nImgs);
                         indexText(&textFeatures,&textIndex, &nTextDocs);
                         persistIndex(dataPath, &imgIndex, &textIndex, nImgs, nTextDocs);
+                        printf("finished indexing!\n");
                     }
                 break;
             case 's':

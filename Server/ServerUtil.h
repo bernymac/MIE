@@ -31,7 +31,8 @@
 #include "portable_endian.h"
 
 
-static const std::string dataPath = "/Users/bernardo/Data/MIE";
+//static const std::string dataPath = "/Users/bernardo/Data/MIE";
+static const std::string dataPath = "/home/ubuntu/Data/MIE";
 static const int clusters = 1000;
 
 /*
