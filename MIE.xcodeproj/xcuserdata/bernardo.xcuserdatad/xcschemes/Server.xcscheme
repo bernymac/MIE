@@ -63,7 +63,7 @@
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "mieMT"
+            argument = "mie"
             isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>

@@ -14,6 +14,7 @@
 		D11388201BC6B00F008CCA5D /* libcrypto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D19DE85A1AC1724000235D38 /* libcrypto.a */; };
 		D11388211BC6B00F008CCA5D /* libssl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D19DE85B1AC1724000235D38 /* libssl.a */; };
 		D144F5CD1BD1350400811024 /* MIEServerMT.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D144F5CB1BD1350400811024 /* MIEServerMT.cpp */; settings = {ASSET_TAGS = (); }; };
+		D144F5D01BD3A2E900811024 /* CashServerMT.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D144F5CE1BD3A2E800811024 /* CashServerMT.cpp */; settings = {ASSET_TAGS = (); }; };
 		D1508DA71AC18387003D3387 /* libopencv_calib3d.2.4.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = D1508D971AC18387003D3387 /* libopencv_calib3d.2.4.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		D1508DA81AC18387003D3387 /* libopencv_contrib.2.4.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = D1508D981AC18387003D3387 /* libopencv_contrib.2.4.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		D1508DA91AC18387003D3387 /* libopencv_core.2.4.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = D1508D991AC18387003D3387 /* libopencv_core.2.4.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
@@ -165,6 +166,8 @@
 		D144F5C91BD12E0700811024 /* ThreadPool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ThreadPool.h; sourceTree = "<group>"; };
 		D144F5CB1BD1350400811024 /* MIEServerMT.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MIEServerMT.cpp; sourceTree = "<group>"; };
 		D144F5CC1BD1350400811024 /* MIEServerMT.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MIEServerMT.h; sourceTree = "<group>"; };
+		D144F5CE1BD3A2E800811024 /* CashServerMT.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CashServerMT.cpp; sourceTree = "<group>"; };
+		D144F5CF1BD3A2E800811024 /* CashServerMT.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = CashServerMT.hpp; sourceTree = "<group>"; };
 		D1508D971AC18387003D3387 /* libopencv_calib3d.2.4.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_calib3d.2.4.dylib; path = /usr/local/opencv/opencv2.4/lib/libopencv_calib3d.2.4.dylib; sourceTree = "<absolute>"; };
 		D1508D981AC18387003D3387 /* libopencv_contrib.2.4.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_contrib.2.4.dylib; path = /usr/local/opencv/opencv2.4/lib/libopencv_contrib.2.4.dylib; sourceTree = "<absolute>"; };
 		D1508D991AC18387003D3387 /* libopencv_core.2.4.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_core.2.4.dylib; path = /usr/local/opencv/opencv2.4/lib/libopencv_core.2.4.dylib; sourceTree = "<absolute>"; };
@@ -356,6 +359,8 @@
 				D10C77551BC421F500BAAB0F /* CashServer.cpp */,
 				D10C77561BC421F600BAAB0F /* CashServer.hpp */,
 				D144F5C91BD12E0700811024 /* ThreadPool.h */,
+				D144F5CE1BD3A2E800811024 /* CashServerMT.cpp */,
+				D144F5CF1BD3A2E800811024 /* CashServerMT.hpp */,
 			);
 			path = Server;
 			sourceTree = "<group>";
@@ -518,6 +523,7 @@
 				D144F5CD1BD1350400811024 /* MIEServerMT.cpp in Sources */,
 				D10C77571BC421F600BAAB0F /* CashServer.cpp in Sources */,
 				D1D788101AF4E09A00EB7B27 /* MIEServer.cpp in Sources */,
+				D144F5D01BD3A2E900811024 /* CashServerMT.cpp in Sources */,
 				D1D788111AF4E09A00EB7B27 /* SSEServer.cpp in Sources */,
 				D1D7880E1AF2928000EB7B27 /* Main.cpp in Sources */,
 			);
