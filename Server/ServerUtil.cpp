@@ -197,15 +197,15 @@ void readFromArr (void* val, int size, char* arr, int* pos) {
 }
 
 int readIntFromArr (char* arr, int* pos) {
-    int x = -1;
-    readFromArr(&x, sizeof(int), arr, pos);
+    uint32_t x;
+    readFromArr(&x, sizeof(uint32_t), arr, pos);
     return ntohl(x);
 }
 
 float readFloatFromArr (char* arr, int* pos) {
-    float x = -1.f;
-    readFromArr(&x, sizeof(float), arr, pos);
-    return unpack754_32(x);
+    uint64_t x;
+    readFromArr(&x, sizeof(uint64_t), arr, pos);
+    return (float)unpack754_32(x);
 }
 
 #include <math.h>

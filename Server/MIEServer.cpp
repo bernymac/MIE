@@ -161,7 +161,7 @@ bool MIEServer::readOrPersistFeatures(string dataPath, map<int,Mat>* imgFeatures
                 fread (featureBuff, 1, buffSize, f);
                 pos = 0;
                 for (int k = 0; k < featureSize; k++)
-                    readFromArr(&(aux2.at<float>(j,k)), sizeof(float), featureBuff, &pos);
+                    aux2.at<float>(j,k) = readFloatFromArr(featureBuff, &pos);
             }
             (*imgFeatures)[imgId] = aux2;
         }
@@ -188,7 +188,7 @@ bool MIEServer::readOrPersistFeatures(string dataPath, map<int,Mat>* imgFeatures
             for (int j = 0; j < it->second.rows; j++) {
                 pos = 0;
                 for (int k = 0; k < featureSize; k++)
-                    addToArr(&(it->second.at<float>(j,k)), sizeof(float), featureBuff, &pos);
+                    addFloatToArr(it->second.at<float>(j,k), featureBuff, &pos);
                 fwrite(featureBuff, 1, buffSize, f);
             }
         }
@@ -198,11 +198,11 @@ bool MIEServer::readOrPersistFeatures(string dataPath, map<int,Mat>* imgFeatures
     // read/persist text
     f = fopen((dataPath+"/textFeatures").c_str(), "rb");
     if (textFeatures->size() == 0 && f != NULL) {
-        int nDocs, keywordSize, pos=0;
+        int pos=0;
         char buff[2*sizeof(int)];
         fread(buff, 1, 2*sizeof(int), f);
-        readFromArr(&nDocs, sizeof(int), buff, &pos);
-        readFromArr(&keywordSize, sizeof(int), buff, &pos);
+        int nDocs = readIntFromArr(buff, &pos);
+        int keywordSize = readIntFromArr(buff, &pos);
         for (int i = 0; i < nDocs; i++) {
             char docIdBuff[2*sizeof(int)];
             fread(docIdBuff, 1, 2*sizeof(int), f);
@@ -231,8 +231,8 @@ bool MIEServer::readOrPersistFeatures(string dataPath, map<int,Mat>* imgFeatures
         int keywordSize = (int)textFeatures->begin()->second[0].size();
         char buff[2*sizeof(int)];
         int pos = 0;
-        addToArr(&nDocs, sizeof(int), buff, &pos);
-        addToArr(&keywordSize, sizeof(int), buff, &pos);
+        addIntToArr(nDocs, buff, &pos);
+        addIntToArr(keywordSize, buff, &pos);
         if (f != NULL)
             fclose(f);
         f = fopen((dataPath+"/textFeatures").c_str(), "wb");
@@ -315,19 +315,19 @@ void MIEServer::persistImgIndex(string dataPath, vector<map<int,int> >* imgIndex
     int indexSize = (int)imgIndex->size();
     char buff[2*sizeof(int)];
     int pos = 0;
-    addToArr(&nImgs, sizeof(int), buff, &pos);
-    addToArr(&indexSize, sizeof(int), buff, &pos);
+    addIntToArr(nImgs, buff, &pos);
+    addIntToArr(indexSize, buff, &pos);
     fwrite(buff, 1, 2*sizeof(int), f);
     for (int i = 0; i < indexSize; i++) {
         int postingListSize = (int)(*imgIndex)[i].size();
         size_t buffSize = sizeof(int) + postingListSize * 2 * sizeof(int);
         char* buff2 = (char*)malloc(buffSize);
         pos = 0;
-        addToArr(&postingListSize, sizeof(int), buff2, &pos);
+        addIntToArr(postingListSize, buff2, &pos);
         for (map<int,int>::iterator it=(*imgIndex)[i].begin(); it!=(*imgIndex)[i].end(); ++it) {
             int first = it->first;
-            addToArr(&first, sizeof(int), buff2, &pos);
-            addToArr(&(it->second), sizeof(int), buff2, &pos);
+            addIntToArr(first, buff2, &pos);
+            addIntToArr(it->second, buff2, &pos);
         }
         fwrite(buff2, 1, buffSize, f);
         free(buff2);
@@ -342,24 +342,24 @@ void MIEServer::persistTextIndex(string dataPath, map<vector<unsigned char>,map<
     int keywordSize = (int)textIndex->begin()->first.size();
     char buff[3*sizeof(int)];
     int pos = 0;
-    addToArr(&nTextDocs, sizeof(int), buff, &pos);
-    addToArr(&indexSize, sizeof(int), buff, &pos);
-    addToArr(&keywordSize, sizeof(int), buff, &pos);
+    addIntToArr(nTextDocs, buff, &pos);
+    addIntToArr(indexSize, buff, &pos);
+    addIntToArr(keywordSize, buff, &pos);
     fwrite(buff, 1, 3*sizeof(int), f);
     for (map<vector<unsigned char>,map<int,int> >::iterator it=textIndex->begin(); it!=textIndex->end(); ++it) {
         int postingListSize = (int)it->second.size();
         size_t buffSize = keywordSize * sizeof(unsigned char) + sizeof(int) + postingListSize*2*sizeof(int);
         char* buff2 = (char*)malloc(buffSize);
         pos = 0;
-        addToArr(&postingListSize, sizeof(int), buff2, &pos);
+        addIntToArr(postingListSize, buff2, &pos);
         for (int i = 0; i < keywordSize; i++) {
             unsigned char val = it->first[i];
             addToArr(&val, sizeof(unsigned char), buff2, &pos);
         }
         for (map<int,int>::iterator it2=it->second.begin(); it2!=it->second.end(); ++it2) {
             int first = it2->first;
-            addToArr(&first, sizeof(int), buff2, &pos);
-            addToArr(&(it2->second), sizeof(int), buff2, &pos);
+            addIntToArr(first, buff2, &pos);
+            addIntToArr((it2->second), buff2, &pos);
         }
         fwrite(buff2, 1, buffSize, f);
         free(buff2);
@@ -382,10 +382,10 @@ bool MIEServer::readIndex(string dataPath, vector<map<int,int> >* imgIndex,
     if (f1 != NULL) {
         char buff[3*sizeof(int)];
         fread (buff, 1, 3*sizeof(int), f1);
-        int indexSize=0, postingListSize=0, pos=0;
-        readFromArr(nImgs, sizeof(int), buff, &pos);
-        readFromArr(&indexSize, sizeof(int), buff, &pos);
-        readFromArr(&postingListSize, sizeof(int), buff, &pos);
+        int pos=0;
+        *nImgs = readIntFromArr(buff, &pos);
+        int indexSize = readIntFromArr(buff, &pos);
+        int postingListSize = readIntFromArr(buff, &pos);
         for (int i = 0; i < indexSize; i++) {
             map<int,int> aux;
             (*imgIndex)[i] = aux;
@@ -395,12 +395,11 @@ bool MIEServer::readIndex(string dataPath, vector<map<int,int> >* imgIndex,
             fread (buff2, 1, buffSize, f1);
             pos = 0;
             for (int j = 0; j < postingListSize; j++) {
-                int docId=0, score=0;
-                readFromArr(&docId, sizeof(int), buff2, &pos);
-                readFromArr(&score, sizeof(int), buff2, &pos);
+                int docId = readIntFromArr(buff2, &pos);
+                int score = readIntFromArr(buff2, &pos);
                 (*imgIndex)[i][docId] = score;
             }
-            readFromArr(&postingListSize, sizeof(int), buff2, &pos);
+            postingListSize = readIntFromArr(buff2, &pos);
             free(buff2);
         }
         fclose(f1);
@@ -408,11 +407,11 @@ bool MIEServer::readIndex(string dataPath, vector<map<int,int> >* imgIndex,
     if (f2 != NULL) {
         char buff[4*sizeof(int)];
         fread (buff, 1, 4*sizeof(int), f2);
-        int indexSize=0, postingListSize=0, keywordSize=0, pos=0;
-        readFromArr(nTextDocs, sizeof(int), buff, &pos);
-        readFromArr(&indexSize, sizeof(int), buff, &pos);
-        readFromArr(&keywordSize, sizeof(int), buff, &pos);
-        readFromArr(&postingListSize, sizeof(int), buff, &pos);
+        int pos=0;
+        *nTextDocs = readIntFromArr(buff, &pos);
+        int indexSize = readIntFromArr(buff, &pos);
+        int keywordSize = readIntFromArr(buff, &pos);
+        int postingListSize = readIntFromArr(buff, &pos);
         for (int i = 0; i < indexSize; i++) {
             size_t buffSize = keywordSize * sizeof(unsigned char) + postingListSize*2*sizeof(int) + sizeof(int);
             char* buff2 = (char*)malloc(buffSize);
@@ -425,13 +424,12 @@ bool MIEServer::readIndex(string dataPath, vector<map<int,int> >* imgIndex,
                 readFromArr(&key[j], sizeof(unsigned char), buff2, &pos);
             map<int,int> aux;
             for (int j = 0; j < postingListSize; j++) {
-                int docId=0, score=0;
-                readFromArr(&docId, sizeof(int), buff2, &pos);
-                readFromArr(&score, sizeof(int), buff2, &pos);
+                int docId = readIntFromArr(buff2, &pos);
+                int score = readIntFromArr(buff2, &pos);
                 aux[docId] = score;
             }
             (*textIndex)[key] = aux;
-            readFromArr(&postingListSize, sizeof(int), buff2, &pos);
+            postingListSize = readIntFromArr(buff2, &pos);
             free(buff2);
         }
         fclose(f2);
