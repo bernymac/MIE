@@ -12,7 +12,7 @@
 using namespace std;
 
 SBE::SBE (int dimensions) {
-    m = 64;//256;
+    m = 64;//128;//256;
     delta = 0.5f;
     k = dimensions;
     
