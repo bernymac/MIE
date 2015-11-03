@@ -96,7 +96,7 @@ void MIEClient::processDoc(int id, const char* imgDataset, const char* textDatas
     for (int i = 0; i < numCPU; i++) {
         struct sbeThreadData data;
         data.first = i * descPerCPU;
-        const int last = i*descPerCPU + descPerCPU-1;
+        const int last = i*descPerCPU + descPerCPU;
         if (last < descriptors.rows)
             data.last = last;
         else
@@ -142,9 +142,12 @@ int MIEClient::sendDoc(char op, int id, vector< vector<float> >* features, vecto
     addIntToArr (int((*features)[0].size()), buff, &pos);
     addIntToArr (int(encKeywords->size()), buff, &pos);
     addIntToArr (TextCrypt::keysize, buff, &pos);
-    for (int i = 0; i < features->size(); i++)
+    for (int i = 0; i < features->size(); i++) {
+        if ((*features)[i].size() != (*features)[0].size())         //debug check
+            pee("Unexpected error; feature of uniform size");
         for (int j = 0; j < (*features)[i].size(); j++)
             addIntToArr ((int)(*features)[i][j], buff, &pos);
+    }
     //and text features
     for (int i = 0; i < encKeywords->size(); i++) {
         for (int j = 0; j < (*encKeywords)[i].size(); j++) {
