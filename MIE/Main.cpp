@@ -9,6 +9,7 @@
 #include "MIEClient.h"
 #include "SSEClient.h"
 #include "CashClient.hpp"
+#include "PaillierCashClient.hpp"
 
 using namespace cv;
 using namespace std;
@@ -26,17 +27,17 @@ void printQueryResults (set<QueryResult,cmp_QueryResult> queryResults) {
 void runMIEClient() {
     LOGI("begin MIE!\n");
     int first = 1;
-    int last = 3000;
+    int last = 1000;
     MIEClient mie;
     timespec start = getTime();
     
     mie.addDocs("flickr_imgs","flickr_tags",first,last,0);
 //    mie.addDocs("flickr_imgs", "flickr_tags",1,10,1000);
-//    mie.index();
-//    vector<QueryResult> queryResults = mie.search(0, "wang", "docs");
+    mie.index();
+//    vector<QueryResult> queryResults = mie.search(1, "flickr_imgs", "flickr_tags");
     
     double total_time = diffSec(start, getTime());
-    LOGI("%s total_time:%f.6\n",mie.printTime().c_str(),total_time);
+    LOGI("%s total_time:%.6f\n",mie.printTime().c_str(),total_time);
 //    printQueryResults(queryResults);
 }
 
@@ -56,8 +57,8 @@ void runSSEClient() {
 void runCashClient() {
     LOGI("begin Cash SSE!\n");
     int first = 1;
-    int last = 3000;
-    int groupsize = 10;
+    int last = 1000;//1;
+    int groupsize = 10;//1;
     CashClient cash;
     cash.train("flickr_imgs",first,last);
     timespec start = getTime();
@@ -69,13 +70,34 @@ void runCashClient() {
 //    vector<QueryResult> queryResults = cash.search("flickr_imgs","flickr_tags",1);
     
     double total_time = diffSec(start, getTime());
-    LOGI("%s total_time:%f.6\n",cash.printTime().c_str(),total_time);
+    LOGI("%s total_time:%.6f\n",cash.printTime().c_str(),total_time);
 //    printQueryResults(queryResults);
+}
+
+void runPaillierCashClient() {
+    LOGI("begin Paillier Cash SSE!\n");
+    int first = 1;
+    int last = 1000;//1;
+    int groupsize = 10;//1;
+    PaillierCashClient cash;
+    cash.train("flickr_imgs",first,last);
+    timespec start = getTime();
+    
+    for (unsigned i=first; i<=last; i+=groupsize)
+        cash.addDocs("flickr_imgs","flickr_tags",i,i+groupsize-1,0);
+    //    for (int i = 0; i < 100; i++)
+    //        cash.addDocs("flickr_imgs", "flickr_tags", first+i*10, 10+i*10, last);
+    //    vector<QueryResult> queryResults = cash.search("flickr_imgs","flickr_tags",1);
+    
+    double total_time = diffSec(start, getTime());
+    LOGI("%s total_time:%.6f\n",cash.printTime().c_str(),total_time);
+    //    printQueryResults(queryResults);
 }
  
 int main(int argc, const char * argv[]) {
-//    runMIEClient();
+    runMIEClient();
 //    runSSEClient();
-    runCashClient();
+//    runCashClient();
+//    runPaillierCashClient();
 }
 
