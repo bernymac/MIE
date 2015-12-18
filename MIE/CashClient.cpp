@@ -368,20 +368,24 @@ vector<QueryResult> CashClient::search(const char* imgDataset, const char* textD
     }
     indexTime += diffSec(start, getTime());         //end benchmark
     free(fname);
+//    return queryRO(&vws, &kws);
+    return queryStd(&vws, &kws);
+}
+
     
-    //mandar para a cloud
-    start = getTime();                              //start cloud time benchmark
-    long buffSize = 1 + 3*sizeof(int) + vws.size()*(2*CashCrypt::Ksize+sizeof(int)) + kws.size()*(2*CashCrypt::Ksize+sizeof(int));
+vector<QueryResult> CashClient::queryRO(map<int,int>* vws, map<string,int>* kws) {
+    timespec start = getTime();                              //start cloud time benchmark
+    long buffSize = 1 + 3*sizeof(int) + vws->size()*(2*CashCrypt::Ksize+sizeof(int)) + kws->size()*(2*CashCrypt::Ksize+sizeof(int));
     char* buff = (char*)malloc(buffSize);
     if (buff == NULL) pee("malloc error in CashClient::search sendCloud");
     int pos = 0;
     buff[pos++] = 's';       //cmd
-    addIntToArr ((int)vws.size(), buff, &pos);
-    addIntToArr ((int)kws.size(), buff, &pos);
+    addIntToArr ((int)vws->size(), buff, &pos);
+    addIntToArr ((int)kws->size(), buff, &pos);
     addIntToArr (CashCrypt::Ksize, buff, &pos);
     cloudTime += diffSec(start, getTime());         //end benchmark
     start = getTime();                              //start crypto time benchmark
-    for (map<int,int>::iterator it=vws.begin(); it!=vws.end(); ++it) {
+    for (map<int,int>::iterator it=vws->begin(); it!=vws->end(); ++it) {
         int vw = it->first;
         int append = 1;
         unsigned char k1[CashCrypt::Ksize];
@@ -397,7 +401,7 @@ vector<QueryResult> CashClient::search(const char* imgDataset, const char* textD
 //            LOGI("vw 0 k2: %s\n",getHexRepresentation(k2,CashCrypt::Ksize).c_str());
 //        }
     }
-    for (map<string,int>::iterator it=kws.begin(); it!=kws.end(); ++it) {
+    for (map<string,int>::iterator it=kws->begin(); it!=kws->end(); ++it) {
         string kw = it->first;
         int append = 1;
         unsigned char k1[CashCrypt::Ksize];
@@ -423,6 +427,75 @@ vector<QueryResult> CashClient::search(const char* imgDataset, const char* textD
     close(sockfd);
     return queryResults;
 }
+
+vector<QueryResult> CashClient::queryStd(map<int,int>* vws, map<string,int>* kws) {
+    timespec start = getTime();                              //start cloud time benchmark
+    long buffSize = 1 + 3*sizeof(int);
+    for (map<int,int>::iterator it=vws->begin(); it!=vws->end(); ++it) {
+        const int counter = (*imgDcount)[it->first];
+        buffSize += sizeof(int) + counter*CashCrypt::Ksize + CashCrypt::Ksize + sizeof(int);
+    }
+    for (map<string,int>::iterator it=kws->begin(); it!=kws->end(); ++it) {
+        const int counter = (*textDcount)[it->first];
+        buffSize += sizeof(int) + counter*CashCrypt::Ksize + CashCrypt::Ksize + sizeof(int);
+    }
+    char* buff = (char*)malloc(buffSize);
+    if (buff == NULL) pee("malloc error in CashClient::search sendCloud");
+    int pos = 0;
+    buff[pos++] = 's';       //cmd
+    addIntToArr ((int)vws->size(), buff, &pos);
+    addIntToArr ((int)kws->size(), buff, &pos);
+    addIntToArr (CashCrypt::Ksize, buff, &pos);
+    cloudTime += diffSec(start, getTime());            //end benchmark
+    start = getTime();                              //start crypto time benchmark
+    for (map<int,int>::iterator it=vws->begin(); it!=vws->end(); ++it) {
+        int vw = it->first;
+        int counter = (*imgDcount)[vw];
+        addIntToArr(counter, buff, &pos);
+        int append = 2;
+        unsigned char k2[CashCrypt::Ksize];
+        crypto->deriveKey(&append, sizeof(int), &vw, sizeof(int), k2);
+        addToArr(k2, CashCrypt::Ksize * sizeof(unsigned char), buff, &pos);
+        addIntToArr (it->second, buff, &pos);
+        append = 1;
+        unsigned char k1[CashCrypt::Ksize];
+        crypto->deriveKey(&append, sizeof(int), &vw, sizeof(int), k1);
+        for (int c = 0; c < counter; c++) {
+            vector<unsigned char> encCounter = crypto->encCounter(k1, (unsigned char*)&c, sizeof(int));
+            for (int j = 0; j < encCounter.size(); j++)
+                addToArr(&encCounter[j], sizeof(unsigned char), buff, &pos);
+        }
+    }
+    for (map<string,int>::iterator it=kws->begin(); it!=kws->end(); ++it) {
+        string kw = it->first;
+        int counter = (*textDcount)[kw];
+        addIntToArr(counter, buff, &pos);
+        int append = 2;
+        unsigned char k2[CashCrypt::Ksize];
+        crypto->deriveKey(&append, sizeof(int), (void*)kw.c_str(), (int)kw.size(), k2);
+        addToArr(k2, CashCrypt::Ksize * sizeof(unsigned char), buff, &pos);
+        addIntToArr (it->second, buff, &pos);
+        append = 1;
+        unsigned char k1[CashCrypt::Ksize];
+        crypto->deriveKey(&append, sizeof(int), (void*)kw.c_str(), (int)kw.size(), k1);
+        for (int c = 0; c < counter; c++) {
+            vector<unsigned char> encCounter = crypto->encCounter(k1, (unsigned char*)&c, sizeof(int));
+            for (int j = 0; j < encCounter.size(); j++)
+                addToArr(&encCounter[j], sizeof(unsigned char), buff, &pos);
+        }
+    }
+//    const int x = (int)encKeywords.size()*TextCrypt::keysize+2*sizeof(int);
+//    LOGI("Text Search network traffic part 1: %d\n",x);
+    cryptoTime += diffSec(start, getTime());        //end benchmark
+    start = getTime();                              //start cloud time benchmark
+    int sockfd = connectAndSend(buff, buffSize);
+    free(buff);
+    vector<QueryResult> queryResults = receiveQueryResults(sockfd);
+    close(sockfd);
+    cloudTime += diffSec(start, getTime());            //end benchmark
+    return queryResults;
+}
+
 
 string CashClient::printTime() {
     char char_time[120];

@@ -36,6 +36,8 @@ class CashClient {
     
     void encryptAndIndex(void* keyword, int keywordSize, int counter, int docId, int tf,
                          map<vector<unsigned char>, vector<unsigned char> >* index);
+    vector<QueryResult> queryRO(map<int,int>* vws, map<string,int>* kws);
+    vector<QueryResult> queryStd(map<int,int>* vws, map<string,int>* kws);
     
 public:
     CashClient();
