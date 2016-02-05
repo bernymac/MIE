@@ -17,7 +17,7 @@ int main(int argc, const char * argv[]) {
     setvbuf(stdout, NULL, _IONBF, 0);
     Server* server;
     if (argc != 2) {
-        printf("Incorrect number of arguments. Please give a server name, e.g. \"MIE\", \"SSE\" or \"Cash\"");
+        printf("Incorrect number of arguments. Please give a server name, e.g. \"mie\", \"mieMT\", \"sse\", \"Cash\" and \"PaillierCash\"\n");
         return 0;
     } else if (strcasecmp(argv[1], "mie") == 0)
         server = new MIEServer();
