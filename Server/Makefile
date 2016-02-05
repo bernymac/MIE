@@ -14,6 +14,6 @@ ServerUtil.o : ServerUtil.cpp
 CashServer.o : CashServer.cpp
 	g++ -std=c++11 -I /usr/local/ssl/include -c CashServer.cpp
 PaillierCashServer.o : PaillierCashServer.cpp
-    g++ -std=c++11 -I /usr/local/ssl/include -c PaillierCashServer.cpp
+	g++ -std=c++11 -I /usr/local/ssl/include -c PaillierCashServer.cpp
 clean :
 	rm Server Main.o MIEServer.o MIEServerMT.o SSEServer.o ServerUtil.o CashServer.o PaillierCashServer.o
