@@ -15,6 +15,7 @@
 #include <set>
 #include "EnglishAnalyzer.h"
 #include "CashCrypt.hpp"
+#include "CashClient.hpp"
 #include "Util.h"
 #include "gmp.h"
 extern "C" {
@@ -25,34 +26,21 @@ extern "C" {
 using namespace std;
 using namespace cv;
 
-class PaillierCashClient {
-    double featureTime, cryptoTime, cloudTime, indexTime, trainTime;
-    Ptr<FeatureDetector> detector;
-    Ptr<DescriptorExtractor> extractor;
-    Ptr<BOWImgDescriptorExtractor> bowExtractor;
-    EnglishAnalyzer* analyzer;
-    CashCrypt* crypto;
-    
-    vector<int>* imgDcount;
-    map<string,int>* textDcount;
+class PaillierCashClient : public CashClient {
     
     paillier_pubkey_t* homPub;
     paillier_prvkey_t* homPriv;
     
     void encryptAndIndex(void* keyword, int keywordSize, int counter, int docId, int tf,
                          map<vector<unsigned char>, vector<unsigned char> >* index);
+    vector<QueryResult> receiveResults(int sockfd);
+    set<QueryResult,cmp_QueryResult> calculateQueryResults(int sockfd);
     
 public:
     PaillierCashClient();
     ~PaillierCashClient();
-    void train(const char* dataset, int first, int last);
-    void addDocs(const char* imgDataset, const char* textDataset, int first, int last, int prefix);
-    vector<QueryResult> search(const char* imgDataset, const char* textDataset, int id);
-    string printTime();
+    
 };
-
-
-
 
 
 #endif /* PaillierCashClient_hpp */

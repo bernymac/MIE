@@ -8,6 +8,9 @@
 #ifndef __MIE__Util__
 #define __MIE__Util__
 
+#include <iostream>
+#include <fstream>
+#include <dirent.h>
 #include <set>
 #include <map>
 #include <vector>
@@ -36,7 +39,7 @@
 //desktop
 static const char* dataPath = "/Users/bernardo/Data";
 static const char* datasetsPath = "/Users/bernardo/Datasets";
-static const char* serverIP = "127.0.0.1"; //"52.30.28.99";
+static const char* serverIP = "127.0.0.1";//"52.31.107.86";
 #define  LOGI(...)  fprintf(stdout,__VA_ARGS__)
 //mobile
 //static const char* dataPath = "/sdcard/Data";
@@ -122,6 +125,9 @@ float getIdf (float nDocs, float df);
 
 std::set<QueryResult,cmp_QueryResult> sort (std::map<int,float>* queryResults);
 
+std::set<QueryResult,cmp_QueryResult> mergeSearchResults(std::set<QueryResult,cmp_QueryResult>* imgResults,
+                                                         std::set<QueryResult,cmp_QueryResult>* textResults);
+
 std::vector<QueryResult> receiveQueryResults(int sockfd);
 
 std::string exec(const char* cmd);
@@ -129,5 +135,15 @@ std::string exec(const char* cmd);
 void zipAndSend(int sockfd, char* buff, long size);
 
 long receiveAndUnzip(int sockfd, char* data);
+
+std::vector<std::string>& split(const std::string& s, char delim, std::vector<std::string>& elems);
+
+void printHolidayResults (std::string fPath, std::map<int,std::vector<QueryResult> > results);
+
+void processHolidayDataset (int nImgs, std::map<int,std::string>& imgs);
+
+void processFlickrImgsDataset (int nImgs, std::map<int,std::string>& imgs);
+
+void processFlickrTagsDataset (int nImgs, std::map<int,std::string>& docs);
 
 #endif /* defined(__MIE__Util__) */

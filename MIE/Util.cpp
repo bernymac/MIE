@@ -220,8 +220,8 @@ void readFromArr (void* val, int size, char* arr, int* pos) {
 }
 
 int readIntFromArr (char* arr, int* pos) {
-    int x;
-    readFromArr(&x, sizeof(int), arr, pos);
+    uint32_t x;
+    readFromArr(&x, sizeof(uint32_t), arr, pos);
     return ntohl(x);
 }
 
@@ -288,6 +288,50 @@ std::set<QueryResult,cmp_QueryResult> sort (std::map<int,float>* queryResults) {
         orderedResults.insert(qr);
     }
     return orderedResults;
+}
+
+std::set<QueryResult,cmp_QueryResult> mergeSearchResults(std::set<QueryResult,cmp_QueryResult>* imgResults,
+                                                         std::set<QueryResult,cmp_QueryResult>* textResults) {
+    const float sigma = 0.01f;
+    //prepare ranks
+    std::map<int,Rank> ranks;
+    if (textResults != NULL) {
+        int i = 1;
+        for (std::set<QueryResult,cmp_QueryResult>::iterator it=textResults->begin(); it!=textResults->end(); ++it) {
+            struct Rank qr;
+            qr.textRank = i++;
+            qr.imgRank = 0;
+            ranks[it->docId] = qr;
+        }
+    }
+    if (imgResults != NULL) {
+        int i = 1;
+        for (std::set<QueryResult,cmp_QueryResult>::iterator it=imgResults->begin(); it!=imgResults->end(); ++it) {
+            std::map<int,Rank>::iterator rank = ranks.find(it->docId);
+            if (rank == ranks.end()) {
+                struct Rank qr;
+                qr.textRank = 0;
+                qr.imgRank = i++;
+                ranks[it->docId] = qr;
+            } else
+                rank->second.imgRank = i++;
+        }
+    }
+    std::map<int,float> queryResults;
+    for (std::map<int,Rank>::iterator it=ranks.begin(); it!=ranks.end(); ++it) {
+        float score = 0.f, df = 0.f;
+        if (it->second.textRank > 0) {
+            score =  1 / pow(it->second.textRank,2);
+            df++;
+        }
+        if (it->second.imgRank > 0) {
+            score +=  1 / pow(it->second.imgRank,2);
+            df++;
+        }
+        score *= log(df+sigma);
+        queryResults[it->first] = score;
+    }
+    return sort(&queryResults);
 }
 
 std::vector<QueryResult> receiveQueryResults(int sockfd) {
@@ -387,3 +431,139 @@ long receiveAndUnzip(int sockfd, char* data) {
         }
     return dataSize;
 }
+
+std::vector<std::string>& split(const std::string& s, char delim, std::vector<std::string>& elems) {
+    std::stringstream ss(s);
+    std::string item;
+    while (std::getline(ss, item, delim)) {
+        elems.push_back(item);
+    }
+    return elems;
+}
+
+
+std::vector<int> holidayQueries (char* fName) {
+    std::vector<int> result;
+    result.resize(500);         //could also count nº of lines or use dynamic structure
+    std::string line;
+    std::ifstream fstream (fName);
+    if (fstream.is_open()) {
+        while ( getline (fstream,line) )                  //split file around lines
+            if (line.size() > 0) {
+                std::istringstream lstream(line);
+                std::string queryFileName;
+                getline (lstream,queryFileName);            //split line around spaces
+                std::istringstream wstream(queryFileName);
+                std::string queryId;
+                std::getline(wstream, queryId, '.');   //split word around '.'
+                result.push_back(atoi(queryId.c_str()));
+            }
+        fstream.close();
+    } else
+        pee("Util::holidayQueries Unable to open file");
+    
+    
+    return result;
+}
+
+void processHolidayDataset (int nImgs, std::map<int,std::string>& imgs) {
+    std::string holidayDir = datasetsPath;
+    holidayDir += "/inriaHolidays/";
+    DIR* dir;
+    struct dirent* ent;
+    int i = 0;
+    if ((dir = opendir (holidayDir.c_str())) != NULL) {
+        while ((ent = readdir (dir)) != NULL && i < nImgs) {
+            std::string fname = ent->d_name;
+            const size_t pos = fname.find(".jpg");
+            if (pos != std::string::npos) {
+                std::string idString = fname.substr(0,pos);
+                const int id = atoi(idString.c_str());
+                std::string path = holidayDir;
+                path += fname;
+                imgs[id] = path;
+                i++;
+            }
+        }
+        closedir (dir);
+    } else
+        pee ("Util::processHolidayDataset couldn't open dir");
+}
+
+void processFlickrImgsDataset (int nImgs, std::map<int,std::string>& imgs) {
+    std::string holidayDir = datasetsPath;
+    holidayDir += "/flickr_imgs/";
+    DIR* dir;
+    struct dirent* ent;
+    int i = 0;
+    if ((dir = opendir (holidayDir.c_str())) != NULL) {
+        while ((ent = readdir (dir)) != NULL && i < nImgs) {
+            std::string fname = ent->d_name;
+            const size_t pos = fname.find(".jpg");
+            if (pos != std::string::npos) {
+                std::string idString = fname.substr(2,pos-2);
+                const int id = atoi(idString.c_str());
+                std::string path = holidayDir;
+                path += fname;
+                imgs[id] = path;
+                i++;
+            }
+        }
+        closedir (dir);
+    } else
+        pee ("Util::processFlickrImgsDataset couldn't open dir");
+}
+
+void processFlickrTagsDataset (int nImgs, std::map<int,std::string>& docs) {
+    std::string holidayDir = datasetsPath;
+    holidayDir += "/flickr_tags/";
+    DIR* dir;
+    struct dirent* ent;
+    int i = 0;
+    if ((dir = opendir (holidayDir.c_str())) != NULL) {
+        while ((ent = readdir (dir)) != NULL && i < nImgs) {
+            std::string fname = ent->d_name;
+            const size_t pos = fname.find(".txt");
+            if (pos != std::string::npos) {
+                std::string idString = fname.substr(4,pos-4);
+                const int id = atoi(idString.c_str());
+                std::string path = holidayDir;
+                path += fname;
+                docs[id] = path;
+                i++;
+            }
+        }
+        closedir (dir);
+    } else
+        pee ("Util::processFlickrTagsDataset couldn't open dir");
+}
+
+void printHolidayResults (std::string fPath, std::map<int,std::vector<QueryResult> > results) {
+    std::ofstream ofs (fPath);
+    for (std::map<int,std::vector<QueryResult> >::iterator it = results.begin(); it != results.end(); ++it) {
+        ofs << it->first << ".jpg";
+        for (int i = 0; i < it->second.size(); i++) {
+            ofs << " " << i << " " << it->second.at(i).docId << ".jpg";
+        }
+        ofs << std::endl;
+    }
+    ofs.close();
+}
+
+/*
+protected static void mapQueryHolidayDataset (String path) throws Exception {
+    List<QueryResult[]> searches = new ArrayList<QueryResult[]>(500);
+    for (int i = 100000; i <= 149900; i+=100)
+        searches.add(loader.searchImage(i, -1));
+    PrintWriter pw = new PrintWriter(new File(path));
+    int i = 100000;
+    for (QueryResult[] result: searches) {
+        pw.print(i+".jpg");
+        for (int j = 0; j < result.length; j++)
+            pw.print(" "+j+" "+result[j].getId()+".jpg");
+        pw.println();
+        i+=100;
+    }
+    pw.close();
+}
+*/

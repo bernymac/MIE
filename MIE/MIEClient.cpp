@@ -13,7 +13,7 @@ MIEClient::MIEClient() {
     indexTime = 0;
     cryptoTime = 0;
     cloudTime = 0;
-    detector = FeatureDetector::create( /*"Dense"*/ "PyramidDense" );
+    detector = FeatureDetector::create( /*"Dense"*/ /*"PyramidDense"*/ "SURF" );
     extractor = DescriptorExtractor::create( "SURF" );
     analyzer = new EnglishAnalyzer;
     sbe = new SBE(extractor->descriptorSize());
@@ -31,15 +31,28 @@ MIEClient::~MIEClient() {
 }
 
 void MIEClient::addDocs(const char* imgDataset, const char* textDataset, int first, int last, int prefix) {
-    for (int id = first; id <= last; id++) {
+    map<int,string> tags;
+    processFlickrTagsDataset(last-first+1, tags);
+    map<int,string> imgs;
+    if (strcmp(imgDataset,"flickr_imgs") == 0)
+        processFlickrImgsDataset(last-first+1, imgs);
+    else if (strcmp(imgDataset,"inriaHolidays") == 0)
+        processHolidayDataset(last-first+1, imgs);
+    
+    map<int,string>::iterator imgs_it=imgs.begin();
+    map<int,string>::iterator tags_it=tags.begin();
+    while (imgs_it != imgs.end() && tags_it != tags.end()) {
         vector< vector<float> > imgFeatures;
         vector< vector<unsigned char> > encKeywords;
-        processDoc(id, imgDataset, textDataset, &imgFeatures, &encKeywords);
+        processDoc(imgs_it->first, imgs_it->second, tags_it->second, &imgFeatures, &encKeywords);
         
         timespec start = getTime();
-        int sockfd = sendDoc('a', id+prefix, &imgFeatures, &encKeywords);
+        int sockfd = sendDoc('a', imgs_it->first+prefix, &imgFeatures, &encKeywords);
         close(sockfd);
         cloudTime += diffSec(start, getTime());
+        ++imgs_it;
+        ++tags_it;
+        
 //        socketReceiveAck(sockfd);
         
 //        pthread_t t;
@@ -55,14 +68,10 @@ void MIEClient::addDocs(const char* imgDataset, const char* textDataset, int fir
     }
 }
 
-void MIEClient::processDoc(int id, const char* imgDataset, const char* textDataset, vector< vector<float> >* features, vector<vector<unsigned char> >* encKeywords) {
+void MIEClient::processDoc(int id, string imgPath, string textPath, vector< vector<float> >* features, vector<vector<unsigned char> >* encKeywords) {
     //extract img features
     timespec start = getTime();                     //start feature benchmark
-    char* fname = (char*)malloc(120);
-    if (fname == NULL) pee("malloc error in MIEClient::processDoc");
-    bzero(fname, 120);
-    sprintf(fname, "%s/%s/im%d.jpg", datasetsPath, imgDataset, id);
-    Mat image = imread(fname);
+    Mat image = imread(imgPath);
     vector<KeyPoint> keypoints;
     Mat descriptors;
     detector->detect(image, keypoints);
@@ -73,11 +82,8 @@ void MIEClient::processDoc(int id, const char* imgDataset, const char* textDatas
     
     //extract text features
     start = getTime();                              //start feature benchmark
-    bzero(fname, 120);
-    sprintf(fname, "%s/%s/tags%d.txt", datasetsPath, textDataset, id);
-    vector<string> keywords = analyzer->extractFile(fname);
+    vector<string> keywords = analyzer->extractFile(textPath.c_str());
     featureTime += diffSec(start, getTime());       //end benchmark
-    free(fname);
     
     //encrypt img features
     start = getTime();                              //start crypto benchmark
@@ -220,10 +226,10 @@ void MIEClient::index() {
     close(sockfd);
 }
 
-vector<QueryResult> MIEClient::search(int id, const char* imgDataset, const char* textDataset) {
+vector<QueryResult> MIEClient::search(int id, string imgPath, string textPath) {
     vector< vector<float> > features;
     vector< vector<unsigned char> > encKeywords;
-    processDoc(id, imgDataset, textDataset, &features, &encKeywords);
+    processDoc(id, imgPath, textPath, &features, &encKeywords);
     
     timespec start = getTime();     //start cloud time benchmark
     int sockfd = sendDoc('s', id, &features, &encKeywords);

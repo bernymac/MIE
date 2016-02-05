@@ -31,14 +31,35 @@ void runMIEClient() {
     MIEClient mie;
     timespec start = getTime();
     
-    mie.addDocs("flickr_imgs","flickr_tags",first,last,0);
+    mie.addDocs("inriaHolidays","flickr_tags",first,last,0);
 //    mie.addDocs("flickr_imgs", "flickr_tags",1,10,1000);
-    mie.index();
-//    vector<QueryResult> queryResults = mie.search(1, "flickr_imgs", "flickr_tags");
+//    mie.index();
     
+//    string imgPath = datasetsPath;
+//    imgPath += "/flickr_imgs/im1.jpg";
+//    string textPath = datasetsPath;
+//    textPath += "/flickr_tags/tags1.txt";
+//    vector<QueryResult> queryResults = mie.search(1, imgPath, textPath);
+
     double total_time = diffSec(start, getTime());
     LOGI("%s total_time:%.6f\n",mie.printTime().c_str(),total_time);
 //    printQueryResults(queryResults);
+    
+/*    map<int,vector<QueryResult> > queries;
+    for (int i = 100000; i <= 149900; i+=100) {
+        string imgPath = datasetsPath;
+        imgPath += "/inriaHolidays/";
+        imgPath += i;
+        imgPath += ".jpg";
+        string textPath = datasetsPath;
+        textPath += "/flickr_tags/tags";
+        textPath += i/10000;
+        textPath += ".txt";
+        queries[i] = mie.search(i, imgPath, textPath);
+    }
+    string fName = dataPath;
+    fName += "/MIE/mieHoliday.dat";
+    printHolidayResults(fName, queries); */
 }
 
 void runSSEClient() {
@@ -65,20 +86,20 @@ void runCashClient() {
     
     for (unsigned i=first; i<=last; i+=groupsize)
         cash.addDocs("flickr_imgs","flickr_tags",i,i+groupsize-1,0);
-//    for (int i = 0; i < 100; i++)
-//        cash.addDocs("flickr_imgs", "flickr_tags", first+i*10, 10+i*10, last);
-//    vector<QueryResult> queryResults = cash.search("flickr_imgs","flickr_tags",1);
+/*    for (int i = 0; i < 100; i++)
+        cash.addDocs("flickr_imgs", "flickr_tags", first+i*10, 10+i*10, last); */
+    vector<QueryResult> queryResults = cash.search("flickr_imgs","flickr_tags",1, false);
     
     double total_time = diffSec(start, getTime());
     LOGI("%s total_time:%.6f\n",cash.printTime().c_str(),total_time);
-//    printQueryResults(queryResults);
+    printQueryResults(queryResults);
 }
 
 void runPaillierCashClient() {
     LOGI("begin Paillier Cash SSE!\n");
     int first = 1;
-    int last = 1000;//1;
-    int groupsize = 10;//1;
+    int last = 100;
+    int groupsize = 10;
     PaillierCashClient cash;
     cash.train("flickr_imgs",first,last);
     timespec start = getTime();
@@ -87,17 +108,16 @@ void runPaillierCashClient() {
         cash.addDocs("flickr_imgs","flickr_tags",i,i+groupsize-1,0);
     //    for (int i = 0; i < 100; i++)
     //        cash.addDocs("flickr_imgs", "flickr_tags", first+i*10, 10+i*10, last);
-    //    vector<QueryResult> queryResults = cash.search("flickr_imgs","flickr_tags",1);
+//    vector<QueryResult> queryResults = cash.search("flickr_imgs","flickr_tags",1, false);
     
     double total_time = diffSec(start, getTime());
     LOGI("%s total_time:%.6f\n",cash.printTime().c_str(),total_time);
-    //    printQueryResults(queryResults);
+//    printQueryResults(queryResults);
 }
  
 int main(int argc, const char * argv[]) {
-    runMIEClient();
+//    runMIEClient();
 //    runSSEClient();
 //    runCashClient();
-//    runPaillierCashClient();
+    runPaillierCashClient();
 }
-
