@@ -21,7 +21,7 @@ BOWImgDescriptorExtractor* MIEServerMT::bowExtr;
 mutex MIEServerMT::imgFeaturesLock, MIEServerMT::textFeaturesLock, MIEServerMT::imgIndexLock, MIEServerMT::textIndexLock;
 
 MIEServerMT::MIEServerMT() {
-    startServer();
+//    startServer();
 }
 
 MIEServerMT::~MIEServerMT() {
@@ -496,7 +496,7 @@ set<QueryResult,cmp_QueryResult> MIEServerMT::imgSearch (Mat* features) {
             }
         }
     }
-    return sort(queryResults);
+    return sort(&queryResults);
 }
 
 set<QueryResult,cmp_QueryResult> MIEServerMT::textSearch(vector<vector<unsigned char> >* keywords) {
@@ -522,7 +522,7 @@ set<QueryResult,cmp_QueryResult> MIEServerMT::textSearch(vector<vector<unsigned 
                 queryResults[posting->first] += score;
         }
     }
-    return sort(queryResults);
+    return sort(&queryResults);
 }
 
 void MIEServerMT::search(int newsockfd) {
@@ -533,6 +533,6 @@ void MIEServerMT::search(int newsockfd) {
     set<QueryResult,cmp_QueryResult> imgResults = imgSearch(&mat);
     set<QueryResult,cmp_QueryResult> textResults = textSearch(&keywords);
     set<QueryResult,cmp_QueryResult> mergedResults = mergeSearchResults(&imgResults, &textResults);
-    sendQueryResponse(newsockfd, &mergedResults);
+    sendQueryResponse(newsockfd, &mergedResults, 20);
 }
 

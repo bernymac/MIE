@@ -25,6 +25,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/features2d/features2d.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include "Server.h"
 #include "ServerUtil.h"
 #include "ThreadPool.h"
 #include <mutex>
@@ -32,7 +33,7 @@
 using namespace std;
 using namespace cv;
 
-class MIEServerMT {
+class MIEServerMT : public Server {
     
     static map<int,Mat> imgFeatures;
     static map<int,vector<vector<unsigned char> > > textFeatures;

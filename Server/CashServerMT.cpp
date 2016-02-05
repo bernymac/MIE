@@ -19,7 +19,7 @@ map<string,CashServerMT::encCounter> CashServerMT::textDcount;
 mutex CashServerMT::imgIndexLock, CashServerMT::textIndexLock;
 
 CashServerMT::CashServerMT() {
-    startServer();
+//    startServer();
 }
 
 CashServerMT::~CashServerMT() {
@@ -136,7 +136,7 @@ void CashServerMT::search(int newsockfd) {
     set<QueryResult,cmp_QueryResult> textQueryResults = calculateQueryResults(kwsSize, Ksize, buff, &pos, &encTextIndex, &textIndexLock);
     free(buff);
     set<QueryResult,cmp_QueryResult> mergedResults = mergeSearchResults(&imgQueryResults, &textQueryResults);
-    sendQueryResponse(newsockfd, &mergedResults);
+    sendQueryResponse(newsockfd, &mergedResults, 20);
 }
 
 
@@ -190,5 +190,5 @@ set<QueryResult,cmp_QueryResult> CashServerMT::calculateQueryResults(int kwsSize
             }
         }
     }
-    return sort(queryResults);
+    return sort(&queryResults);
 }

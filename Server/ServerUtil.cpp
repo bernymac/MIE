@@ -241,9 +241,9 @@ int denormalize(float val, int size) {
     return round(val * size);
 }
 
-std::set<QueryResult,cmp_QueryResult> sort (std::map<int,float> queryResults) {
+std::set<QueryResult,cmp_QueryResult> sort (std::map<int,float>* queryResults) {
     std::set<QueryResult,cmp_QueryResult> orderedResults;
-    for (std::map<int,float>::iterator it=queryResults.begin(); it!=queryResults.end(); ++it) {
+    for (std::map<int,float>::iterator it=queryResults->begin(); it!=queryResults->end(); ++it) {
         struct QueryResult qr;
         qr.docId = it->first;
         qr.score = it->second;
@@ -293,13 +293,11 @@ std::set<QueryResult,cmp_QueryResult> mergeSearchResults(std::set<QueryResult,cm
         score *= log(df+sigma);
         queryResults[it->first] = score;
     }
-    return sort(queryResults);
+    return sort(&queryResults);
 }
 
-//mudar isto para k como deve ser!
-void sendQueryResponse(int newsockfd, std::set<QueryResult,cmp_QueryResult>* mergedResults) {
-    int resultsSize = 20;               //Should be parameter k, number of query results
-    if (mergedResults->size() < 20)
+void sendQueryResponse(int newsockfd, std::set<QueryResult,cmp_QueryResult>* mergedResults, int resultsSize) {
+    if (mergedResults->size() < resultsSize || resultsSize < 0)
         resultsSize = (int)mergedResults->size();
     long size = sizeof(int) + resultsSize * (sizeof(int) + sizeof(uint64_t));
     char* buff = (char*)malloc(size);

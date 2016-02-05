@@ -1,4 +1,4 @@
-//
+ //
 //  CashServer.cpp
 //  MIE
 //
@@ -11,7 +11,7 @@
 using namespace std;
 
 CashServer::CashServer() {
-    startServer();
+//    startServer();
 }
 
 CashServer::~CashServer() {
@@ -45,7 +45,7 @@ void CashServer::startServer() {
                 receiveDocs(newsockfd);
                 break;
             case 's':
-                search(newsockfd);
+                this->search(newsockfd);
                 break;
             default:
                 printf("unkonwn command!\n");
@@ -81,7 +81,7 @@ void CashServer::receiveDocs(int newsockfd) {
         for (int j = 0; j < postingSize; j++)
             readFromArr(&posting[j], sizeof(unsigned char), buff, &pos);
         postingSize = readIntFromArr(buff, &pos);
-        if (encImgIndex->find(vw)!=encImgIndex->end())                  //debug
+        if (encImgIndex->find(vw)!=encImgIndex->end())                  //debug - not supposed to happen
             pee("Found an unexpected collision in encImgIndex");
         (*encImgIndex)[vw] = posting;
         free(buff);
@@ -130,7 +130,7 @@ void CashServer::search(int newsockfd) {
     set<QueryResult,cmp_QueryResult> textQueryResults = calculateQueryResults(newsockfd, kwsSize, Ksize, /*buff, &pos,*/ encTextIndex);
 //    free(buff);
     set<QueryResult,cmp_QueryResult> mergedResults = mergeSearchResults(&imgQueryResults, &textQueryResults);
-    sendQueryResponse(newsockfd, &mergedResults);
+    sendQueryResponse(newsockfd, &mergedResults, 20);
 }
 
     
@@ -180,7 +180,7 @@ set<QueryResult,cmp_QueryResult> CashServer::calculateQueryResults(int newsockfd
         }
 //        free(buff);
     }
-    return sort(queryResults);
+    return sort(&queryResults);
 }
 
 //old search with Random Oracles

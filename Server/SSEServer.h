@@ -22,10 +22,11 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include "ServerUtil.h"
+#include "Server.h"
 
 using namespace std;
 
-class SSEServer {
+class SSEServer : public Server {
     vector<vector<unsigned char> >* encImgIndex;
     map<vector<unsigned char>,vector<unsigned char> >* encTextIndex;
     

@@ -23,11 +23,12 @@
 #include <netdb.h>
 #include "ServerUtil.h"
 #include "ThreadPool.h"
+#include "Server.h"
 #include <mutex>
 
 using namespace std;
 
-class CashServerMT {
+class CashServerMT : public Server {
     
     struct encCounter {
         vector<unsigned char> value;
@@ -41,7 +42,7 @@ class CashServerMT {
     static map<string,encCounter> textDcount;
     static mutex imgIndexLock, textIndexLock;
     
-    static void startServer();
+    void startServer();
     static void clientThread(int newsockfd);
     static void receiveDocs(int newsockfd);
     static void search(int newsockfd);
