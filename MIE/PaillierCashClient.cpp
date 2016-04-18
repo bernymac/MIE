@@ -148,7 +148,7 @@ set<QueryResult,cmp_QueryResult> PaillierCashClient::calculateQueryResults(int s
         char* buf = (char*) mpz_export(0, &len, 1, 1, 0, 0, plaintextTf.m);
         mpz_clear(plaintextTf.m);
         memcpy(&tf, buf, len);
-        queryResults[docId] = tf;
+        queryResults[docId] = tf; 
     }
     delete[] buff;
     return sort(&queryResults);
