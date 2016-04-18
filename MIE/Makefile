@@ -7,27 +7,27 @@ Client : Main.o CashClient.o CashCrypt.o EnglishAnalyzer.o \
                     -lopencv_highgui -lopencv_imgcodecs -lopencv_nonfree -lz -lcrypto -lgmp -ldl
 
 Main.o : Main.cpp MIEClient.o SSEClient.o CashClient.o
-	g++ -I /usr/local/opencv/opencv2.4/include -c Main.cpp
-CashClient.o : CashClient.cpp CashClient.o EnglishAnalyzer.o CashCrypt.o Util.o
-	g++ -I /usr/local/opencv/opencv2.4/include -c CashClient.cpp
+	g++ -std=gnu++98 -I /usr/local/opencv/opencv2.4/include -c Main.cpp
+CashClient.o : CashClient.cpp EnglishAnalyzer.o CashCrypt.o Util.o
+	g++ -std=gnu++98 -I /usr/local/opencv/opencv2.4/include -c CashClient.cpp
 PaillierCashClient.o : PaillierCashClient.cpp CashClient.o
-	g++ -I /usr/local/opencv/opencv2.4/include -c PaillierCashClient.cpp
+	g++ -std=gnu++98 -I /usr/local/opencv/opencv2.4/include -c PaillierCashClient.cpp
 CashCrypt.o : CashCrypt.cpp CashCrypt.hpp Util.h
-	g++ -I /usr/local/opencv/opencv2.4/include -c CashCrypt.cpp
+	g++ -std=gnu++98 -I /usr/local/opencv/opencv2.4/include -c CashCrypt.cpp
 EnglishAnalyzer.o : EnglishAnalyzer.cpp EnglishAnalyzer.h PorterStemmer.c Util.h
-	g++ -I /usr/local/opencv/opencv2.4/include -c EnglishAnalyzer.cpp
+	g++ -std=gnu++98 -I /usr/local/opencv/opencv2.4/include -c EnglishAnalyzer.cpp
 MIEClient.o : MIEClient.cpp MIEClient.h EnglishAnalyzer.h SBE.h TextCrypt.h Util.h
-	g++ -I /usr/local/opencv/opencv2.4/include -c MIEClient.cpp
+	g++ -std=gnu++98 -I /usr/local/opencv/opencv2.4/include -c MIEClient.cpp
 SBE.o : SBE.cpp SBE.h Util.h
-	g++ -I /usr/local/opencv/opencv2.4/include -c SBE.cpp
+	g++ -std=gnu++98 -I /usr/local/opencv/opencv2.4/include -c SBE.cpp
 SSEClient.o : SSEClient.cpp SSEClient.h EnglishAnalyzer.h SSECrypt.h TextCrypt.h Util.h
-	g++ -I /usr/local/opencv/opencv2.4/include -c SSEClient.cpp
+	g++ -std=gnu++98 -I /usr/local/opencv/opencv2.4/include -c SSEClient.cpp
 SSECrypt.o : SSECrypt.cpp SSECrypt.h Util.h
-	g++ -I /usr/local/opencv/opencv2.4/include -c SSECrypt.cpp
+	g++ -std=gnu++98 -I /usr/local/opencv/opencv2.4/include -c SSECrypt.cpp
 TextCrypt.o : TextCrypt.cpp TextCrypt.h Util.h
-	g++ -I /usr/local/opencv/opencv2.4/include -c TextCrypt.cpp
+	g++ -std=gnu++98 -I /usr/local/opencv/opencv2.4/include -c TextCrypt.cpp
 Util.o : Util.cpp Util.h portable_endian.h
-	g++ -I /usr/local/opencv/opencv2.4/include -c Util.cpp
+	g++ -std=gnu++98 -I /usr/local/opencv/opencv2.4/include -c Util.cpp
 clean :
 	rm Client Main.o CashClient.o CashCrypt.o EnglishAnalyzer.o \
       	 			MIEClient.o SBE.o SSEClient.o SSECrypt.o TextCrypt.o \
