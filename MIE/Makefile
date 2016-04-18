@@ -4,7 +4,7 @@ Client : Main.o CashClient.o CashCrypt.o EnglishAnalyzer.o \
 	g++ -o Client Main.o CashClient.o CashCrypt.o PaillierCashClient.o EnglishAnalyzer.o \
       	 			MIEClient.o SBE.o SSEClient.o SSECrypt.o TextCrypt.o Util.o \
 					-L/usr/local/opencv/opencv2.4/lib -lopencv_core -lopencv_features2d \
-                    -lopencv_highgui -lopencv_imgcodecs -lopencv_nonfree -lz -lcrypto -lgmp -ldl
+					-lopencv_highgui -lopencv_imgcodecs -lopencv_nonfree -lz -lcrypto -lgmp -ldl
 
 Main.o : Main.cpp MIEClient.o SSEClient.o CashClient.o
 	g++ -std=gnu++98 -I /usr/local/opencv/opencv2.4/include -c Main.cpp
@@ -29,6 +29,5 @@ TextCrypt.o : TextCrypt.cpp TextCrypt.h Util.h
 Util.o : Util.cpp Util.h portable_endian.h
 	g++ -std=gnu++98 -I /usr/local/opencv/opencv2.4/include -c Util.cpp
 clean :
-	rm Client Main.o CashClient.o CashCrypt.o EnglishAnalyzer.o \
-      	 			MIEClient.o SBE.o SSEClient.o SSECrypt.o TextCrypt.o \
-					Util.o
+rm Client Main.o CashClient.o CashCrypt.o PaillierCashClient.o EnglishAnalyzer.o \
+	MIEClient.o SBE.o SSEClient.o SSECrypt.o TextCrypt.o Util.o
