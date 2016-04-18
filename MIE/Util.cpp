@@ -539,7 +539,7 @@ void processFlickrTagsDataset (int nImgs, std::map<int,std::string>& docs) {
 }
 
 void printHolidayResults (std::string fPath, std::map<int,std::vector<QueryResult> > results) {
-    std::ofstream ofs (fPath);
+    std::ofstream ofs (fPath.c_str());
     for (std::map<int,std::vector<QueryResult> >::iterator it = results.begin(); it != results.end(); ++it) {
         ofs << it->first << ".jpg";
         for (int i = 0; i < it->second.size(); i++) {
