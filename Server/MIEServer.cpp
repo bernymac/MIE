@@ -106,7 +106,7 @@ void MIEServer::receiveDoc(int newsockfd, int& id, Mat& mat, vector<vector<unsig
     memcpy(&dataSize, buff + sizeof(uint64_t), sizeof(uint64_t));
     zipSize = be64toh(zipSize);
     dataSize = be64toh(dataSize);
-    char* data = (char*)malloc(dataSize);
+    char* data = new char[dataSize];
     receiveAndUnzip(newsockfd, data, &dataSize, zipSize);   //with zip
     
 //    char data[5*sizeof(int)];
@@ -135,7 +135,7 @@ void MIEServer::receiveDoc(int newsockfd, int& id, Mat& mat, vector<vector<unsig
         for (int j = 0; j < keywordSize; j++)
             readFromArr(&(keywords[i][j]), sizeof(unsigned char), data, &pos);
     }
-    free(data);
+    delete[] data;
 }
 
 bool MIEServer::readOrPersistFeatures(map<int,Mat>& imgFeatures,
@@ -149,7 +149,7 @@ bool MIEServer::readOrPersistFeatures(map<int,Mat>& imgFeatures,
         const int nImgs = readIntFromArr(buff, &pos);
         const int featureSize = readIntFromArr(buff, &pos);
         size_t buffSize = featureSize*sizeof(float);
-        char* featureBuff = (char*)malloc(buffSize);
+        char* featureBuff = new char[buffSize];
         for (int i = 0; i < nImgs; i++) {
             char imgIdBuff[2*sizeof(int)];    //read imgId
             fread (imgIdBuff, 1, 2*sizeof(int), f);
@@ -165,7 +165,8 @@ bool MIEServer::readOrPersistFeatures(map<int,Mat>& imgFeatures,
             }
             imgFeatures[imgId] = aux2;
         }
-        free(featureBuff);
+        fclose(f);
+        delete[] featureBuff;
     } else if (imgFeatures.size() > 0) {
         if (f != NULL)
             fclose(f);
@@ -178,7 +179,8 @@ bool MIEServer::readOrPersistFeatures(map<int,Mat>& imgFeatures,
         addIntToArr(featureSize, buff, &pos);
         fwrite(buff, 1, 2*sizeof(int), f);
         size_t buffSize = featureSize*sizeof(float);
-        char* featureBuff = (char*)malloc(buffSize);
+        char* featureBuff = new char[buffSize];
+        //char* featureBuff = (char*)malloc(buffSize);
         for (map<int,Mat>::iterator it=imgFeatures.begin(); it!=imgFeatures.end(); ++it) {
             char imgIdBuff[2*sizeof(int)];
             pos = 0;
@@ -192,9 +194,9 @@ bool MIEServer::readOrPersistFeatures(map<int,Mat>& imgFeatures,
                 fwrite(featureBuff, 1, buffSize, f);
             }
         }
-        free(featureBuff);
+        fclose(f);
+        delete[] featureBuff;
     }
-    fclose(f);
     // read/persist text
     f = fopen((dataPath+"MIE/textFeatures").c_str(), "rb");
     if (textFeatures.size() == 0 && f != NULL) {
@@ -212,7 +214,7 @@ bool MIEServer::readOrPersistFeatures(map<int,Mat>& imgFeatures,
             vector<vector<unsigned char> > aux2;
             aux2.resize(nKeywords);
             size_t buffSize = nKeywords*keywordSize*sizeof(unsigned char);
-            char* buff2 = (char*)malloc(buffSize);
+            char* buff2 = new char[buffSize];
 //            bzero(buff2,buffSize);
             fread(buff2, 1, buffSize, f);
             pos = 0;
@@ -224,7 +226,8 @@ bool MIEServer::readOrPersistFeatures(map<int,Mat>& imgFeatures,
                 aux2[j] = aux3;
             }
             textFeatures[docId] = aux2;
-            free(buff2);
+            fclose(f);
+            delete[] buff2;
         }
     } else if (textFeatures.size() > 0) {
         int nDocs = (int)textFeatures.size();
@@ -240,7 +243,7 @@ bool MIEServer::readOrPersistFeatures(map<int,Mat>& imgFeatures,
         for (map<int,vector<vector<unsigned char> > >::iterator it=textFeatures.begin(); it!=textFeatures.end(); ++it) {
             int nKeywords = (int)it->second.size();
             size_t buffSize = 2*sizeof(int) + nKeywords*keywordSize*sizeof(unsigned char);
-            char* buff2 = (char*)malloc(buffSize);
+            char* buff2 = new char[buffSize];
 //            bzero(buff2,buffSize);
             pos = 0;
             addIntToArr(it->first, buff2, &pos);
@@ -249,10 +252,10 @@ bool MIEServer::readOrPersistFeatures(map<int,Mat>& imgFeatures,
                 for (int k = 0; k < keywordSize; k++)
                     addToArr(&it->second[j][k], sizeof(unsigned char), buff2, &pos);
             fwrite(buff2, 1, buffSize, f);
-            free(buff2);
+            fclose(f);
+            delete[] buff2;
         }
     }
-    fclose(f);
     return imgFeatures.size() > 0 && textFeatures.size() > 0 ? true : false;
 }
 
@@ -321,7 +324,7 @@ void MIEServer::persistImgIndex(vector<map<int,int> >& imgIndex, int nImgs) {
     for (int i = 0; i < indexSize; i++) {
         int postingListSize = (int)imgIndex[i].size();
         size_t buffSize = sizeof(int) + postingListSize * 2 * sizeof(int);
-        char* buff2 = (char*)malloc(buffSize);
+        char* buff2 = new char[buffSize];
         pos = 0;
         addIntToArr(postingListSize, buff2, &pos);
         for (map<int,int>::iterator it=imgIndex[i].begin(); it!=imgIndex[i].end(); ++it) {
@@ -330,7 +333,7 @@ void MIEServer::persistImgIndex(vector<map<int,int> >& imgIndex, int nImgs) {
             addIntToArr(it->second, buff2, &pos);
         }
         fwrite(buff2, 1, buffSize, f);
-        free(buff2);
+        delete[] buff2;
     }
     fclose(f);
 }
@@ -349,7 +352,7 @@ void MIEServer::persistTextIndex(map<vector<unsigned char>,map<int,int> >& textI
     for (map<vector<unsigned char>,map<int,int> >::iterator it=textIndex.begin(); it!=textIndex.end(); ++it) {
         int postingListSize = (int)it->second.size();
         size_t buffSize = keywordSize * sizeof(unsigned char) + sizeof(int) + postingListSize*2*sizeof(int);
-        char* buff2 = (char*)malloc(buffSize);
+        char* buff2 = new char[buffSize];
         pos = 0;
         addIntToArr(postingListSize, buff2, &pos);
         for (int i = 0; i < keywordSize; i++) {
@@ -362,7 +365,7 @@ void MIEServer::persistTextIndex(map<vector<unsigned char>,map<int,int> >& textI
             addIntToArr((it2->second), buff2, &pos);
         }
         fwrite(buff2, 1, buffSize, f);
-        free(buff2);
+        delete[] buff2;
     }
     fclose(f);
 }
@@ -390,7 +393,7 @@ bool MIEServer::readIndex(vector<map<int,int> >& imgIndex,
             map<int,int> aux;
             imgIndex[i] = aux;
             size_t buffSize = postingListSize * 2 * sizeof(int) + sizeof(int);
-            char* buff2 = (char*)malloc(buffSize);
+            char* buff2 = new char[buffSize];
             bzero(buff2, buffSize);
             fread (buff2, 1, buffSize, f1);
             pos = 0;
@@ -400,7 +403,7 @@ bool MIEServer::readIndex(vector<map<int,int> >& imgIndex,
                 imgIndex[i][docId] = score;
             }
             postingListSize = readIntFromArr(buff2, &pos);
-            free(buff2);
+            delete[] buff2;
         }
         fclose(f1);
     }
@@ -414,7 +417,7 @@ bool MIEServer::readIndex(vector<map<int,int> >& imgIndex,
         int postingListSize = readIntFromArr(buff, &pos);
         for (int i = 0; i < indexSize; i++) {
             size_t buffSize = keywordSize * sizeof(unsigned char) + postingListSize*2*sizeof(int) + sizeof(int);
-            char* buff2 = (char*)malloc(buffSize);
+            char* buff2 = new char[buffSize];
             bzero(buff2, buffSize);
             fread (buff2, 1, buffSize, f2);
             pos = 0;
@@ -430,7 +433,7 @@ bool MIEServer::readIndex(vector<map<int,int> >& imgIndex,
             }
             textIndex[key] = aux;
             postingListSize = readIntFromArr(buff2, &pos);
-            free(buff2);
+            delete[] buff2;
         }
         fclose(f2);
     }
@@ -491,8 +494,8 @@ void MIEServer::search(int newsockfd, BOWImgDescriptorExtractor& bowExtr, vector
     vector<vector<unsigned char> > keywords;
     receiveDoc(newsockfd, id, mat, keywords);
     set<QueryResult,cmp_QueryResult> imgResults = imgSearch(mat,bowExtr,imgIndex,nImgs);
-    set<QueryResult,cmp_QueryResult> textResults = textSearch(keywords,textIndex, nTextDocs);
-    set<QueryResult,cmp_QueryResult> mergedResults = mergeSearchResults(&imgResults, &textResults);
-    sendQueryResponse(newsockfd, /*&imgResults*/&mergedResults, -1);
+//    set<QueryResult,cmp_QueryResult> textResults = textSearch(keywords,textIndex, nTextDocs);
+//    set<QueryResult,cmp_QueryResult> mergedResults = mergeSearchResults(&imgResults, &textResults);
+    sendQueryResponse(newsockfd, &imgResults/*&mergedResults*/, -1);
 }
 
