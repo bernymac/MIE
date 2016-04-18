@@ -22,7 +22,7 @@ PaillierCashClient::PaillierCashClient() {
         char* pubHex = new char[pubKeySize];
         fread (pubHex, 1, pubKeySize, fHomPub);
         homPub = paillier_pubkey_from_hex(pubHex);
-        delete pubHex;
+        delete[] pubHex;
         
         fseek(fHomPriv,0,SEEK_END);
         const int privKeySize = (int)ftell(fHomPriv);
@@ -30,7 +30,7 @@ PaillierCashClient::PaillierCashClient() {
         char* privHex = new char[privKeySize];
         fread (privHex, 1, privKeySize, fHomPriv);
         homPriv = paillier_prvkey_from_hex(privHex, homPub);
-        delete privHex;
+        delete[] privHex;
     } else {
         paillier_keygen(1024, &homPub, &homPriv, paillier_get_rand_devurandom);
         fHomPub = fopen((keyFilename+"/Cash/homPub").c_str(), "wb");
@@ -99,10 +99,8 @@ void PaillierCashClient::encryptAndIndex(void* keyword, int keywordSize, int cou
 }
 
 vector<QueryResult> PaillierCashClient::receiveResults(int sockfd) {
-    
-    set<QueryResult,cmp_QueryResult> imgQueryResults = this->calculateQueryResults(sockfd);
-    set<QueryResult,cmp_QueryResult> textQueryResults = this->calculateQueryResults(sockfd);
-    close(sockfd);
+    set<QueryResult,cmp_QueryResult> imgQueryResults = calculateQueryResults(sockfd);
+    set<QueryResult,cmp_QueryResult> textQueryResults = calculateQueryResults(sockfd);
     set<QueryResult,cmp_QueryResult> mergedResults = mergeSearchResults(&imgQueryResults, &textQueryResults);
     
     vector<QueryResult> results;
@@ -127,7 +125,7 @@ set<QueryResult,cmp_QueryResult> PaillierCashClient::calculateQueryResults(int s
 
     map<int,float> queryResults;
     int buffSize = nResults * (sizeof(int) + homEncSize);
-    char* buff = (char*)malloc(buffSize);
+    char* buff = new char[buffSize];
     if (buff == NULL) pee("malloc error in PaillierCashClient::receiveResults");
     socketReceive(sockfd, buff, buffSize);
     pos = 0;
@@ -152,6 +150,7 @@ set<QueryResult,cmp_QueryResult> PaillierCashClient::calculateQueryResults(int s
         memcpy(&tf, buf, len);
         queryResults[docId] = tf;
     }
+    delete[] buff;
     return sort(&queryResults);
 
 }
