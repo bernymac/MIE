@@ -15,8 +15,8 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/features2d/features2d.hpp>
+#include <opencv2/xfeatures2d/nonfree.hpp>
 #include <set>
-#include <mutex>
 #include "EnglishAnalyzer.h"
 #include "CashCrypt.hpp"
 #include "Util.h"
@@ -45,7 +45,7 @@ protected:
     Ptr<BOWImgDescriptorExtractor> bowExtractor;
     EnglishAnalyzer* analyzer;
     static CashCrypt* crypto;
-    static mutex lock;
+    static pthread_mutex_t* lock;
     
     int imgDcount[CLUSTERS];
     map<string,int>* textDcount;
@@ -64,6 +64,7 @@ public:
     void addDocs(const char* imgDataset, const char* textDataset, int first, int last, int prefix);
     vector<QueryResult> search(const char* imgDataset, const char* textDataset, int id, bool randomOracle);
     string printTime();
+    void cleanTime();
 };
 
 

@@ -15,7 +15,7 @@
 
 
 CashCrypt* CashClient::crypto;
-mutex CashClient::lock;
+pthread_mutex_t* CashClient::lock;
 
 CashClient::CashClient() {
     featureTime = 0;
@@ -23,13 +23,17 @@ CashClient::CashClient() {
     cloudTime = 0;
     indexTime = 0;
     trainTime = 0;
-    detector = FeatureDetector::create( "PyramidDense" );
-    extractor = DescriptorExtractor::create( "SURF" );
+    detector = 
+    //detector = xfeatures2d::SurfFeatureDetector::create();
+    FeatureDetector::create( /*"Dense"*/ /*"PyramidDense"*/ "SURF" );
+    //extractor = xfeatures2d::SurfDescriptorExtractor::create();
+    DescriptorExtractor::create( "SURF" );
     Ptr<DescriptorMatcher> matcher = DescriptorMatcher::create( "BruteForce" );
     bowExtractor = new BOWImgDescriptorExtractor( extractor, matcher );
     analyzer = new EnglishAnalyzer;
     crypto = new CashCrypt;
-    
+    lock = new pthread_mutex_t;
+    pthread_mutex_init(lock, NULL);
 //    imgDcount = new vector<int>(CLUSTERS,0);
     memset(imgDcount, 0, CLUSTERS);
     textDcount = new map<string,int>;
@@ -40,6 +44,7 @@ CashClient::~CashClient() {
     extractor.release();
     bowExtractor.release();
     delete textDcount;
+    delete lock;
 }
 
 void CashClient::train(const char* dataset, int first, int last) {
@@ -74,7 +79,7 @@ void CashClient::train(const char* dataset, int first, int last) {
             }
         }
         free(fname);
-        LOGI("build codebook with %d descriptors!\n",bowTrainer.descripotorsCount());
+        LOGI("build codebook with %d descriptors!\n",bowTrainer.descripotorsCount/*descriptorsCount*/());
         Mat codebook = bowTrainer.cluster();
         bowExtractor->setVocabulary(codebook);
         trainTime += diffSec(start, getTime());         //getTime
@@ -356,11 +361,12 @@ void CashClient::encryptAndIndex(void* keyword, int keywordSize, int counter, in
     addIntToArr(docId, (char*)idAndScore, &pos);
     addIntToArr(tf, (char*)idAndScore, &pos);
     vector<unsigned char> encData = crypto->encData(k2, idAndScore, pos);
-    lock.lock();
+    pthread_mutex_lock (lock);
     if (index->find(encCounter) != index->end())
         pee("Found an unexpected collision in CashClient::encryptAndIndex");
     (*index)[encCounter] = encData;
-    lock.unlock();
+    pthread_mutex_unlock (lock);
+
 //    if (keywordSize > 4) {
 //        LOGI("vw 0 k1: %s\n",getHexRepresentation(k1,CashCrypt::Ksize).c_str());
 //        LOGI("vw 0 k2: %s\n",getHexRepresentation(k2,CashCrypt::Ksize).c_str());
@@ -546,5 +552,13 @@ string CashClient::printTime() {
             featureTime, cryptoTime, trainTime, indexTime, cloudTime);
     string time = char_time;
     return time;
+}
+
+void CashClient::cleanTime() {
+    featureTime = 0;
+    cryptoTime = 0;
+    cloudTime = 0;
+    indexTime = 0;
+    trainTime = 0;
 }
 
