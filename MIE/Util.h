@@ -39,7 +39,7 @@
 //desktop
 static const char* dataPath = "/Users/bernardo/Data";
 static const char* datasetsPath = "/Users/bernardo/Datasets";
-static const char* serverIP = "127.0.0.1";//"52.31.107.86";
+static const char* serverIP = "127.0.0.1";//"54.194.253.119";
 #define  LOGI(...)  fprintf(stdout,__VA_ARGS__)
 //mobile
 //static const char* dataPath = "/sdcard/Data";
@@ -138,12 +138,12 @@ long receiveAndUnzip(int sockfd, char* data);
 
 std::vector<std::string>& split(const std::string& s, char delim, std::vector<std::string>& elems);
 
-void printHolidayResults (std::string fPath, std::map<int,std::vector<QueryResult> > results);
-
 void processHolidayDataset (int nImgs, std::map<int,std::string>& imgs);
 
 void processFlickrImgsDataset (int nImgs, std::map<int,std::string>& imgs);
 
 void processFlickrTagsDataset (int nImgs, std::map<int,std::string>& docs);
+
+void printHolidayResults (std::string fPath, std::map<int,std::vector<QueryResult> > results);
 
 #endif /* defined(__MIE__Util__) */

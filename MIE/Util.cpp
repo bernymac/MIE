@@ -442,7 +442,7 @@ std::vector<std::string>& split(const std::string& s, char delim, std::vector<st
 }
 
 
-std::vector<int> holidayQueries (char* fName) {
+/*std::vector<int> holidayQueries (char* fName) {
     std::vector<int> result;
     result.resize(500);         //could also count nº of lines or use dynamic structure
     std::string line;
@@ -464,7 +464,7 @@ std::vector<int> holidayQueries (char* fName) {
     
     
     return result;
-}
+}*/
 
 void processHolidayDataset (int nImgs, std::map<int,std::string>& imgs) {
     std::string holidayDir = datasetsPath;
@@ -550,20 +550,3 @@ void printHolidayResults (std::string fPath, std::map<int,std::vector<QueryResul
     ofs.close();
 }
 
-/*
-protected static void mapQueryHolidayDataset (String path) throws Exception {
-    List<QueryResult[]> searches = new ArrayList<QueryResult[]>(500);
-    for (int i = 100000; i <= 149900; i+=100)
-        searches.add(loader.searchImage(i, -1));
-    PrintWriter pw = new PrintWriter(new File(path));
-    int i = 100000;
-    for (QueryResult[] result: searches) {
-        pw.print(i+".jpg");
-        for (int j = 0; j < result.length; j++)
-            pw.print(" "+j+" "+result[j].getId()+".jpg");
-        pw.println();
-        i+=100;
-    }
-    pw.close();
-}
-*/
