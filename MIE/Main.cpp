@@ -26,40 +26,39 @@ void printQueryResults (set<QueryResult,cmp_QueryResult> queryResults) {
 
 void runMIEClient() {
     LOGI("begin MIE!\n");
-    int first = 1;
-    int last = 1000;
     MIEClient mie;
     timespec start = getTime();
     
-    mie.addDocs("inriaHolidays","flickr_tags",first,last,0);
-//    mie.addDocs("flickr_imgs", "flickr_tags",1,10,1000);
-//    mie.index();
+    mie.addDocs("inriaHolidays","flickr_tags",1,1491,0);
+//    mie.addDocs("flickr_imgs", "flickr_tags",1,1000,0);
+    mie.index();
     
-//    string imgPath = datasetsPath;
-//    imgPath += "/flickr_imgs/im1.jpg";
-//    string textPath = datasetsPath;
-//    textPath += "/flickr_tags/tags1.txt";
-//    vector<QueryResult> queryResults = mie.search(1, imgPath, textPath);
+/*    string imgPath = datasetsPath;
+    imgPath += "/inriaHolidays/100701.jpg";
+    string textPath = datasetsPath;
+    textPath += "/flickr_tags/tags1.txt";
+    vector<QueryResult> queryResults = mie.search(1, imgPath, textPath);
 
     double total_time = diffSec(start, getTime());
     LOGI("%s total_time:%.6f\n",mie.printTime().c_str(),total_time);
-//    printQueryResults(queryResults);
-    
+    printQueryResults(queryResults);
+*/
 /*    map<int,vector<QueryResult> > queries;
     for (int i = 100000; i <= 149900; i+=100) {
         string imgPath = datasetsPath;
         imgPath += "/inriaHolidays/";
-        imgPath += i;
+        imgPath += to_string(i);
         imgPath += ".jpg";
         string textPath = datasetsPath;
         textPath += "/flickr_tags/tags";
-        textPath += i/10000;
+        textPath += to_string(i/100000);
         textPath += ".txt";
         queries[i] = mie.search(i, imgPath, textPath);
     }
     string fName = dataPath;
     fName += "/MIE/mieHoliday.dat";
-    printHolidayResults(fName, queries); */
+    printHolidayResults(fName, queries);
+*/
 }
 
 void runSSEClient() {
@@ -78,7 +77,7 @@ void runSSEClient() {
 void runCashClient() {
     LOGI("begin Cash SSE!\n");
     int first = 1;
-    int last = 1000;//1;
+    int last = 3000;//1;
     int groupsize = 10;//1;
     CashClient cash;
     cash.train("flickr_imgs",first,last);
@@ -88,6 +87,7 @@ void runCashClient() {
         cash.addDocs("flickr_imgs","flickr_tags",i,i+groupsize-1,0);
 /*    for (int i = 0; i < 100; i++)
         cash.addDocs("flickr_imgs", "flickr_tags", first+i*10, 10+i*10, last); */
+    cash.cleanTime();
     vector<QueryResult> queryResults = cash.search("flickr_imgs","flickr_tags",1, false);
     
     double total_time = diffSec(start, getTime());
@@ -98,26 +98,39 @@ void runCashClient() {
 void runPaillierCashClient() {
     LOGI("begin Paillier Cash SSE!\n");
     int first = 1;
-    int last = 100;
+    int last = 1000;
     int groupsize = 10;
     PaillierCashClient cash;
     cash.train("flickr_imgs",first,last);
-    timespec start = getTime();
-    
-    for (unsigned i=first; i<=last; i+=groupsize)
-        cash.addDocs("flickr_imgs","flickr_tags",i,i+groupsize-1,0);
+
+    timespec start = getTime();    
+//    for (unsigned i=first; i<=last; i+=groupsize)
+//        cash.addDocs("flickr_imgs","flickr_tags",i,i+groupsize-1,0);
     //    for (int i = 0; i < 100; i++)
     //        cash.addDocs("flickr_imgs", "flickr_tags", first+i*10, 10+i*10, last);
-//    vector<QueryResult> queryResults = cash.search("flickr_imgs","flickr_tags",1, false);
+//    cash.cleanTime();
+    vector<QueryResult> queryResults = cash.search("flickr_imgs","flickr_tags",1, false);
     
     double total_time = diffSec(start, getTime());
     LOGI("%s total_time:%.6f\n",cash.printTime().c_str(),total_time);
-//    printQueryResults(queryResults);
+    printQueryResults(queryResults);
 }
  
 int main(int argc, const char * argv[]) {
-//    runMIEClient();
-//    runSSEClient();
-//    runCashClient();
-    runPaillierCashClient();
+    setvbuf(stdout, NULL, _IONBF, 0);
+    if (argc != 2) {
+        printf("Incorrect number of arguments. Please give a server name, e.g. \"mie\", \"sse\", \"Cash\" or \"PaillierCash\"\n");
+        return 0;
+    } else if (strcasecmp(argv[1], "mie") == 0)
+        runMIEClient();
+    else if (strcasecmp(argv[1], "sse") == 0)
+        runSSEClient();
+    else if (strcasecmp(argv[1], "cash") == 0)
+        runCashClient();
+    else if (strcasecmp(argv[1], "PaillierCash") == 0)
+        runPaillierCashClient();
+    else {
+        printf("Server command not recognized! Available Servers: \"mie\", \"sse\", \"Cash\" and \"PaillierCash\"\n");
+        return 0;
+    }
 }
