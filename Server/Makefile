@@ -1,21 +1,22 @@
-Server : Main.o MIEServer.o MIEServerMT.o SSEServer.o ServerUtil.o CashServer.o PaillierCashServer.o
-	g++ -o Server Main.o MIEServer.o MIEServerMT.o SSEServer.o ServerUtil.o CashServer.o PaillierCashServer.o paillier.o `pkg-config --libs zlib` `pkg-config --libs opencv` `pkg-config --libs openssl` -lgmp -ldl
+Server : Main.o MIEServer.o MIEServerMT.o SSEServer.o ServerUtil.o CashServer.o PaillierCashServer.o paillier.o
+	g++ -o Server Main.o MIEServer.o MIEServerMT.o SSEServer.o ServerUtil.o CashServer.o PaillierCashServer.o paillier.o \
+		-L/usr/local/opencv/opencv3.1/lib -lopencv_core -lopencv_features2d -lopencv_flann -lopencv_highgui -lcrypto -lz -lgmp -ldl
 
 Main.o : Main.cpp
-	g++ -std=c++11 -I /usr/local/ssl/include -c Main.cpp
+	g++ -std=c++11 -I /usr/local/opencv/opencv3.1/include -c Main.cpp
 MIEServer.o : MIEServer.cpp
-	g++ -std=c++11 -I /usr/local/ssl/include -c MIEServer.cpp
+	g++ -std=c++11 -I /usr/local/opencv/opencv3.1/include -c MIEServer.cpp
 MIEServerMT.o : MIEServerMT.cpp
-	g++ -std=c++11 -I /usr/local/ssl/include -c MIEServerMT.cpp
+	g++ -std=c++11 -I /usr/local/opencv/opencv3.1/include -c MIEServerMT.cpp
 SSEServer.o : SSEServer.cpp
-	g++ -std=c++11 -I /usr/local/ssl/include -c SSEServer.cpp
+	g++ -std=c++11 -I /usr/local/opencv/opencv3.1/include -c SSEServer.cpp
 ServerUtil.o : ServerUtil.cpp
-	g++ -std=c++11 -I /usr/local/ssl/include -c ServerUtil.cpp
+	g++ -std=c++11 -I /usr/local/opencv/opencv3.1/include -c ServerUtil.cpp
 CashServer.o : CashServer.cpp
-	g++ -std=c++11 -I /usr/local/ssl/include -c CashServer.cpp
+	g++ -std=c++11 -I /usr/local/opencv/opencv3.1/include -c CashServer.cpp
+PaillierCashServer.o : PaillierCashServer.cpp
+	g++ -std=c++11 -I /usr/local/opencv/opencv3.1/include -c PaillierCashServer.cpp
 paillier.o : paillier.c
-	gcc -I /usr/local/ssl/include -c paillier.c
-PaillierCashServer.o : PaillierCashServer.cpp paillier.o
-	g++ -std=c++11 -I /usr/local/ssl/include -c PaillierCashServer.cpp
+	gcc -c paillier.c
 clean :
-	rm Server Main.o MIEServer.o MIEServerMT.o SSEServer.o ServerUtil.o CashServer.o PaillierCashServer.o
+	rm Server Main.o MIEServer.o MIEServerMT.o SSEServer.o ServerUtil.o CashServer.o PaillierCashServer.o paillier.o
