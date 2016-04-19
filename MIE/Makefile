@@ -1,16 +1,16 @@
 Client : Main.o CashClient.o PaillierCashClient.o CashCrypt.o \
 		EnglishAnalyzer.o MIEClient.o SBE.o SSEClient.o SSECrypt.o \
-		TextCrypt.o Util.o
+		TextCrypt.o Util.o paillier.o
 	g++ -o Client Main.o CashClient.o CashCrypt.o PaillierCashClient.o EnglishAnalyzer.o \
-		MIEClient.o SBE.o SSEClient.o SSECrypt.o TextCrypt.o Util.o \
+		MIEClient.o SBE.o SSEClient.o SSECrypt.o TextCrypt.o Util.o paillier.o \
 		-L/usr/local/opencv/opencv2.4/lib -lopencv_core -lopencv_features2d \
 		-lopencv_highgui -lopencv_nonfree -lz -lcrypto -lgmp -ldl -lpthread
 
 Main.o : Main.cpp MIEClient.o SSEClient.o CashClient.o
 	g++ -std=gnu++98 -I /usr/local/opencv/opencv2.4/include -c Main.cpp
-CashClient.o : CashClient.cpp EnglishAnalyzer.o CashCrypt.o Util.o
+CashClient.o : CashClient.cpp CashClient.hpp EnglishAnalyzer.o CashCrypt.o Util.o
 	g++ -std=gnu++98 -I /usr/local/opencv/opencv2.4/include -c CashClient.cpp
-PaillierCashClient.o : PaillierCashClient.cpp CashClient.o
+PaillierCashClient.o : PaillierCashClient.cpp PaillierCashClient.hpp CashClient.o
 	g++ -std=gnu++98 -I /usr/local/opencv/opencv2.4/include -c PaillierCashClient.cpp
 CashCrypt.o : CashCrypt.cpp CashCrypt.hpp Util.h
 	g++ -std=gnu++98 -I /usr/local/opencv/opencv2.4/include -c CashCrypt.cpp
@@ -28,6 +28,8 @@ TextCrypt.o : TextCrypt.cpp TextCrypt.h Util.h
 	g++ -std=gnu++98 -I /usr/local/opencv/opencv2.4/include -c TextCrypt.cpp
 Util.o : Util.cpp Util.h portable_endian.h
 	g++ -std=gnu++98 -I /usr/local/opencv/opencv2.4/include -c Util.cpp
+paillier.o : paillier.c paillier.h
+	gcc -c paillier.c
 clean :
 	rm Client Main.o CashClient.o CashCrypt.o PaillierCashClient.o EnglishAnalyzer.o \
 		MIEClient.o SBE.o SSEClient.o SSECrypt.o TextCrypt.o Util.o
