@@ -30,4 +30,4 @@ endif
 
 run : Server
 	export LD_LIBRARY_PATH=/usr/local/opencv/opencv3.1/lib/:$LD_LIBRARY_PATH
-	@echo Server $(RUN_ARGS)
+	./Server $(RUN_ARGS)
