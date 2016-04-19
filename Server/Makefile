@@ -1,3 +1,4 @@
+#make run build accept arguments
 ifeq (run,$(firstword $(MAKECMDGOALS)))
 RUN_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
 $(eval $(RUN_ARGS):;@:)
@@ -34,8 +35,9 @@ paillier.o : paillier.c
 clean :
 	rm Server Main.o MIEServer.o MIEServerMT.o SSEServer.o ServerUtil.o CashServer.o PaillierCashServer.o paillier.o
 
+config :
+	export LD_LIBRARY_PATH=/usr/local/opencv/opencv3.1/lib/:$(LD_LIBRARY_PATH)
 
 .PHONY: run
 run : Server
-	export LD_LIBRARY_PATH=/usr/local/opencv/opencv3.1/lib/:$LD_LIBRARY_PATH
-	@echo ./Server $(RUN_ARGS)
+	./Server $(RUN_ARGS)
