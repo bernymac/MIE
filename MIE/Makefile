@@ -10,7 +10,7 @@ Main.o : Main.cpp MIEClient.o SSEClient.o CashClient.o
 	g++ -std=gnu++98 -I /usr/local/opencv/opencv2.4/include -c Main.cpp
 CashClient.o : CashClient.cpp CashClient.hpp EnglishAnalyzer.o CashCrypt.o Util.o
 	g++ -std=gnu++98 -I /usr/local/opencv/opencv2.4/include -c CashClient.cpp
-PaillierCashClient.o : PaillierCashClient.cpp PaillierCashClient.hpp CashClient.o
+PaillierCashClient.o : PaillierCashClient.cpp PaillierCashClient.hpp CashClient.o paillier.o
 	g++ -std=gnu++98 -I /usr/local/opencv/opencv2.4/include -c PaillierCashClient.cpp
 CashCrypt.o : CashCrypt.cpp CashCrypt.hpp Util.h
 	g++ -std=gnu++98 -I /usr/local/opencv/opencv2.4/include -c CashCrypt.cpp
@@ -32,4 +32,4 @@ paillier.o : paillier.c paillier.h
 	gcc -c paillier.c
 clean :
 	rm Client Main.o CashClient.o CashCrypt.o PaillierCashClient.o EnglishAnalyzer.o \
-		MIEClient.o SBE.o SSEClient.o SSECrypt.o TextCrypt.o Util.o
+		MIEClient.o SBE.o SSEClient.o SSECrypt.o TextCrypt.o Util.o paillier.o
