@@ -1,6 +1,6 @@
 Server : Main.o MIEServer.o MIEServerMT.o SSEServer.o ServerUtil.o CashServer.o PaillierCashServer.o paillier.o
 	g++ -o Server Main.o MIEServer.o MIEServerMT.o SSEServer.o ServerUtil.o CashServer.o PaillierCashServer.o paillier.o \
-		-L/usr/local/opencv/opencv3.1/lib -lopencv_core -lopencv_features2d -lopencv_flann -lopencv_highgui -lcrypto -lz -lgmp -ldl
+		-L/usr/local/opencv/opencv3.1/lib -lopencv_core -lopencv_features2d -lcrypto -lz -lgmp -ldl
 
 Main.o : Main.cpp
 	g++ -std=c++11 -I /usr/local/opencv/opencv3.1/include -c Main.cpp
@@ -18,5 +18,10 @@ PaillierCashServer.o : PaillierCashServer.cpp
 	g++ -std=c++11 -I /usr/local/opencv/opencv3.1/include -c PaillierCashServer.cpp
 paillier.o : paillier.c
 	gcc -c paillier.c
+
 clean :
 	rm Server Main.o MIEServer.o MIEServerMT.o SSEServer.o ServerUtil.o CashServer.o PaillierCashServer.o paillier.o
+
+run :
+	export LD_LIBRARY_PATH=/usr/local/opencv/opencv3.1/lib/:$LD_LIBRARY_PATH
+	./Server mie
