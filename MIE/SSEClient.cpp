@@ -16,8 +16,8 @@ SSEClient::SSEClient() {
     cloudTime = 0;
     indexTime = 0;
     trainTime = 0;
-    detector = FeatureDetector::create( "PyramidDense" );
-    extractor = DescriptorExtractor::create( "SURF" );
+    FeatureDetector::create( /*"Dense"*/ /*"PyramidDense"*/ "SURF" );//detector = xfeatures2d::SurfFeatureDetector::create();
+    DescriptorExtractor::create( "SURF" );//extractor = xfeatures2d::SurfDescriptorExtractor::create();
     Ptr<DescriptorMatcher> matcher = DescriptorMatcher::create( "BruteForce" );
     bowExtractor = new BOWImgDescriptorExtractor( extractor, matcher );
     analyzer = new EnglishAnalyzer;
@@ -465,8 +465,8 @@ string SSEClient::printTime() {
 #define READ_QUERIES 0 // set READ to 1 to read from disk. 0 to compute and write
 
 void sse_bovwDOCS() {
-    Ptr<FeatureDetector> detector = FeatureDetector::create( "PyramidDense" );
-    Ptr<DescriptorExtractor> extractor = DescriptorExtractor::create( "SURF" );
+    Ptr<FeatureDetector> detector = FeatureDetector::create( "PyramidDense" ); //xfeatures2d::SurfFeatureDetector::create();
+    Ptr<DescriptorExtractor> extractor = DescriptorExtractor::create( "SURF" ); //xfeatures2d::SurfDescriptorExtractor::create();
     Ptr<DescriptorMatcher> matcher = DescriptorMatcher::create( "BruteForce" );
     Ptr<BOWImgDescriptorExtractor> bowExtractor = new BOWImgDescriptorExtractor( extractor, matcher );
     string dataset = "/Users/bernardo/Dropbox/WorkspacePHD/MUSE/datasets/wang/";
