@@ -52,6 +52,7 @@ clean :
 
 #export LD_LIBRARY_PATH=/usr/local/opencv/opencv2.4/lib/:$LD_LIBRARY_PATH
 run : Client
+	rm core
 	./Client $(RUN_ARGS)
 
 .PHONY: run clean
