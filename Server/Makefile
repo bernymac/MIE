@@ -22,6 +22,12 @@ paillier.o : paillier.c
 clean :
 	rm Server Main.o MIEServer.o MIEServerMT.o SSEServer.o ServerUtil.o CashServer.o PaillierCashServer.o paillier.o
 
-run :
+
+ifeq (run,$(firstword $(MAKECMDGOALS))) # If the first argument is "run"...
+	RUN_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS)) # use the rest as arguments for "run"
+	$(eval $(RUN_ARGS):;@:) # ...and turn them into do-nothing targets
+endif
+
+run : Server
 	export LD_LIBRARY_PATH=/usr/local/opencv/opencv3.1/lib/:$LD_LIBRARY_PATH
-	./Server mie
+	@echo Server $(RUN_ARGS)
