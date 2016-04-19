@@ -32,11 +32,13 @@ PaillierCashServer.o : PaillierCashServer.cpp
 paillier.o : paillier.c
 	gcc -c paillier.c
 
+.PHONY: clean
 clean :
 	rm Server Main.o MIEServer.o MIEServerMT.o SSEServer.o ServerUtil.o CashServer.o PaillierCashServer.o paillier.o
 
+.PHONY: config
 config :
-	export LD_LIBRARY_PATH=/usr/local/opencv/opencv3.1/lib/:$(LD_LIBRARY_PATH)
+	export LD_LIBRARY_PATH=/usr/local/opencv/opencv3.1/lib/:$$LD_LIBRARY_PATH
 
 .PHONY: run
 run : Server
