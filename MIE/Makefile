@@ -7,8 +7,8 @@ endif
 Client : Main.o CashClient.o PaillierCashClient.o CashCrypt.o EnglishAnalyzer.o MIEClient.o SBE.o SSEClient.o SSECrypt.o \
 		TextCrypt.o Util.o paillier.o
 	g++ -o Client Main.o CashClient.o CashCrypt.o PaillierCashClient.o EnglishAnalyzer.o MIEClient.o SBE.o SSEClient.o \
-		SSECrypt.o TextCrypt.o Util.o paillier.o -L/usr/local/opencv/opencv2.4/lib -lopencv_core -lopencv_features2d \
-		-lopencv_highgui -lopencv_nonfree -lz -lcrypto -lgmp -ldl -lpthread
+		SSECrypt.o TextCrypt.o Util.o paillier.o -L/usr/local/opencv/opencv2.4/lib -lopencv_core -lopencv_nonfree \
+		-lopencv_highgui -lopencv_features2d -lz -lcrypto -lgmp -ldl -lpthread
 
 Main.o : Main.cpp MIEClient.o SSEClient.o CashClient.o
 	g++ -std=gnu++98 -I /usr/local/opencv/opencv2.4/include -g -O0 -c Main.cpp
@@ -50,7 +50,6 @@ clean :
 	rm Client Main.o CashClient.o CashCrypt.o PaillierCashClient.o EnglishAnalyzer.o MIEClient.o SBE.o SSEClient.o SSECrypt.o \
 		TextCrypt.o Util.o paillier.o
 
-#export LD_LIBRARY_PATH=/usr/local/opencv/opencv2.4/lib/:$$LD_LIBRARY_PATH
 run : Client
 	rm core 2> /dev/null
 	LD_LIBRARY_PATH=/usr/local/opencv/opencv2.4/lib/:$$LD_LIBRARY_PATH ./Client $(RUN_ARGS)
