@@ -17,7 +17,7 @@ SBE::SBE (int dimensions) {
     k = dimensions;
     
     string keyFilename = homePath;
-    FILE* f = fopen((keyFilename+"/Data/MIE/sbeKey").c_str(), "rb");
+    FILE* f = fopen((keyFilename+"Data/MIE/sbeKey").c_str(), "rb");
     size_t buffSize = m * k * sizeof(float) + m * sizeof(float);
     char* buff = (char*)malloc(buffSize);
     if (buff == NULL) pee("malloc error in SBE::SBE (int dimensions)");
@@ -48,7 +48,7 @@ SBE::SBE (int dimensions) {
         }
     }
     if (f == NULL) {
-        f = fopen((keyFilename+"/MIE/sbeKey").c_str(), "wb");
+        f = fopen((keyFilename+"Data/MIE/sbeKey").c_str(), "wb");
         fwrite(buff, 1, buffSize, f);
     }
     free(buff);

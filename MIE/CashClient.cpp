@@ -64,13 +64,13 @@ void CashClient::train(const char* dataset, int first, int last) {
         terminate_criterion.epsilon = FLT_EPSILON;
         BOWKMeansTrainer bowTrainer ( CLUSTERS, terminate_criterion, 3, KMEANS_PP_CENTERS );
         RNG& rng = theRNG();
-//        char* fname = (char*)malloc(120);
-//        if (fname == NULL) pee("malloc error in CashClient::train()");
+        char* fname = (char*)malloc(120);
+        if (fname == NULL) pee("malloc error in CashClient::train()");
         for (unsigned i = first; i < last; i++) {
             if (rng.uniform(0.f,1.f) <= 0.1f) {
-//                bzero(fname, 120);
-                string fname = homePath; fname += "Datasets/"; fname += dataset; fname += "/im"; fname += to_string(i); fname += ".jpg";
-//                sprintf(fname, "%s/%s/im%d.jpg", datasetsPath, dataset, i);
+                bzero(fname, 120);
+                sprintf(fname, "%sDatasets/%s/im%d.jpg", homePath, dataset, i);
+//                string fname = homePath; fname += "Datasets/"; fname += dataset; fname += "/im"; fname += to_string(i); fname += ".jpg";
                 Mat image = imread(fname);
                 vector<KeyPoint> keypoints;
                 Mat descriptors;
@@ -79,7 +79,7 @@ void CashClient::train(const char* dataset, int first, int last) {
                 bowTrainer.add(descriptors);
             }
         }
-//        free(fname);
+        free(fname);
         LOGI("build codebook with %d descriptors!\n",bowTrainer.descripotorsCount());
         Mat codebook = bowTrainer.cluster();
         bowExtractor->setVocabulary(codebook);
@@ -201,15 +201,15 @@ void CashClient::addDocs(const char* imgDataset, const char* textDataset, int fi
     map<vector<unsigned char>,vector<unsigned char> > encTextIndex;
     int sockfd = -1;
     timespec start;
-//    char* fname = (char*)malloc(120);
-//    if (fname == NULL) pee("malloc error in CashClient::addDocs fname");
+    char* fname = (char*)malloc(120);
+    if (fname == NULL) pee("malloc error in CashClient::addDocs fname");
     for (unsigned id=first; id<=last; id++) {
         //extract img features
         start = getTime();                          //start feature extraction benchmark
-//        bzero(fname, 120);
-//        sprintf(fname, "%s/%s/im%d.jpg", datasetsPath, imgDataset, id);
-        string s = homePath; s += "Datasets/"; s += imgDataset; s += "/im"; s += to_string(id); s += ".jpg";
-        Mat image = imread(s);//fname);
+        bzero(fname, 120);
+        sprintf(fname, "%sDatasets/%s/im%d.jpg", homePath, imgDataset, id);
+//        string fname = homePath; fname += "Datasets/"; fname += imgDataset; fname += "/im"; fname += itoa(id); fname += ".jpg";
+        Mat image = imread(fname);
         vector<KeyPoint> keypoints;
         Mat bowDesc;
         detector->detect( image, keypoints );
@@ -220,10 +220,10 @@ void CashClient::addDocs(const char* imgDataset, const char* textDataset, int fi
         
         //extract text features
         start = getTime();                          //start feature extraction benchmark
-//        bzero(fname, 120);
-//        sprintf(fname, "%s/%s/tags%d.txt", datasetsPath, textDataset, id);
-        s = homePath; s += "Datasets/"; s += textDataset; s += "/tags"; s += to_string(id); s += ".txt";
-        vector<string> keywords = analyzer->extractFile(s.c_str());//fname);
+        bzero(fname, 120);
+        sprintf(fname, "%sDatasets/%s/tags%d.txt", homePath, textDataset, id);
+//        s = homePath; s += "Datasets/"; s += textDataset; s += "/tags"; s += to_string(id); s += ".txt";
+        vector<string> keywords = analyzer->extractFile(fname);
         featureTime += diffSec(start, getTime());   //end benchmark
         start = getTime();                          //start index benchmark
         map<string,int> textTfs;
@@ -260,7 +260,8 @@ void CashClient::addDocs(const char* imgDataset, const char* textDataset, int fi
             if (pthread_create(&encThreads[i], NULL, encryptAndIndexImgsThread, (void*)&encThreadsData[i]))
                 pee("Error: unable to create sbeEncryptionThread");
         }
-/*        for (int j=0; j<CLUSTERS; j++) {
+/* //Single Thread
+        for (int j=0; j<CLUSTERS; j++) {
             int val = denormalize(bowDesc.at<float>(j),(int)keypoints.size());
             if (val > 0) {
                 int c = (*imgDcount)[j];
@@ -292,7 +293,7 @@ void CashClient::addDocs(const char* imgDataset, const char* textDataset, int fi
 //            indexTime += diffSec(start, getTime());         //end benchmark
         
     }
-//    free(fname);
+    free(fname);
     
     //send to cloud
     start = getTime();                          //start cloud benchmark
@@ -383,10 +384,10 @@ vector<QueryResult> CashClient::search(const char* imgDataset, const char* textD
     //process img object
     timespec start = getTime();                     //start feature extraction benchmark
     map<int,int> vws;
-//    char* fname = (char*)malloc(120);
-    string s = homePath; s += "Datasets/"; s += imgDataset; s += "/im"; s += to_string(id); s += ".jpg";
-//    sprintf(fname, "%s/%s/im%d.jpg", datasetsPath, imgDataset, id);
-    Mat image = imread(s);//fname);
+    char* fname = (char*)malloc(120);
+    sprintf(fname, "%sDatasets/%s/im%d.jpg", homePath, imgDataset, id);
+//    string s = homePath; s += "Datasets/"; s += imgDataset; s += "/im"; s += to_string(id); s += ".jpg";
+    Mat image = imread(fname);
     vector<KeyPoint> keypoints;
     Mat bowDesc;
     detector->detect( image, keypoints );
@@ -403,10 +404,10 @@ vector<QueryResult> CashClient::search(const char* imgDataset, const char* textD
     //process text object
     start = getTime();                              //start feature extraction benchmark
     map<string,int> kws;
-//    bzero(fname, 120);
-//    sprintf(fname, "%s/%s/tags%d.txt", datasetsPath, textDataset, id);
-    s = homePath; s += "Datasets/"; s += textDataset; s += "/tags"; s += to_string(id); s += ".txt";
-    vector<string> keywords = analyzer->extractFile(s.c_str());//fname);
+    bzero(fname, 120);
+    sprintf(fname, "%sDatasets/%s/tags%d.txt", homePath, textDataset, id);
+//    s = homePath; s += "Datasets/"; s += textDataset; s += "/tags"; s += to_string(id); s += ".txt";
+    vector<string> keywords = analyzer->extractFile(fname);
     featureTime += diffSec(start, getTime());       //end benchmark
     start = getTime();                              //start index time benchmark
     for (int j = 0; j < keywords.size(); j++) {
@@ -417,7 +418,7 @@ vector<QueryResult> CashClient::search(const char* imgDataset, const char* textD
             queryTf->second++;
     }
     indexTime += diffSec(start, getTime());         //end benchmark
-//    free(fname);
+    free(fname);
     if (randomOracle)
         return queryRO(&vws, &kws);
     else
