@@ -12,9 +12,9 @@
 
 PaillierCashClient::PaillierCashClient() {
     //automatically runs super() at start
-    const string keyFilename = dataPath;
-    FILE* fHomPub = fopen((keyFilename+"/Cash/homPub").c_str(), "rb");
-    FILE* fHomPriv = fopen((keyFilename+"/Cash/homPriv").c_str(), "rb");
+    const string keyFilename = homePath;
+    FILE* fHomPub = fopen((keyFilename+"Data/Cash/homPub").c_str(), "rb");
+    FILE* fHomPriv = fopen((keyFilename+"Data/Cash/homPriv").c_str(), "rb");
     if (fHomPub != NULL && fHomPriv != NULL) {
         fseek(fHomPub,0,SEEK_END);
         const int pubKeySize = (int)ftell(fHomPub);

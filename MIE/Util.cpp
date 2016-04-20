@@ -467,8 +467,8 @@ std::vector<std::string>& split(const std::string& s, char delim, std::vector<st
 }*/
 
 void processHolidayDataset (int nImgs, std::map<int,std::string>& imgs) {
-    std::string holidayDir = datasetsPath;
-    holidayDir += "/inriaHolidays/";
+    std::string holidayDir = homePath;
+    holidayDir += "Datasets/inriaHolidays/";
     DIR* dir;
     struct dirent* ent;
     int i = 0;
@@ -491,8 +491,8 @@ void processHolidayDataset (int nImgs, std::map<int,std::string>& imgs) {
 }
 
 void processFlickrImgsDataset (int nImgs, std::map<int,std::string>& imgs) {
-    std::string holidayDir = datasetsPath;
-    holidayDir += "/flickr_imgs/";
+    std::string holidayDir = homePath;
+    holidayDir += "Datasets/flickr_imgs/";
     DIR* dir;
     struct dirent* ent;
     int i = 0;
@@ -515,8 +515,8 @@ void processFlickrImgsDataset (int nImgs, std::map<int,std::string>& imgs) {
 }
 
 void processFlickrTagsDataset (int nImgs, std::map<int,std::string>& docs) {
-    std::string holidayDir = datasetsPath;
-    holidayDir += "/flickr_tags/";
+    std::string holidayDir = homePath;
+    holidayDir += "Datasets/flickr_tags/";
     DIR* dir;
     struct dirent* ent;
     int i = 0;

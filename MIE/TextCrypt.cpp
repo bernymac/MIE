@@ -11,8 +11,8 @@
 using namespace std;
 
 TextCrypt::TextCrypt() {
-    string keyFilename = dataPath;
-    FILE* f = fopen((keyFilename+"/MIE/textKey").c_str(), "rb");
+    string keyFilename = homePath;
+    FILE* f = fopen((keyFilename+"data/MIE/textKey").c_str(), "rb");
     key = (unsigned char*)malloc(keysize);
     if (key == NULL) pee("malloc error in TextCrypt::TextCrypt()");
     if (f != NULL)

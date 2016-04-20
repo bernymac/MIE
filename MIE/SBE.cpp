@@ -12,12 +12,12 @@
 using namespace std;
 
 SBE::SBE (int dimensions) {
-    m = 64;//128;//256;
+    m = 128;//256;//64
     delta = 0.5f;
     k = dimensions;
     
-    string keyFilename = dataPath;
-    FILE* f = fopen((keyFilename+"/MIE/sbeKey").c_str(), "rb");
+    string keyFilename = homePath;
+    FILE* f = fopen((keyFilename+"/Data/MIE/sbeKey").c_str(), "rb");
     size_t buffSize = m * k * sizeof(float) + m * sizeof(float);
     char* buff = (char*)malloc(buffSize);
     if (buff == NULL) pee("malloc error in SBE::SBE (int dimensions)");

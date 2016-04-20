@@ -32,8 +32,8 @@ SSEClient::~SSEClient() {
 }
 
 void SSEClient::train() {
-    string s = dataPath;
-    s += "/SSE/dictionary.yml";
+    string s = homePath;
+    s += "Data/SSE/dictionary.yml";
     if ( access(s.c_str(), F_OK ) != -1 ) {
         FileStorage fs;
         Mat codebook;
@@ -48,12 +48,13 @@ void SSEClient::train() {
         terminate_criterion.epsilon = FLT_EPSILON;
         BOWKMeansTrainer bowTrainer ( CLUSTERS, terminate_criterion, 3, KMEANS_PP_CENTERS );
         RNG& rng = theRNG();
-        char* fname = (char*)malloc(120);
-        if (fname == NULL) pee("malloc error in SSEClient::train()");
+//        char* fname = (char*)malloc(120);
+//        if (fname == NULL) pee("malloc error in SSEClient::train()");
         for (unsigned i = 0; i < DOCS; i++) {
             if (rng.uniform(0.f,1.f) <= 0.1f) {
-                bzero(fname, 120);
-                sprintf(fname, "%s/wang/%d.jpg", datasetsPath, i);
+//                bzero(fname, 120);
+//                sprintf(fname, "%s/wang/%d.jpg", datasetsPath, i);
+                String fname = homePath; fname += "Datasets/wang/"; fname += to_string(i); fname += ".jpg";
                 Mat image = imread(fname);
                 vector<KeyPoint> keypoints;
                 Mat descriptors;
@@ -62,7 +63,7 @@ void SSEClient::train() {
                 bowTrainer.add(descriptors);
             }
         }
-        free(fname);
+//        free(fname);
         LOGI("build codebook with %d descriptors!\n",bowTrainer.descripotorsCount());
         Mat codebook = bowTrainer.cluster();
         bowExtractor->setVocabulary(codebook);
@@ -90,11 +91,12 @@ void SSEClient::addDocs(const char* imgDataset, const char* textDataset, bool fi
     }
     
     //index imgs
-    char* fname = (char*)malloc(120);
-    if (fname == NULL) pee("malloc error in SSEClient::addDocs fname");
+//    char* fname = (char*)malloc(120);
+//    if (fname == NULL) pee("malloc error in SSEClient::addDocs fname");
     for (unsigned i=first; i<=last; i++) {
-        bzero(fname, 120);
-        sprintf(fname, "%s/%s/im%d.txt.jpg", datasetsPath, imgDataset, i);
+//        bzero(fname, 120);
+        string fname = homePath; fname += "Datasets/"; fname += imgDataset; fname += "/im"; fname += to_string(i); fname += ".jpg";
+//        sprintf(fname, "%s/%s/im%d.jpg", datasetsPath, imgDataset, i);
         Mat image = imread(fname);
         vector<KeyPoint> keypoints;
         Mat bowDesc;
@@ -112,9 +114,10 @@ void SSEClient::addDocs(const char* imgDataset, const char* textDataset, bool fi
     }
     //index text
     for (unsigned i=first; i<=last; i++) {
-        bzero(fname, 120);
-        sprintf(fname, "%s/%s/tags%d.txt", datasetsPath, textDataset, i);
-        vector<string> keywords = analyzer->extractFile(fname);
+//        bzero(fname, 120);
+//        sprintf(fname, "%s/%s/tags%d.txt", datasetsPath, textDataset, i);
+        string fname = homePath; fname += "Datasets/"; fname += imgDataset; fname += "/tags"; fname += to_string(i); fname += ".txt";
+        vector<string> keywords = analyzer->extractFile(fname.c_str());
         for (int j = 0; j < keywords.size(); j++) {
             timespec start = getTime();     //start crypto benchmark
             vector<unsigned char> encKeyword = textCrypto->encode(keywords[j]);
@@ -129,7 +132,7 @@ void SSEClient::addDocs(const char* imgDataset, const char* textDataset, bool fi
             indexTime += diffSec(start, getTime());         //end benchmark
         }
     }
-    free(fname);
+//    free(fname);
     
     //encrypt img index
     vector< vector<unsigned char> > encImgIndex;
@@ -270,8 +273,9 @@ void SSEClient::receivePostingLists(int sockfd, vector<map<int,int> >* imgPostin
 set<QueryResult,cmp_QueryResult> SSEClient::search(int id) {
     //process img object
     map<int,int> vws;
-    char* fname = (char*)malloc(120);
-    sprintf(fname, "%s/wang/%d.jpg", datasetsPath, id);
+//    char* fname = (char*)malloc(120);
+//    sprintf(fname, "%s/wang/%d.jpg", datasetsPath, id);
+    string fname = homePath; fname += "Datasets/wang/"; fname += to_string(id); fname += ".jpg";
     Mat image = imread(fname);
     vector<KeyPoint> keypoints;
     Mat bowDesc;
@@ -288,9 +292,10 @@ set<QueryResult,cmp_QueryResult> SSEClient::search(int id) {
     indexTime += diffSec(start, getTime());               //end benchmark
     //process text object
     map<vector<unsigned char>,int> encKeywords;
-    bzero(fname, 120);
-    sprintf(fname, "%s/docs/tags%d.txt", datasetsPath, id+1);
-    vector<string> keywords = analyzer->extractFile(fname);
+//    bzero(fname, 120);
+//    sprintf(fname, "%s/docs/tags%d.txt", datasetsPath, id+1);
+    fname = homePath; fname += "Datasets/docs/"; fname += "/tags"; fname += to_string(id+1); fname += ".txt";
+    vector<string> keywords = analyzer->extractFile(fname.c_str());
     for (int j = 0; j < keywords.size(); j++) {
         start = getTime();                  //start crypto time benchmark
         vector<unsigned char> encKeyword = textCrypto->encode(keywords[j]);
@@ -304,7 +309,7 @@ set<QueryResult,cmp_QueryResult> SSEClient::search(int id) {
         }
         indexTime += diffSec(start, getTime());          //end benchmark
     }
-    free(fname);
+//    free(fname);
     
     //mandar para a cloud
     start = getTime();                      //start cloud time benchmark
