@@ -25,10 +25,10 @@ void MIEServer::startServer() {
     int nImgs = 0, nTextDocs = 0;
     
     BOWImgDescriptorExtractor bowExtr (DescriptorMatcher::create("BruteForce-L1"));
-    if ( access((dataPath+"MIE/codebook.yml").c_str(), F_OK ) != -1 ) {
+    if ( access((homePath+"Data/Server/MIE/codebook.yml").c_str(), F_OK ) != -1 ) {
         FileStorage fs;
         Mat codebook;
-        fs.open(dataPath+"MIE/codebook.yml", FileStorage::READ);
+        fs.open(homePath+"Data/Server/MIE/codebook.yml", FileStorage::READ);
         fs["codebook"] >> codebook;
         fs.release();
         bowExtr.setVocabulary(codebook);
@@ -141,7 +141,7 @@ void MIEServer::receiveDoc(int newsockfd, int& id, Mat& mat, vector<vector<unsig
 bool MIEServer::readOrPersistFeatures(map<int,Mat>& imgFeatures,
                            map<int,vector<vector<unsigned char> > >& textFeatures) {
     // read/persist images
-    FILE* f = fopen((dataPath+"MIE/imgFeatures").c_str(), "rb");
+    FILE* f = fopen((homePath+"Data/Server/MIE/imgFeatures").c_str(), "rb");
     if (imgFeatures.size() == 0 && f != NULL) {
         char buff[2*sizeof(int)];
         fread (buff, 1, 2*sizeof(int), f);
@@ -170,7 +170,7 @@ bool MIEServer::readOrPersistFeatures(map<int,Mat>& imgFeatures,
     } else if (imgFeatures.size() > 0) {
         if (f != NULL)
             fclose(f);
-        f = fopen((dataPath+"MIE/imgFeatures").c_str(), "wb");
+        f = fopen((homePath+"Data/Server/MIE/imgFeatures").c_str(), "wb");
         int nImgs = (int)imgFeatures.size();
         int featureSize = imgFeatures.begin()->second.cols;
         char buff[2*sizeof(int)];
@@ -198,7 +198,7 @@ bool MIEServer::readOrPersistFeatures(map<int,Mat>& imgFeatures,
         delete[] featureBuff;
     }
     // read/persist text
-    f = fopen((dataPath+"MIE/textFeatures").c_str(), "rb");
+    f = fopen((homePath+"Data/Server/MIE/textFeatures").c_str(), "rb");
     if (textFeatures.size() == 0 && f != NULL) {
         int pos=0;
         char buff[2*sizeof(int)];
@@ -238,7 +238,7 @@ bool MIEServer::readOrPersistFeatures(map<int,Mat>& imgFeatures,
         addIntToArr(keywordSize, buff, &pos);
         if (f != NULL)
             fclose(f);
-        f = fopen((dataPath+"MIE/textFeatures").c_str(), "wb");
+        f = fopen((homePath+"Data/Server/MIE/textFeatures").c_str(), "wb");
         fwrite(buff, 1, 2*sizeof(int), f);
         for (map<int,vector<vector<unsigned char> > >::iterator it=textFeatures.begin(); it!=textFeatures.end(); ++it) {
             int nKeywords = (int)it->second.size();
@@ -275,7 +275,7 @@ void MIEServer::indexImgs(map<int,Mat>& imgFeatures, vector<map<int,int> >& imgI
         printf("build codebook with %d descriptors!\n",bowTrainer.descriptorsCount());
         Mat codebook = bowTrainer.cluster();
         FileStorage fs;
-        fs.open(dataPath+"MIE/codebook.yml", FileStorage::WRITE);
+        fs.open(homePath+"Data/Server/MIE/codebook.yml", FileStorage::WRITE);
         fs << "codebook" << codebook;
         fs.release();
         bowExtr.setVocabulary(codebook);
@@ -314,7 +314,7 @@ void MIEServer::indexText(map<int,vector<vector<unsigned char> > >& textFeatures
 }
 
 void MIEServer::persistImgIndex(vector<map<int,int> >& imgIndex, int nImgs) {
-    FILE* f = fopen((dataPath+"MIE/imgIndex").c_str(), "wb");
+    FILE* f = fopen((homePath+"Data/Server/MIE/imgIndex").c_str(), "wb");
     int indexSize = (int)imgIndex.size();
     char buff[2*sizeof(int)];
     int pos = 0;
@@ -340,7 +340,7 @@ void MIEServer::persistImgIndex(vector<map<int,int> >& imgIndex, int nImgs) {
 
 void MIEServer::persistTextIndex(map<vector<unsigned char>,map<int,int> >& textIndex, int nTextDocs) {
     // read/persist text
-    FILE* f = fopen((dataPath+"MIE/textIndex").c_str(), "wb");
+    FILE* f = fopen((homePath+"Data/Server/MIE/textIndex").c_str(), "wb");
     int indexSize = (int)textIndex.size();
     int keywordSize = (int)textIndex.begin()->first.size();
     char buff[3*sizeof(int)];
@@ -378,8 +378,8 @@ void MIEServer::persistIndex(vector<map<int,int> >& imgIndex,
 
 bool MIEServer::readIndex(vector<map<int,int> >& imgIndex,
                   map<vector<unsigned char>,map<int,int> >& textIndex, int& nImgs, int& nTextDocs) {
-    FILE* f1 = fopen((dataPath+"MIE/imgIndex").c_str(), "rb");
-    FILE* f2 = fopen((dataPath+"MIE/textIndex").c_str(), "rb");
+    FILE* f1 = fopen((homePath+"Data/Server/MIE/imgIndex").c_str(), "rb");
+    FILE* f2 = fopen((homePath+"Data/Server/MIE/textIndex").c_str(), "rb");
     if (f1==NULL || f2==NULL)
         return false;
     if (f1 != NULL) {

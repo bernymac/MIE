@@ -47,13 +47,13 @@ class MIEServerMT : public Server {
     static void clientThread(int newsockfd);
     static void receiveDoc(int newsockfd, int* id, Mat* mat, vector<vector<unsigned char> >* keywords);
     static void addDoc(int newsockfd);
-    static bool readOrPersistFeatures(string dataPath);
+    static bool readOrPersistFeatures();
     static void indexImgs();
     static void indexText();
-    static void persistImgIndex(string dataPath);
-    static void persistTextIndex(string dataPath);
-    static void persistIndex(string dataPath);
-    static bool readIndex(string dataPath);
+    static void persistImgIndex();
+    static void persistTextIndex();
+    static void persistIndex();
+    static bool readIndex();
     static set<QueryResult,cmp_QueryResult> imgSearch (Mat* features);
     static set<QueryResult,cmp_QueryResult> textSearch(vector<vector<unsigned char> >* keywords);
     static void search(int newsockfd);

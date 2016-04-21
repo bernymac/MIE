@@ -11,7 +11,7 @@
 
 PaillierCashServer::PaillierCashServer() {
     printf("Starting Paillier Cash Server...\n");
-    FILE* fHomPub = fopen((dataPath+"Cash/homPub").c_str(), "rb");
+    FILE* fHomPub = fopen((homePath+"Data/Server/Cash/homPub").c_str(), "rb");
     if (fHomPub != NULL) {
         fseek(fHomPub,0,SEEK_END);
         const int pubKeySize = (int)ftell(fHomPub);
@@ -19,7 +19,7 @@ PaillierCashServer::PaillierCashServer() {
         char* pubHex = new char[pubKeySize];
         fread (pubHex, 1, pubKeySize, fHomPub);
         homPub = paillier_pubkey_from_hex(pubHex);
-        delete pubHex;
+        delete[] pubHex;
     } else
         pee("Couldn't read Paillier Public Key");
 }
@@ -135,7 +135,7 @@ void PaillierCashServer::sendPaillierQueryResponse(int newsockfd, initializer_li
 //            pos += encSize;
 //          mpz_clear(it2->second.c);
             addToArr(encTFBuff, encSize, buff, &pos);
-            delete encTFBuff;
+            delete[] encTFBuff;
         }
     }
     socketSend (newsockfd, buff, size);

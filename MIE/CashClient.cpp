@@ -49,7 +49,7 @@ CashClient::~CashClient() {
 
 void CashClient::train(const char* dataset, int first, int last) {
     string s = homePath;
-    s += "Data/Cash/dictionary.yml";
+    s += "Data/Client/Cash/dictionary.yml";
     if ( access(s.c_str(), F_OK ) != -1 ) {
         FileStorage fs;
         Mat codebook;

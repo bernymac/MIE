@@ -33,32 +33,40 @@ void runMIEClient() {
 //    mie.addDocs("flickr_imgs", "flickr_tags",1,1000,0);
     mie.index();
     
-/*    string imgPath = datasetsPath;
-    imgPath += "/inriaHolidays/100701.jpg";
-    string textPath = datasetsPath;
-    textPath += "/flickr_tags/tags1.txt";
+/*    string imgPath = homePath;
+    imgPath += "Datasets/inriaHolidays/100701.jpg";
+    string textPath = homePath;
+    textPath += "Datasets/flickr_tags/tags1.txt";
     vector<QueryResult> queryResults = mie.search(1, imgPath, textPath);
-
+*/
     double total_time = diffSec(start, getTime());
     LOGI("%s total_time:%.6f\n",mie.printTime().c_str(),total_time);
-    printQueryResults(queryResults);
-*/
-/*    map<int,vector<QueryResult> > queries;
+//    printQueryResults(queryResults);
+
+    map<int,vector<QueryResult> > queries;
+    char* imgPath = new char[120];
+    char* textPath = new char[120];
     for (int i = 100000; i <= 149900; i+=100) {
-        string imgPath = datasetsPath;
-        imgPath += "/inriaHolidays/";
-        imgPath += to_string(i);
-        imgPath += ".jpg";
-        string textPath = datasetsPath;
-        textPath += "/flickr_tags/tags";
-        textPath += to_string(i/100000);
-        textPath += ".txt";
+//        string imgPath = homePath;
+//        imgPath += "Datasets/inriaHolidays/";
+//        imgPath += to_string(i);
+//        imgPath += ".jpg";
+//        string textPath = homePath;
+//        textPath += "Datasets/flickr_tags/tags";
+//        textPath += to_string(i/100000);
+//        textPath += ".txt";
+        bzero(imgPath, 120);
+        bzero(textPath, 120);
+        sprintf(imgPath, "%sDatasets/inriaHolidays/%d.jpg", homePath, i);
+        sprintf(textPath, "%sDatasets/flickr_tags/tags%d.txt", homePath, i/100000);
         queries[i] = mie.search(i, imgPath, textPath);
     }
-    string fName = dataPath;
-    fName += "/MIE/mieHoliday.dat";
+    delete[] imgPath;
+    delete[] textPath;
+    string fName = homePath;
+    fName += "Data/Client/MIE/mieHoliday.dat";
     printHolidayResults(fName, queries);
-*/
+
 }
 
 void runSSEClient() {

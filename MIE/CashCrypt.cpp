@@ -12,7 +12,7 @@ using namespace std;
 
 CashCrypt::CashCrypt() {
     string keyFilename = homePath;
-    FILE* f = fopen((keyFilename+"Data/Cash/K").c_str(), "rb");
+    FILE* f = fopen((keyFilename+"Data/Client/Cash/K").c_str(), "rb");
     K = (unsigned char*)malloc(Ksize);
     if (K == NULL) pee("malloc error in TextCrypt::TextCrypt()");
     if (f != NULL)
