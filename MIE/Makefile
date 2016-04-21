@@ -9,7 +9,6 @@ Client : Main.o CashClient.o PaillierCashClient.o CashCrypt.o EnglishAnalyzer.o 
 
 debug : Main.debug CashClient.debug PaillierCashClient.debug CashCrypt.debug EnglishAnalyzer.debug MIEClient.debug SBE.debug SSEClient.debug SSECrypt.debug TextCrypt.debug Util.debug paillier.debug
 	g++ -o Client Main.o CashClient.o CashCrypt.o PaillierCashClient.o EnglishAnalyzer.o MIEClient.o SBE.o SSEClient.o SSECrypt.o TextCrypt.o Util.o paillier.o -L/usr/local/opencv/opencv2.4/lib -lopencv_core -lopencv_nonfree -lopencv_highgui -lopencv_features2d -lz -lcrypto -lgmp -ldl -lpthread
-	@echo ulimit -c unlimited
 
 Main.o : Main.cpp
 	g++ -std=gnu++98 -I /usr/local/opencv/opencv2.4/include -c Main.cpp
