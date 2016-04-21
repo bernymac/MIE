@@ -86,6 +86,6 @@ clean :
 	rm Client Main.o CashClient.o CashCrypt.o PaillierCashClient.o EnglishAnalyzer.o MIEClient.o SBE.o SSEClient.o SSECrypt.o TextCrypt.o Util.o paillier.o core
 
 run : Client
-	LD_LIBRARY_PATH=/usr/local/opencv/opencv2.4/lib/:$$LD_LIBRARY_PATH ./Client $(RUN_ARGS)
+	LD_LIBRARY_PATH=/usr/local/opencv/opencv2.4/lib/ ./Client $(RUN_ARGS) >teste.txt 2>&1 &
 
 .PHONY: run clean
