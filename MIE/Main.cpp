@@ -43,7 +43,7 @@ void runMIEClient() {
     LOGI("%s total_time:%.6f\n",mie.printTime().c_str(),total_time);
 //    printQueryResults(queryResults);
 
-    map<int,vector<QueryResult> > queries;
+/*    map<int,vector<QueryResult> > queries;
     char* imgPath = new char[120];
     char* textPath = new char[120];
     for (int i = 100000; i <= 149900; i+=100) {
@@ -66,7 +66,7 @@ void runMIEClient() {
     string fName = homePath;
     fName += "Data/Client/MIE/mieHoliday.dat";
     printHolidayResults(fName, queries);
-
+*/
 }
 
 void runSSEClient() {
