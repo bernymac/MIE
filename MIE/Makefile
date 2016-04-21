@@ -4,17 +4,12 @@ RUN_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
 $(eval $(RUN_ARGS):;@:)
 endif
 
-Client : Main.o CashClient.o PaillierCashClient.o CashCrypt.o EnglishAnalyzer.o MIEClient.o SBE.o SSEClient.o SSECrypt.o \
-TextCrypt.o Util.o paillier.o
-g++ -o Client Main.o CashClient.o CashCrypt.o PaillierCashClient.o EnglishAnalyzer.o MIEClient.o SBE.o SSEClient.o \
-SSECrypt.o TextCrypt.o Util.o paillier.o -L/usr/local/opencv/opencv2.4/lib -lopencv_core -lopencv_nonfree \
--lopencv_highgui -lopencv_features2d -lz -lcrypto -lgmp -ldl -lpthread
+Client : Main.o CashClient.o PaillierCashClient.o CashCrypt.o EnglishAnalyzer.o MIEClient.o SBE.o SSEClient.o SSECrypt.o TextCrypt.o Util.o paillier.o
+	g++ -o Client Main.o CashClient.o CashCrypt.o PaillierCashClient.o EnglishAnalyzer.o MIEClient.o SBE.o SSEClient.o SSECrypt.o TextCrypt.o Util.o paillier.o -L/usr/local/opencv/opencv2.4/lib -lopencv_core -lopencv_nonfree -lopencv_highgui -lopencv_features2d -lz -lcrypto -lgmp -ldl -lpthread
 
 Debug : Main.debug CashClient.debug PaillierCashClient.debug CashCrypt.debug EnglishAnalyzer.debug MIEClient.debug SBE.debug SSEClient.debug SSECrypt.debug TextCrypt.debug Util.debug paillier.debug
 	ulimit -c unlimited
-	g++ -o Client Main.o CashClient.o CashCrypt.o PaillierCashClient.o EnglishAnalyzer.o MIEClient.o SBE.o SSEClient.o \
-		SSECrypt.o TextCrypt.o Util.o paillier.o -L/usr/local/opencv/opencv2.4/lib -lopencv_core -lopencv_nonfree \
-		-lopencv_highgui -lopencv_features2d -lz -lcrypto -lgmp -ldl -lpthread
+	g++ -o Client Main.o CashClient.o CashCrypt.o PaillierCashClient.o EnglishAnalyzer.o MIEClient.o SBE.o SSEClient.o SSECrypt.o TextCrypt.o Util.o paillier.o -L/usr/local/opencv/opencv2.4/lib -lopencv_core -lopencv_nonfree -lopencv_highgui -lopencv_features2d -lz -lcrypto -lgmp -ldl -lpthread
 
 Main.o : Main.cpp MIEClient.o SSEClient.o CashClient.o
 	g++ -std=gnu++98 -I /usr/local/opencv/opencv2.4/include -c Main.cpp
@@ -89,8 +84,7 @@ paillier.debug : paillier.c paillier.h
 	gcc -c -g -O0 paillier.c
 
 clean :
-	rm Client Main.o CashClient.o CashCrypt.o PaillierCashClient.o EnglishAnalyzer.o MIEClient.o SBE.o SSEClient.o SSECrypt.o \
-		TextCrypt.o Util.o paillier.o core
+	rm Client Main.o CashClient.o CashCrypt.o PaillierCashClient.o EnglishAnalyzer.o MIEClient.o SBE.o SSEClient.o SSECrypt.o TextCrypt.o Util.o paillier.o core
 
 run : Client
 	LD_LIBRARY_PATH=/usr/local/opencv/opencv2.4/lib/:$$LD_LIBRARY_PATH ./Client $(RUN_ARGS)
