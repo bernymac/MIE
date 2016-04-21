@@ -62,6 +62,6 @@ clean :
 	rm Server Main.o MIEServer.o MIEServerMT.o SSEServer.o ServerUtil.o CashServer.o PaillierCashServer.o paillier.o core
 
 run : Server
-	LD_LIBRARY_PATH=/usr/local/opencv/opencv3.1/lib/:$$LD_LIBRARY_PATH ./Server $(RUN_ARGS)
+	LD_LIBRARY_PATH=/usr/local/opencv/opencv3.1/lib/:$$LD_LIBRARY_PATH ./Server $(RUN_ARGS) >teste.txt 2>&1 &
 
 .PHONY: run clean
