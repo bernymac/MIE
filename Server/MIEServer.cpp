@@ -180,20 +180,21 @@ bool MIEServer::readOrPersistFeatures(map<int,Mat>& imgFeatures,
         fwrite(buff, 1, 2*sizeof(int), f);
         size_t buffSize = featureSize*sizeof(float);
         char* featureBuff = new char[buffSize];
-        //char* featureBuff = (char*)malloc(buffSize);
         for (map<int,Mat>::iterator it=imgFeatures.begin(); it!=imgFeatures.end(); ++it) {
-            char imgIdBuff[2*sizeof(int)];
+            bzero(buff, 2*sizeof(int));
             pos = 0;
-            addIntToArr(it->first, imgIdBuff, &pos);
-            addIntToArr(it->second.rows, imgIdBuff, &pos);
-            fwrite(imgIdBuff, 1, 2*sizeof(int), f);
+            addIntToArr(it->first, buff, &pos);
+            addIntToArr(it->second.rows, buff, &pos);
+            fwrite(buff, 1, 2*sizeof(int), f);
             for (int j = 0; j < it->second.rows; j++) {
+                bzero(featureBuff, buffSize);
                 pos = 0;
                 for (int k = 0; k < featureSize; k++)
                     addFloatToArr(it->second.at<float>(j,k), featureBuff, &pos);
                 fwrite(featureBuff, 1, buffSize, f);
             }
         }
+        fflush(f);
         fclose(f);
         delete[] featureBuff;
     }
@@ -244,7 +245,6 @@ bool MIEServer::readOrPersistFeatures(map<int,Mat>& imgFeatures,
             int nKeywords = (int)it->second.size();
             size_t buffSize = 2*sizeof(int) + nKeywords*keywordSize*sizeof(unsigned char);
             char* buff2 = new char[buffSize];
-//            bzero(buff2,buffSize);
             pos = 0;
             addIntToArr(it->first, buff2, &pos);
             addIntToArr(nKeywords, buff2, &pos);
@@ -252,9 +252,10 @@ bool MIEServer::readOrPersistFeatures(map<int,Mat>& imgFeatures,
                 for (int k = 0; k < keywordSize; k++)
                     addToArr(&it->second[j][k], sizeof(unsigned char), buff2, &pos);
             fwrite(buff2, 1, buffSize, f);
-            fclose(f);
+            fflush(f);
             delete[] buff2;
         }
+        fclose(f);
     }
     return imgFeatures.size() > 0 && textFeatures.size() > 0 ? true : false;
 }
