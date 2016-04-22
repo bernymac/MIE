@@ -97,6 +97,7 @@ void MIEClient::processDoc(int id, string imgPath, string textPath, vector< vect
 //        (*features)[i] = sbe->encode(feature);
 //    }
     const long numCPU = sysconf(_SC_NPROCESSORS_ONLN);    //hand made threads equal to cpus
+    LOGI("num cpus:%ld",numCPU);
     const int descPerCPU = ceil((float)descriptors.rows/(float)numCPU);
     pthread_t sbeThreads[numCPU];
     struct sbeThreadData sbeThreadsData[numCPU];
