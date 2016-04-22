@@ -97,8 +97,8 @@ void MIEClient::processDoc(int id, string imgPath, string textPath, vector< vect
 //        (*features)[i] = sbe->encode(feature);
 //    }
     const long numCPU = sysconf(_SC_NPROCESSORS_ONLN);    //hand made threads equal to cpus
-    LOGI("num cpus:%ld",numCPU);
     const int descPerCPU = ceil((float)descriptors.rows/(float)numCPU);
+    LOGI("num cpus:%ld\n",descPerCPU);
     pthread_t sbeThreads[numCPU];
     struct sbeThreadData sbeThreadsData[numCPU];
     for (int i = 0; i < numCPU; i++) {
@@ -129,6 +129,7 @@ void MIEClient::processDoc(int id, string imgPath, string textPath, vector< vect
 }
 
 void* MIEClient::sbeEncryptionThread(void* threadData) {
+    LOGI("starting thread\n");
     struct sbeThreadData* data = (struct sbeThreadData*) threadData;
     for (int i = data->first; i < data->last; i++ ) {
         vector<float> feature;
