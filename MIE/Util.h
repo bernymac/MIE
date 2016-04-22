@@ -8,6 +8,7 @@
 #ifndef __MIE__Util__
 #define __MIE__Util__
 
+#include <pthread.h>
 #include <iostream>
 #include <fstream>
 #include <dirent.h>
