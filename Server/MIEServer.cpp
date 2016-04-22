@@ -63,14 +63,14 @@ void MIEServer::startServer() {
                 //try to read index from disk
                 if (!readIndex(imgIndex, textIndex, nImgs, nTextDocs)) {
                     //try to read features if not in memory, persist them otherwise
-                    if (readOrPersistFeatures(imgFeatures, textFeatures)) {
+//                    if (readOrPersistFeatures(imgFeatures, textFeatures)) {
                         indexImgs(imgFeatures, imgIndex, bowExtr, nImgs);
                         indexText(textFeatures,textIndex, nTextDocs);
                         persistIndex(imgIndex, textIndex, nImgs, nTextDocs);
-                    } else {
-                        printf("no features to index!\n");
-                        break;
-                    }
+//                    } else {
+//                        printf("no features to index!\n");
+//                        break;
+//                    }
                 }
                 printf("finished indexing!\n");
                 break;
