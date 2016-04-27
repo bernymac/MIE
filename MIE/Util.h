@@ -139,11 +139,13 @@ long receiveAndUnzip(int sockfd, char* data);
 
 std::vector<std::string>& split(const std::string& s, char delim, std::vector<std::string>& elems);
 
-void processHolidayDataset (int nImgs, std::map<int,std::string>& imgs);
+void extractFileNames (const char* imgDataset, const char* textDataset, int first, int last, std::map<int,std::string>& imgs, std::map<int,std::string>& docs);
 
-void processFlickrImgsDataset (int nImgs, std::map<int,std::string>& imgs);
+void extractHolidayFileNames (int nImgs, std::map<int,std::string>& imgs);
 
-void processFlickrTagsDataset (int nImgs, std::map<int,std::string>& docs);
+void extractFlickrImgsFileNames (int nImgs, std::map<int,std::string>& imgs);
+
+void extractFlickrTagsFileNames (int nImgs, std::map<int,std::string>& docs);
 
 void printHolidayResults (std::string fPath, std::map<int,std::vector<QueryResult> > results);
 

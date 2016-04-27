@@ -120,20 +120,24 @@ void CashServer::search(int newsockfd) {
     const int vwsSize = readIntFromArr(buffer, &pos);
     const int kwsSize = readIntFromArr(buffer, &pos);
     const int Ksize = readIntFromArr(buffer, &pos);
+    //if RO
+    buffSize = (vwsSize + kwsSize) * (2*Ksize + sizeof(int));
+    char* buff = (char*)malloc(buffSize);
+    if (buff == NULL) pee("malloc error in CashServer::search receive vws and kws");
+    receiveAll(newsockfd, buff, buffSize);
+    pos = 0;
+    set<QueryResult,cmp_QueryResult> imgQueryResults = calculateQueryResultsRO( vwsSize, Ksize, buff, &pos, encImgIndex);
+    set<QueryResult,cmp_QueryResult> textQueryResults = calculateQueryResultsRO( kwsSize, Ksize, buff, &pos, encTextIndex);
+    free(buff);
+    //if std
+//    set<QueryResult,cmp_QueryResult> imgQueryResults = calculateQueryResults(newsockfd, vwsSize, Ksize, encImgIndex);
+//    set<QueryResult,cmp_QueryResult> textQueryResults = calculateQueryResults(newsockfd, kwsSize, Ksize, encTextIndex);
     
-//    buffSize = (vwsSize + kwsSize) * (2*Ksize + sizeof(int));
-//    char* buff = (char*)malloc(buffSize);
-//    if (buff == NULL) pee("malloc error in CashServer::search receive vws and kws");
-//    receiveAll(newsockfd, buff, buffSize);
-//    pos = 0;
-    set<QueryResult,cmp_QueryResult> imgQueryResults = calculateQueryResults(newsockfd, vwsSize, Ksize, /*buff, &pos,*/ encImgIndex);
-    set<QueryResult,cmp_QueryResult> textQueryResults = calculateQueryResults(newsockfd, kwsSize, Ksize, /*buff, &pos,*/ encTextIndex);
-//    free(buff);
     set<QueryResult,cmp_QueryResult> mergedResults = mergeSearchResults(&imgQueryResults, &textQueryResults);
-    sendQueryResponse(newsockfd, &mergedResults, 20);
+    sendQueryResponse(newsockfd, &mergedResults, -1);
 }
 
-    
+//search in std model
 set<QueryResult,cmp_QueryResult> CashServer::calculateQueryResults(int newsockfd, int kwsSize, int Ksize, /*char* buff, int* pos,*/
                                                  map<vector<unsigned char>,vector<unsigned char> >* index) {
     map<int,float> queryResults;
@@ -145,9 +149,7 @@ set<QueryResult,cmp_QueryResult> CashServer::calculateQueryResults(int newsockfd
         
         int counter = readIntFromArr(smallBuff, &pos);
         int buffSize = Ksize + sizeof(int) + counter*Ksize;
-//        char* buff = (char*)malloc(buffSize);
-//        if (buff == NULL) pee("malloc error in CashServer::search receive vws");
-        char buff[buffSize];
+        char* buff = new char[buffSize];
         receiveAll(newsockfd, buff, buffSize);
         pos = 0;
         unsigned char k2[Ksize];
@@ -178,13 +180,13 @@ set<QueryResult,cmp_QueryResult> CashServer::calculateQueryResults(int newsockfd
             else
                 docScoreIt->second += score;
         }
-//        free(buff);
+        delete[] buff;
     }
     return sort(&queryResults);
 }
 
-//old search with Random Oracles
-/*set<QueryResult,cmp_QueryResult> CashServer::calculateQueryResults(int kwsSize, int Ksize, char* buff, int* pos,
+//search with Random Oracles
+set<QueryResult,cmp_QueryResult> CashServer::calculateQueryResultsRO(int kwsSize, int Ksize, char* buff, int* pos,
                                                                    map<vector<unsigned char>,vector<unsigned char> >* index) {
     map<int,float> queryResults;
     for (int i = 0; i < kwsSize; i++) {
@@ -232,5 +234,5 @@ set<QueryResult,cmp_QueryResult> CashServer::calculateQueryResults(int newsockfd
             }
         }
     }
-    return sort(queryResults);
-}*/
+    return sort(&queryResults);
+}

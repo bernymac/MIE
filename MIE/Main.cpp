@@ -38,23 +38,15 @@ void runMIEClient() {
     string textPath = homePath;
     textPath += "Datasets/flickr_tags/tags1.txt";
     vector<QueryResult> queryResults = mie.search(1, imgPath, textPath);
+    printQueryResults(queryResults);
 */
     double total_time = diffSec(start, getTime());
     LOGI("%s total_time:%.6f\n",mie.printTime().c_str(),total_time);
-//    printQueryResults(queryResults);
 
 /*    map<int,vector<QueryResult> > queries;
     char* imgPath = new char[120];
     char* textPath = new char[120];
     for (int i = 100000; i <= 149900; i+=100) {
-//        string imgPath = homePath;
-//        imgPath += "Datasets/inriaHolidays/";
-//        imgPath += to_string(i);
-//        imgPath += ".jpg";
-//        string textPath = homePath;
-//        textPath += "Datasets/flickr_tags/tags";
-//        textPath += to_string(i/100000);
-//        textPath += ".txt";
         bzero(imgPath, 120);
         bzero(textPath, 120);
         sprintf(imgPath, "%sDatasets/inriaHolidays/%d.jpg", homePath, i);
@@ -84,23 +76,43 @@ void runSSEClient() {
 
 void runCashClient() {
     LOGI("begin Cash SSE!\n");
-    int first = 1;
-    int last = 3000;//1;
-    int groupsize = 10;//1;
+//    int first = 1;
+//    int last = 1000;
+//    int groupsize = 1000;
     CashClient cash;
-    cash.train("flickr_imgs",first,last);
-    timespec start = getTime();
+//    cash.train("flickr_imgs",first,last);
+    cash.train("inriaHolidays",1,1491);
+//    timespec start = getTime();
     
-    for (unsigned i=first; i<=last; i+=groupsize)
-        cash.addDocs("flickr_imgs","flickr_tags",i,i+groupsize-1,0);
-/*    for (int i = 0; i < 100; i++)
-        cash.addDocs("flickr_imgs", "flickr_tags", first+i*10, 10+i*10, last); */
-    cash.cleanTime();
-    vector<QueryResult> queryResults = cash.search("flickr_imgs","flickr_tags",1, false);
-    
+//    for (unsigned i=first; i<=last; i+=groupsize)
+//        cash.addDocs("flickr_imgs","flickr_tags",i,i+groupsize-1,0);
+//    cash.addDocs("inriaHolidays","flickr_tags",1,1491,0);
+//    cash.cleanTime();
+/*    string imgPath = homePath;
+    imgPath += "Datasets/inriaHolidays/100701.jpg";
+    string textPath = homePath;
+    textPath += "Datasets/flickr_tags/tags1.txt";
+    vector<QueryResult> queryResults = cash.search(imgPath,textPath,1, true);
+ 
     double total_time = diffSec(start, getTime());
     LOGI("%s total_time:%.6f\n",cash.printTime().c_str(),total_time);
     printQueryResults(queryResults);
+*/
+    map<int,vector<QueryResult> > queries;
+    char* imgPath = new char[120];
+    char* textPath = new char[120];
+    for (int i = 100000; i <= 149900; i+=100) {
+        bzero(imgPath, 120);
+        bzero(textPath, 120);
+        sprintf(imgPath, "%sDatasets/inriaHolidays/%d.jpg", homePath, i);
+        sprintf(textPath, "%sDatasets/flickr_tags/tags%d.txt", homePath, i/100000);
+        queries[i] = cash.search(imgPath,textPath,1, true);
+    }
+    delete[] imgPath;
+    delete[] textPath;
+    string fName = homePath;
+    fName += "Data/Client/Cash/cashHoliday.dat";
+    printHolidayResults(fName, queries);
 }
 
 void runPaillierCashClient() {

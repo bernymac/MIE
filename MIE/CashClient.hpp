@@ -62,7 +62,7 @@ public:
     ~CashClient();
     void train(const char* dataset, int first, int last);
     void addDocs(const char* imgDataset, const char* textDataset, int first, int last, int prefix);
-    vector<QueryResult> search(const char* imgDataset, const char* textDataset, int id, bool randomOracle);
+    vector<QueryResult> search(string imgPath, string textPath, int id, bool randomOracle);
     string printTime();
     void cleanTime();
 };

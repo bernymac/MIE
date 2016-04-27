@@ -43,8 +43,8 @@ protected:
 //    void returnIndex(int newsockfd);
 //    void sendPostingLists(int newsockfd, vector<vector<unsigned char> >* imgPostingLists, map<vector<unsigned char>, vector<unsigned char> >* textPostingLists);
 
-    set<QueryResult,cmp_QueryResult> calculateQueryResults(int newsockfd, int kwsSize, int Ksize, /*char* buff, int* pos,*/
-                                                           map<vector<unsigned char>,vector<unsigned char> >* index);
+    set<QueryResult,cmp_QueryResult> calculateQueryResults(int newsockfd, int kwsSize, int Ksize,                      map<vector<unsigned char>,vector<unsigned char> >* index);
+    set<QueryResult,cmp_QueryResult> calculateQueryResultsRO(int kwsSize, int Ksize, char* buff, int* pos,                                                                        map<vector<unsigned char>,vector<unsigned char> >* index);
 public:
     CashServer();
     ~CashServer();

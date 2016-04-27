@@ -33,12 +33,8 @@ MIEClient::~MIEClient() {
 
 void MIEClient::addDocs(const char* imgDataset, const char* textDataset, int first, int last, int prefix) {
     map<int,string> tags;
-    processFlickrTagsDataset(last-first+1, tags);
     map<int,string> imgs;
-    if (strcmp(imgDataset,"flickr_imgs") == 0)
-        processFlickrImgsDataset(last-first+1, imgs);
-    else if (strcmp(imgDataset,"inriaHolidays") == 0)
-        processHolidayDataset(last-first+1, imgs);
+    extractFileNames(imgDataset, textDataset, first, last, imgs, tags);
     
     map<int,string>::iterator imgs_it=imgs.begin();
     map<int,string>::iterator tags_it=tags.begin();
