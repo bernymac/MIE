@@ -495,8 +495,8 @@ void MIEServer::search(int newsockfd, BOWImgDescriptorExtractor& bowExtr, vector
     vector<vector<unsigned char> > keywords;
     receiveDoc(newsockfd, id, mat, keywords);
     set<QueryResult,cmp_QueryResult> imgResults = imgSearch(mat,bowExtr,imgIndex,nImgs);
-//    set<QueryResult,cmp_QueryResult> textResults = textSearch(keywords,textIndex, nTextDocs);
-//    set<QueryResult,cmp_QueryResult> mergedResults = mergeSearchResults(&imgResults, &textResults);
+    set<QueryResult,cmp_QueryResult> textResults = textSearch(keywords,textIndex, nTextDocs);
+    set<QueryResult,cmp_QueryResult> mergedResults = mergeSearchResults(&imgResults, &textResults);
     sendQueryResponse(newsockfd, &imgResults/*&mergedResults*/, -1);
 }
 
