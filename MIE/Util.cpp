@@ -466,7 +466,15 @@ std::vector<std::string>& split(const std::string& s, char delim, std::vector<st
     return result;
 }*/
 
-void processHolidayDataset (int nImgs, std::map<int,std::string>& imgs) {
+void extractFileNames (const char* imgDataset, const char* textDataset, int first, int last, std::map<int,std::string>& imgs, std::map<int,std::string>& docs) {
+    extractFlickrTagsFileNames(last-first+1, docs);
+    if (strcmp(imgDataset,"flickr_imgs") == 0)
+        extractFlickrImgsFileNames(last-first+1, imgs);
+    else if (strcmp(imgDataset,"inriaHolidays") == 0)
+        extractHolidayFileNames(last-first+1, imgs);
+}
+
+void extractHolidayFileNames (int nImgs, std::map<int,std::string>& imgs) {
     std::string holidayDir = homePath;
     holidayDir += "Datasets/inriaHolidays/";
     DIR* dir;
@@ -490,7 +498,7 @@ void processHolidayDataset (int nImgs, std::map<int,std::string>& imgs) {
         pee ("Util::processHolidayDataset couldn't open dir");
 }
 
-void processFlickrImgsDataset (int nImgs, std::map<int,std::string>& imgs) {
+void extractFlickrImgsFileNames (int nImgs, std::map<int,std::string>& imgs) {
     std::string holidayDir = homePath;
     holidayDir += "Datasets/flickr_imgs/";
     DIR* dir;
@@ -514,7 +522,7 @@ void processFlickrImgsDataset (int nImgs, std::map<int,std::string>& imgs) {
         pee ("Util::processFlickrImgsDataset couldn't open dir");
 }
 
-void processFlickrTagsDataset (int nImgs, std::map<int,std::string>& docs) {
+void extractFlickrTagsFileNames (int nImgs, std::map<int,std::string>& docs) {
     std::string holidayDir = homePath;
     holidayDir += "Datasets/flickr_tags/";
     DIR* dir;
