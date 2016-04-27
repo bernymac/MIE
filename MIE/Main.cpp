@@ -29,9 +29,9 @@ void runMIEClient() {
     MIEClient mie;
     timespec start = getTime();
     
-    mie.addDocs("inriaHolidays","flickr_tags",1,1491,0);
+//    mie.addDocs("inriaHolidays","flickr_tags",1,1491,0);
 //    mie.addDocs("flickr_imgs", "flickr_tags",1,1000,0);
-    mie.index();
+//    mie.index();
     
 /*    string imgPath = homePath;
     imgPath += "Datasets/inriaHolidays/100701.jpg";
@@ -40,10 +40,10 @@ void runMIEClient() {
     vector<QueryResult> queryResults = mie.search(1, imgPath, textPath);
     printQueryResults(queryResults);
 */
-    double total_time = diffSec(start, getTime());
-    LOGI("%s total_time:%.6f\n",mie.printTime().c_str(),total_time);
+//    double total_time = diffSec(start, getTime());
+//    LOGI("%s total_time:%.6f\n",mie.printTime().c_str(),total_time);
 
-/*    map<int,vector<QueryResult> > queries;
+    map<int,vector<QueryResult> > queries;
     char* imgPath = new char[120];
     char* textPath = new char[120];
     for (int i = 100000; i <= 149900; i+=100) {
@@ -58,7 +58,7 @@ void runMIEClient() {
     string fName = homePath;
     fName += "Data/Client/MIE/mieHoliday.dat";
     printHolidayResults(fName, queries);
-*/
+
 }
 
 void runSSEClient() {
