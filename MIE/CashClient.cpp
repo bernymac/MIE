@@ -25,7 +25,7 @@ CashClient::CashClient() {
     trainTime = 0;
     //detector = xfeatures2d::SurfFeatureDetector::create();
     //extractor = xfeatures2d::SurfDescriptorExtractor::create();
-    detector = FeatureDetector::create( /*"Dense"*/ /*"PyramidDense"*/ "SURF" );
+    detector = FeatureDetector::create( /*"Dense"*/ "PyramidDense" /*"SURF"*/ );
     extractor = DescriptorExtractor::create( "SURF" );
     Ptr<DescriptorMatcher> matcher = DescriptorMatcher::create( "BruteForce" );
     bowExtractor = new BOWImgDescriptorExtractor( extractor, matcher );
@@ -33,7 +33,6 @@ CashClient::CashClient() {
     crypto = new CashCrypt;
     lock = new pthread_mutex_t;
     pthread_mutex_init(lock, NULL);
-//    imgDcount = new vector<int>(CLUSTERS,0);
     memset(imgDcount, 0, CLUSTERS);
     textDcount = new map<string,int>;
 }
