@@ -120,6 +120,7 @@ void CashServer::search(int newsockfd) {
     const int vwsSize = readIntFromArr(buffer, &pos);
     const int kwsSize = readIntFromArr(buffer, &pos);
     const int Ksize = readIntFromArr(buffer, &pos);
+    
     //if RO
     buffSize = (vwsSize + kwsSize) * (2*Ksize + sizeof(int));
     char* buff = (char*)malloc(buffSize);
@@ -129,12 +130,13 @@ void CashServer::search(int newsockfd) {
     set<QueryResult,cmp_QueryResult> imgQueryResults = calculateQueryResultsRO( vwsSize, Ksize, buff, &pos, encImgIndex);
     set<QueryResult,cmp_QueryResult> textQueryResults = calculateQueryResultsRO( kwsSize, Ksize, buff, &pos, encTextIndex);
     free(buff);
+    
     //if std
 //    set<QueryResult,cmp_QueryResult> imgQueryResults = calculateQueryResults(newsockfd, vwsSize, Ksize, encImgIndex);
 //    set<QueryResult,cmp_QueryResult> textQueryResults = calculateQueryResults(newsockfd, kwsSize, Ksize, encTextIndex);
     
     set<QueryResult,cmp_QueryResult> mergedResults = mergeSearchResults(&imgQueryResults, &textQueryResults);
-    sendQueryResponse(newsockfd, &mergedResults, -1);
+    sendQueryResponse(newsockfd, &imgQueryResults/*mergedResults*/, -1);
 }
 
 //search in std model
