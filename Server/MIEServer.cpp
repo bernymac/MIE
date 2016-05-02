@@ -452,7 +452,7 @@ set<QueryResult,cmp_QueryResult> MIEServer::imgSearch (Mat& features, BOWImgDesc
             map<int,int> postingList = imgIndex[i];
             double idf = getIdf(nImgs, postingList.size());
             for (map<int,int>::iterator it=postingList.begin(); it!=postingList.end(); ++it) {
-                double score = getTfIdf(queryTf, it->second, idf);
+                double score = scaledTfIdf/*getTfIdf*/(queryTf, it->second, idf);
                 if (queryResults.count(it->first) == 0)
                     queryResults[it->first] = score;
                 else
