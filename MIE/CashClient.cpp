@@ -25,8 +25,8 @@ CashClient::CashClient() {
     trainTime = 0;
     //detector = xfeatures2d::SurfFeatureDetector::create();
     //extractor = xfeatures2d::SurfDescriptorExtractor::create();
-    detector = FeatureDetector::create( /*"Dense"*/ "PyramidDense" /*"SURF"*/ );
-    extractor = DescriptorExtractor::create( "SURF" );
+    detector = FeatureDetector::create( /*"Dense"*/ /*"PyramidDense"*/ /*"SURF"*/ "SIFT");
+    extractor = DescriptorExtractor::create( "SIFT"/*"SURF"*/ );
     Ptr<DescriptorMatcher> matcher = DescriptorMatcher::create( "BruteForce" );
     bowExtractor = new BOWImgDescriptorExtractor( extractor, matcher );
     analyzer = new EnglishAnalyzer;

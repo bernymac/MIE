@@ -223,7 +223,7 @@ set<QueryResult,cmp_QueryResult> CashServer::calculateQueryResultsRO(int kwsSize
         if (c != 0) {
             const double idf = getIdf(nDocs, c);
             for (map<int,int>::iterator it=postingList.begin(); it != postingList.end(); ++it) {
-                const double score = getTfIdf(queryTf, it->second, idf);
+                const double score = scaledTfIdf/*getTfIdf*/(queryTf, it->second, idf);
                 map<int,double>::iterator docScoreIt = queryResults.find(it->first);
                 if (docScoreIt == queryResults.end())
                     queryResults[it->first] = score;
