@@ -477,7 +477,7 @@ bool MIEServerMT::readIndex() {
 }
 
 set<QueryResult,cmp_QueryResult> MIEServerMT::imgSearch (Mat* features) {
-    map<int,float> queryResults;
+    map<int,double> queryResults;
     Mat bowDesc;
     bowExtr->compute(*features,bowDesc);
     for (int i = 0; i < clusters; i++) {
@@ -486,9 +486,9 @@ set<QueryResult,cmp_QueryResult> MIEServerMT::imgSearch (Mat* features) {
             imgIndexLock.lock();
             map<int,int> postingList = imgIndex[i];
             imgIndexLock.unlock();
-            float idf = getIdf(nImgs, postingList.size());
+            double idf = getIdf(nImgs, postingList.size());
             for (map<int,int>::iterator it=postingList.begin(); it!=postingList.end(); ++it) {
-                float score = getTfIdf(queryTf, it->second, idf);
+                double score = getTfIdf(queryTf, it->second, idf);
                 if (queryResults.count(it->first) == 0)
                     queryResults[it->first] = score;
                 else
@@ -507,15 +507,15 @@ set<QueryResult,cmp_QueryResult> MIEServerMT::textSearch(vector<vector<unsigned 
         else
             query[(*keywords)[i]]++;
     }
-    map<int,float> queryResults;
+    map<int,double> queryResults;
     for (map<vector<unsigned char>,int>::iterator queryTerm = query.begin(); queryTerm != query.end(); ++queryTerm) {
         textIndexLock.lock();
         map<int,int> postingList = textIndex[queryTerm->first];
         textIndexLock.unlock();
-        float idf = getIdf(nDocs, postingList.size());
+        double idf = getIdf(nDocs, postingList.size());
         for (map<int,int>::iterator posting = postingList.begin(); posting != postingList.end(); ++posting) {
             //float score = bm25L(posting->second, queryTerm->second, idf, docLength, avgDocLength);
-            float score =  getTfIdf(queryTerm->second, posting->second, idf);
+            double score =  getTfIdf(queryTerm->second, posting->second, idf);
             if (queryResults.count(posting->first) == 0)
                 queryResults[posting->first] = score;
             else

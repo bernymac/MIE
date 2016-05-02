@@ -114,9 +114,11 @@ int readIntFromArr (char* arr, int* pos);
 
 float readFloatFromArr (char* arr, int* pos);
 
-float getTfIdf (float qtf, float tf, float idf);
+double scaledTfIdf (double qtf, double tf, double idf);
 
-float getIdf (float nDocs, float df);
+double getTfIdf (double qtf, double tf, double idf);
+
+double getIdf (double nDocs, double df);
 
 float bm25L(float rawTF, float queryTF, float idf, float docLength, float avgDocLength);
 

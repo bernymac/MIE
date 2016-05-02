@@ -142,7 +142,7 @@ void CashServerMT::search(int newsockfd) {
 
 set<QueryResult,cmp_QueryResult> CashServerMT::calculateQueryResults(int kwsSize, int Ksize, char* buff, int* pos,
                                                 map<vector<unsigned char>,vector<unsigned char> >* index, mutex* indexLock) {
-    map<int,float> queryResults;
+    map<int,double> queryResults;
     for (int i = 0; i < kwsSize; i++) {
         unsigned char k1[Ksize];
         readFromArr(k1, Ksize*sizeof(unsigned char), buff, pos);
@@ -179,10 +179,10 @@ set<QueryResult,cmp_QueryResult> CashServerMT::calculateQueryResults(int kwsSize
         }
         indexLock->unlock();
         if (c != 0) {
-            const float idf = getIdf(nDocs, c);
+            const double idf = getIdf(nDocs, c);
             for (map<int,int>::iterator it=postingList.begin(); it != postingList.end(); ++it) {
-                const float score = getTfIdf(queryTf, it->second, idf);
-                map<int,float>::iterator docScoreIt = queryResults.find(it->first);
+                const double score = getTfIdf(queryTf, it->second, idf);
+                map<int,double>::iterator docScoreIt = queryResults.find(it->first);
                 if (docScoreIt == queryResults.end())
                     queryResults[it->first] = score;
                 else

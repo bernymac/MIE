@@ -266,16 +266,18 @@ bool wangIsRelevant(int queryID, int resultID) {
     return false;
 }
 
-float getTfIdf (float tf, float idf) {
-    /*    if (tf != 0)
-     return (1+log10(tf))* idf;
-     else
-     return 0;
-     */
+double scaledTfIdf (double qtf, double tf, double idf) {
+    if (tf != 0)
+        return qtf * (1+log10(tf))* idf;
+    else
+        return 0;
+}
+
+double getTfIdf (double tf, double idf) {
     return tf*idf;
 }
 
-float getIdf (float nDocs, float df) {
+double getIdf (double nDocs, double df) {
     return log10(nDocs / df);
 }
 

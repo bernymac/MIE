@@ -120,9 +120,11 @@ float readFloatFromArr (char* arr, int* pos);
 
 bool wangIsRelevant(int queryID, int resultID);
 
-float getTfIdf (float tf, float idf);
+double scaledTfIdf (double qtf, double tf, double idf);
 
-float getIdf (float nDocs, float df);
+double getTfIdf (double tf, double idf);
+
+double getIdf (double nDocs, double df);
 
 std::set<QueryResult,cmp_QueryResult> sort (std::map<int,double>* queryResults);
 
