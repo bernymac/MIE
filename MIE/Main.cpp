@@ -182,7 +182,7 @@ void runPaillierCashClient() {
 int main(int argc, const char * argv[]) {
     setvbuf(stdout, NULL, _IONBF, 0);
     if (argc != 2) {
-        printf("Incorrect number of arguments. Please give a test name, e.g. \"mieHolidayAdd\", \"mieFlickrAdd\", \"mieIndex\", \"mieHolidayQueries\", \"mieHolidaySingleSearch\", \"sse\", \"Cash\" or \"PaillierCash\"\n");
+        printf("Incorrect number of arguments. Please give a test name, e.g. \"mieHolidayAdd\", \"mieFlickrAdd\", \"mieIndex\", \"mieHolidayQueries\", \"mieHolidaySingleSearch\", \"sse\", \"cashHolidayAdd\", \"cashFlickrAdd\", \"cashHolidayQueries\", \"cashHolidaySingleSearch\" or \"PaillierCash\"\n");
         return 0;
     } else if (strcasecmp(argv[1], "mieHolidayAdd") == 0)
         runMIEClientHolidayAdd();
@@ -207,7 +207,7 @@ int main(int argc, const char * argv[]) {
     else if (strcasecmp(argv[1], "PaillierCash") == 0)
         runPaillierCashClient();
     else {
-        printf("Server command not recognized! Available Servers: \"mie\", \"sse\", \"Cash\" and \"PaillierCash\"\n");
+        printf("Server command not recognized! Please give a test name, e.g. \"mieHolidayAdd\", \"mieFlickrAdd\", \"mieIndex\", \"mieHolidayQueries\", \"mieHolidaySingleSearch\", \"sse\", \"cashHolidayAdd\", \"cashFlickrAdd\", \"cashHolidayQueries\", \"cashHolidaySingleSearch\" or \"PaillierCash\"\n");
         return 0;
     }
 }
