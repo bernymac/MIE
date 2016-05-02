@@ -123,7 +123,7 @@ set<QueryResult,cmp_QueryResult> PaillierCashClient::calculateQueryResults(int s
     int pos = 0;
     const int nResults = readIntFromArr(resultsSizeBuff, &pos);
 
-    map<int,float> queryResults;
+    map<int,double> queryResults;
     int buffSize = nResults * (sizeof(int) + homEncSize);
     char* buff = new char[buffSize];
     if (buff == NULL) pee("malloc error in PaillierCashClient::receiveResults");

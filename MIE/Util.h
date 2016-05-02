@@ -124,7 +124,7 @@ float getTfIdf (float tf, float idf);
 
 float getIdf (float nDocs, float df);
 
-std::set<QueryResult,cmp_QueryResult> sort (std::map<int,float>* queryResults);
+std::set<QueryResult,cmp_QueryResult> sort (std::map<int,double>* queryResults);
 
 std::set<QueryResult,cmp_QueryResult> mergeSearchResults(std::set<QueryResult,cmp_QueryResult>* imgResults,
                                                          std::set<QueryResult,cmp_QueryResult>* textResults);

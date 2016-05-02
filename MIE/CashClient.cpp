@@ -378,7 +378,7 @@ void CashClient::encryptAndIndex(void* keyword, int keywordSize, int counter, in
 }
 
 
-vector<QueryResult> CashClient::search(string imgPath, string textPath, int id, bool randomOracle) {
+vector<QueryResult> CashClient::search(string imgPath, string textPath, bool randomOracle) {
     //process img object
     timespec start = getTime();                     //start feature extraction benchmark
     map<int,int> vws;

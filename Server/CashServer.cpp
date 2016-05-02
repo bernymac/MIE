@@ -142,7 +142,7 @@ void CashServer::search(int newsockfd) {
 //search in std model
 set<QueryResult,cmp_QueryResult> CashServer::calculateQueryResults(int newsockfd, int kwsSize, int Ksize, /*char* buff, int* pos,*/
                                                  map<vector<unsigned char>,vector<unsigned char> >* index) {
-    map<int,float> queryResults;
+    map<int,double> queryResults;
     for (int i = 0; i < kwsSize; i++) {
         map<int,int> postingList;
         char smallBuff[sizeof(int)];
@@ -157,7 +157,7 @@ set<QueryResult,cmp_QueryResult> CashServer::calculateQueryResults(int newsockfd
         unsigned char k2[Ksize];
         readFromArr(k2, Ksize*sizeof(unsigned char), buff, &pos);
         const int queryTf = readIntFromArr(buff, &pos);
-        const float idf = getIdf(nDocs, counter);
+        const double idf = getIdf(nDocs, counter);
         
         for (int j = 0; j < counter; j++) {
             vector<unsigned char> encCounter;
@@ -175,8 +175,8 @@ set<QueryResult,cmp_QueryResult> CashServer::calculateQueryResults(int newsockfd
             int tf = readIntFromArr((char*)rawPosting, &pos2);
             free(rawPosting);
             
-            const float score = getTfIdf(queryTf, tf, idf);
-            map<int,float>::iterator docScoreIt = queryResults.find(id);
+            const double score = getTfIdf(queryTf, tf, idf);
+            map<int,double>::iterator docScoreIt = queryResults.find(id);
             if (docScoreIt == queryResults.end())
                 queryResults[id] = score;
             else
@@ -190,7 +190,7 @@ set<QueryResult,cmp_QueryResult> CashServer::calculateQueryResults(int newsockfd
 //search with Random Oracles
 set<QueryResult,cmp_QueryResult> CashServer::calculateQueryResultsRO(int kwsSize, int Ksize, char* buff, int* pos,
                                                                    map<vector<unsigned char>,vector<unsigned char> >* index) {
-    map<int,float> queryResults;
+    map<int,double> queryResults;
     for (int i = 0; i < kwsSize; i++) {
         unsigned char k1[Ksize];
         readFromArr(k1, Ksize*sizeof(unsigned char), buff, pos);
@@ -214,21 +214,17 @@ set<QueryResult,cmp_QueryResult> CashServer::calculateQueryResultsRO(int kwsSize
             int x = 0;
             int id = readIntFromArr((char*)rawPosting, &x);
             int tf = readIntFromArr((char*)rawPosting, &x);
-            //            printf("docId: %i tf: %i\n",id,tf);
             postingList[id] = tf;
             c++;
-            //            free(ciphertext);
             free(rawPosting);
-            //            printf("vw 0 counter 0 EncCounter: %s\n",getHexRepresentation(encCounter.data(),Ksize).c_str());
-            //            printf("vw 0 counter 0 EncData: %s\n",getHexRepresentation(it->second.data(),16).c_str());
             encCounter = f(k1, Ksize, (unsigned char*)&c, sizeof(int));
             it = index->find(encCounter);
         }
         if (c != 0) {
-            const float idf = getIdf(nDocs, c);
+            const double idf = getIdf(nDocs, c);
             for (map<int,int>::iterator it=postingList.begin(); it != postingList.end(); ++it) {
-                const float score = getTfIdf(queryTf, it->second, idf);
-                map<int,float>::iterator docScoreIt = queryResults.find(it->first);
+                const double score = getTfIdf(queryTf, it->second, idf);
+                map<int,double>::iterator docScoreIt = queryResults.find(it->first);
                 if (docScoreIt == queryResults.end())
                     queryResults[it->first] = score;
                 else

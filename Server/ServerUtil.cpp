@@ -210,16 +210,19 @@ float readFloatFromArr (char* arr, int* pos) {
 
 #include <math.h>
 
-float getTfIdf (float qtf, float tf, float idf) {
-/*    if (tf != 0)
+double scaledTfIdf (double qtf, double tf, double idf) {
+    if (tf != 0)
         return qtf * (1+log10(tf))* idf;
     else
         return 0;
- */
+}
+
+double getTfIdf (double qtf, double tf, double idf) {
+
     return qtf * tf * idf;
 }
 
-float getIdf (float nDocs, float df) {
+double getIdf (double nDocs, double df) {
     return log10(nDocs / df);
 }
 
@@ -241,9 +244,9 @@ int denormalize(float val, int size) {
     return round(val * size);
 }
 
-std::set<QueryResult,cmp_QueryResult> sort (std::map<int,float>* queryResults) {
+std::set<QueryResult,cmp_QueryResult> sort (std::map<int,double>* queryResults) {
     std::set<QueryResult,cmp_QueryResult> orderedResults;
-    for (std::map<int,float>::iterator it=queryResults->begin(); it!=queryResults->end(); ++it) {
+    for (std::map<int,double>::iterator it=queryResults->begin(); it!=queryResults->end(); ++it) {
         struct QueryResult qr;
         qr.docId = it->first;
         qr.score = it->second;
@@ -279,9 +282,9 @@ std::set<QueryResult,cmp_QueryResult> mergeSearchResults(std::set<QueryResult,cm
                 rank->second.imgRank = i++;
         }
     }
-    std::map<int,float> queryResults;
+    std::map<int,double> queryResults;
     for (std::map<int,Rank>::iterator it=ranks.begin(); it!=ranks.end(); ++it) {
-        float score = 0.f, df = 0.f;
+        double score = 0.f, df = 0.f;
         if (it->second.textRank > 0) {
             score =  1 / pow(it->second.textRank,2);
             df++;

@@ -131,7 +131,7 @@ void runCashClientHolidaySingleSearch() {
     string textPath = homePath;
     textPath += "Datasets/flickr_tags/tags1.txt";
     timespec start = getTime();
-    vector<QueryResult> queryResults = cash.search(imgPath,textPath,1, true);
+    vector<QueryResult> queryResults = cash.search(imgPath,textPath, true);
     double total_time = diffSec(start, getTime());
     LOGI("%s total_time:%.6f\n",cash.printTime().c_str(),total_time);
     printQueryResults(queryResults);
@@ -149,7 +149,7 @@ void runCashClientHolidayQueries() {
         bzero(textPath, 120);
         sprintf(imgPath, "%sDatasets/inriaHolidays/%d.jpg", homePath, i);
         sprintf(textPath, "%sDatasets/flickr_tags/tags%d.txt", homePath, i/100000);
-        queries[i] = cash.search(imgPath,textPath,1, true);
+        queries[i] = cash.search(imgPath,textPath, true);
     }
     delete[] imgPath;
     delete[] textPath;
@@ -172,7 +172,7 @@ void runPaillierCashClient() {
     //    for (int i = 0; i < 100; i++)
     //        cash.addDocs("flickr_imgs", "flickr_tags", first+i*10, 10+i*10, last);
 //    cash.cleanTime();
-    vector<QueryResult> queryResults = cash.search("flickr_imgs","flickr_tags",1, false);
+    vector<QueryResult> queryResults = cash.search("flickr_imgs","flickr_tags", false);
     
     double total_time = diffSec(start, getTime());
     LOGI("%s total_time:%.6f\n",cash.printTime().c_str(),total_time);

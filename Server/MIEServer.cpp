@@ -443,16 +443,16 @@ bool MIEServer::readIndex(vector<map<int,int> >& imgIndex,
 
 set<QueryResult,cmp_QueryResult> MIEServer::imgSearch (Mat& features, BOWImgDescriptorExtractor& bowExtr,
                                                  vector<map<int,int> >& imgIndex, int& nImgs) {
-    map<int,float> queryResults;
+    map<int,double> queryResults;
     Mat bowDesc;
     bowExtr.compute(features,bowDesc);
     for (int i = 0; i < clusters; i++) {
         int queryTf = denormalize(bowDesc.at<float>(i),features.rows);
         if (queryTf > 0) {
             map<int,int> postingList = imgIndex[i];
-            float idf = getIdf(nImgs, postingList.size());
+            double idf = getIdf(nImgs, postingList.size());
             for (map<int,int>::iterator it=postingList.begin(); it!=postingList.end(); ++it) {
-                float score = getTfIdf(queryTf, it->second, idf);
+                double score = getTfIdf(queryTf, it->second, idf);
                 if (queryResults.count(it->first) == 0)
                     queryResults[it->first] = score;
                 else
@@ -472,13 +472,13 @@ set<QueryResult,cmp_QueryResult> MIEServer::textSearch(vector<vector<unsigned ch
         else
             query[keywords[i]]++;
     }
-    map<int,float> queryResults;
+    map<int,double> queryResults;
     for (map<vector<unsigned char>,int>::iterator queryTerm = query.begin(); queryTerm != query.end(); ++queryTerm) {
         map<int,int> postingList = textIndex[queryTerm->first];
-        float idf = getIdf(nTextDocs, postingList.size());
+        double idf = getIdf(nTextDocs, postingList.size());
         for (map<int,int>::iterator posting = postingList.begin(); posting != postingList.end(); ++posting) {
             //float score = bm25L(posting->second, queryTerm->second, idf, docLength, avgDocLength);
-            float score =  getTfIdf(queryTerm->second, posting->second, idf);
+            double score =  getTfIdf(queryTerm->second, posting->second, idf);
             if (queryResults.count(posting->first) == 0)
                 queryResults[posting->first] = score;
             else

@@ -279,9 +279,9 @@ float getIdf (float nDocs, float df) {
     return log10(nDocs / df);
 }
 
-std::set<QueryResult,cmp_QueryResult> sort (std::map<int,float>* queryResults) {
+std::set<QueryResult,cmp_QueryResult> sort (std::map<int,double>* queryResults) {
     std::set<QueryResult,cmp_QueryResult> orderedResults;
-    for (std::map<int,float>::iterator it=queryResults->begin(); it!=queryResults->end(); ++it) {
+    for (std::map<int,double>::iterator it=queryResults->begin(); it!=queryResults->end(); ++it) {
         struct QueryResult qr;
         qr.docId = it->first;
         qr.score = it->second;
@@ -317,9 +317,9 @@ std::set<QueryResult,cmp_QueryResult> mergeSearchResults(std::set<QueryResult,cm
                 rank->second.imgRank = i++;
         }
     }
-    std::map<int,float> queryResults;
+    std::map<int,double> queryResults;
     for (std::map<int,Rank>::iterator it=ranks.begin(); it!=ranks.end(); ++it) {
-        float score = 0.f, df = 0.f;
+        double score = 0.f, df = 0.f;
         if (it->second.textRank > 0) {
             score =  1 / pow(it->second.textRank,2);
             df++;

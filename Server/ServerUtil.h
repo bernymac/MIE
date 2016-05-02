@@ -122,7 +122,7 @@ float bm25L(float rawTF, float queryTF, float idf, float docLength, float avgDoc
 
 int denormalize(float val, int size);
 
-std::set<QueryResult,cmp_QueryResult> sort (std::map<int,float>* queryResults);
+std::set<QueryResult,cmp_QueryResult> sort (std::map<int,double>* queryResults);
 
 std::set<QueryResult,cmp_QueryResult> mergeSearchResults(std::set<QueryResult,cmp_QueryResult>* imgResults,
                                                          std::set<QueryResult,cmp_QueryResult>* textResults);
