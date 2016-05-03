@@ -191,6 +191,11 @@ void addFloatToArr (float val, char* arr, int* pos) {
     addToArr (&x, sizeof(uint64_t), arr, pos);
 }
 
+void addDoubleToArr (double val, char* arr, int* pos) {
+    uint64_t x = pack754_64(val);
+    addToArr (&x, sizeof(uint64_t), arr, pos);
+}
+
 void readFromArr (void* val, int size, char* arr, int* pos) {
     memcpy(val, &arr[*pos], size);
     *pos += size;
@@ -205,7 +210,13 @@ int readIntFromArr (char* arr, int* pos) {
 float readFloatFromArr (char* arr, int* pos) {
     uint64_t x;
     readFromArr(&x, sizeof(uint64_t), arr, pos);
-    return (float)unpack754_32(x);
+    return unpack754_32(x);
+}
+
+double readDoubleFromArr (char* arr, int* pos) {
+    uint64_t x;
+    readFromArr(&x, sizeof(uint64_t), arr, pos);
+    return unpack754_64(x);
 }
 
 #include <math.h>
@@ -310,9 +321,9 @@ void sendQueryResponse(int newsockfd, std::set<QueryResult,cmp_QueryResult>* mer
     int i = 1;
     for (std::set<QueryResult,cmp_QueryResult>::iterator it = mergedResults->begin(); it != mergedResults->end(); ++it) {
         int docId = it->docId;
-        float score = it->score;
+        double score = it->score;
         addIntToArr(docId, buff, &pos);
-        addFloatToArr(score, buff, &pos);
+        addDoubleToArr(score, buff, &pos);
         if (i == resultsSize)
             break;
         else

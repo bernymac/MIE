@@ -14,7 +14,7 @@ MIEClient::MIEClient() {
     cryptoTime = 0;
     cloudTime = 0;
     initModule_nonfree();
-    detector = FeatureDetector::create( /*"Dense"*/ "PyramidDense" /*"SURF"*/ );//xfeatures2d::SurfFeatureDetector::create();
+    detector = FeatureDetector::create( "SURF" /*"Dense"*/ /*"PyramidDense"*/ );//xfeatures2d::SurfFeatureDetector::create();
     extractor = DescriptorExtractor::create( "SURF" );//xfeatures2d::SurfDescriptorExtractor::create(); 
     analyzer = new EnglishAnalyzer;
     sbe = new SBE(extractor->descriptorSize());

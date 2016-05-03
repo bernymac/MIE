@@ -197,8 +197,6 @@ set<QueryResult,cmp_QueryResult> CashServer::calculateQueryResultsRO(int kwsSize
         unsigned char k2[Ksize];
         readFromArr(k2, Ksize*sizeof(unsigned char), buff, pos);
         const int queryTf = readIntFromArr(buff, pos);
-        //        printf("vw 0 k1: %s\n",getHexRepresentation(k1,Ksize).c_str());
-        //        printf("vw 0 k2: %s\n",getHexRepresentation(k2,Ksize).c_str());
         
         map<int,int> postingList;
         int c = 0;
@@ -206,9 +204,6 @@ set<QueryResult,cmp_QueryResult> CashServer::calculateQueryResultsRO(int kwsSize
         map<vector<unsigned char>,vector<unsigned char> >::iterator it = index->find(encCounter);
         while (it != index->end()) {
             int ciphertextSize = (int)it->second.size();
-            //            unsigned char* ciphertext = (unsigned char*)malloc(ciphertextSize);
-            //            for(int j = 0; j < ciphertextSize; j++)
-            //                ciphertext[j] = it->second[j];
             unsigned char* rawPosting = (unsigned char*)malloc(ciphertextSize);
             dec(k2, it->second.data(), ciphertextSize, rawPosting);
             int x = 0;

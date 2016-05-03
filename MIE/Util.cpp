@@ -231,6 +231,12 @@ float readFloatFromArr (char* arr, int* pos) {
     return (float)unpack754_32(x);
 }
 
+double readDoubleFromArr (char* arr, int* pos) {
+    uint64_t x;
+    readFromArr(&x, sizeof(uint64_t), arr, pos);
+    return unpack754_64(x);
+}
+
 bool wangIsRelevant(int queryID, int resultID) {
     if (queryID >= 0 && queryID < 100) {
         if (resultID >= 0 && resultID < 100)
@@ -357,7 +363,7 @@ std::vector<QueryResult> receiveQueryResults(int sockfd) {
     for (int i = 0; i < resultsSize; i++) {
         struct QueryResult qr;
         qr.docId = readIntFromArr(buff2, &pos);
-        qr.score = readFloatFromArr(buff2, &pos);
+        qr.score = readDoubleFromArr(buff2, &pos);
         queryResults[i] = qr;
     }
     free(buff2);

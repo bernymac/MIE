@@ -51,7 +51,7 @@ static const char* serverIP = "127.0.0.1";//"54.194.253.119";
 
 struct QueryResult {
     int docId;
-    float score;
+    double score;
 };
 
 struct cmp_QueryResult {
@@ -117,6 +117,8 @@ void readFromArr (void* val, int size, char* arr, int* pos);
 int readIntFromArr (char* arr, int* pos);
 
 float readFloatFromArr (char* arr, int* pos);
+
+double readDoubleFromArr (char* arr, int* pos);
 
 bool wangIsRelevant(int queryID, int resultID);
 

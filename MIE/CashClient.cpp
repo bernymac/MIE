@@ -25,8 +25,8 @@ CashClient::CashClient() {
     trainTime = 0;
     //detector = xfeatures2d::SurfFeatureDetector::create();
     //extractor = xfeatures2d::SurfDescriptorExtractor::create();
-    detector = FeatureDetector::create( /*"Dense"*/ /*"PyramidDense"*/ /*"SURF"*/ "SIFT");
-    extractor = DescriptorExtractor::create( "SIFT"/*"SURF"*/ );
+    detector = FeatureDetector::create( /*"Dense"*/ /*"PyramidDense"*/ /*"SIFT"*/ "SURF");
+    extractor = DescriptorExtractor::create( "SURF"/*"SIFT"*/ );
     Ptr<DescriptorMatcher> matcher = DescriptorMatcher::create( "BruteForce" );
     bowExtractor = new BOWImgDescriptorExtractor( extractor, matcher );
     analyzer = new EnglishAnalyzer;
@@ -67,13 +67,8 @@ void CashClient::train(const char* dataset, int first, int last) {
         terminate_criterion.epsilon = FLT_EPSILON;
         BOWKMeansTrainer bowTrainer ( CLUSTERS, terminate_criterion, 3, KMEANS_PP_CENTERS );
         RNG& rng = theRNG();
-//        char* fname = (char*)malloc(120);
-//        if (fname == NULL) pee("malloc error in CashClient::train()");
-//        for (unsigned i = first; i < last; i++) {
         for (map<int,string>::iterator it = imgs.begin(); it != imgs.end(); ++it) {
             if (rng.uniform(0.f,1.f) <= 0.1f) {
-//                bzero(fname, 120);
-//                sprintf(fname, "%sDatasets/%s/im%d.jpg", homePath, dataset, i);
                 Mat image = imread(it->second);//fname);
                 vector<KeyPoint> keypoints;
                 Mat descriptors;
@@ -82,7 +77,6 @@ void CashClient::train(const char* dataset, int first, int last) {
                 bowTrainer.add(descriptors);
             }
         }
-//        free(fname);
         LOGI("build codebook with %d descriptors!\n",bowTrainer.descripotorsCount());
         Mat codebook = bowTrainer.cluster();
         bowExtractor->setVocabulary(codebook);
@@ -210,14 +204,9 @@ void CashClient::addDocs(const char* imgDataset, const char* textDataset, int fi
     map<int,string>::iterator imgs_it=imgs.begin();
     map<int,string>::iterator tags_it=tags.begin();
     while (imgs_it != imgs.end() && tags_it != tags.end()) {
-//    char* fname = (char*)malloc(120);
-//    if (fname == NULL) pee("malloc error in CashClient::addDocs fname");
-//    for (unsigned id=first; id<=last; id++) {
         //extract img features
         start = getTime();                          //start feature extraction benchmark
-//        bzero(fname, 120);
-//        sprintf(fname, "%sDatasets/%s/im%d.jpg", homePath, imgDataset, id);
-        Mat image = imread(imgs_it->second);//fname);
+        Mat image = imread(imgs_it->second);
         vector<KeyPoint> keypoints;
         Mat bowDesc;
         detector->detect( image, keypoints );
@@ -228,9 +217,7 @@ void CashClient::addDocs(const char* imgDataset, const char* textDataset, int fi
         
         //extract text features
         start = getTime();                          //start feature extraction benchmark
-//        bzero(fname, 120);
-//        sprintf(fname, "%sDatasets/%s/tags%d.txt", homePath, textDataset, id);
-        vector<string> keywords = analyzer->extractFile(tags_it->second.c_str());//fname);
+        vector<string> keywords = analyzer->extractFile(tags_it->second.c_str());
         featureTime += diffSec(start, getTime());   //end benchmark
         start = getTime();                          //start index benchmark
         map<string,int> textTfs;
@@ -368,13 +355,6 @@ void CashClient::encryptAndIndex(void* keyword, int keywordSize, int counter, in
         pee("Found an unexpected collision in CashClient::encryptAndIndex");
     (*index)[encCounter] = encData;
     pthread_mutex_unlock (lock);
-
-//    if (keywordSize > 4) {
-//        LOGI("vw 0 k1: %s\n",getHexRepresentation(k1,CashCrypt::Ksize).c_str());
-//        LOGI("vw 0 k2: %s\n",getHexRepresentation(k2,CashCrypt::Ksize).c_str());
-//        LOGI("vw 0 counter 0 EncCounter: %s\n",getHexRepresentation(encCounter.data(),CashCrypt::Ksize).c_str());
-//        LOGI("vw 0 counter 0 EncData: %s\n",getHexRepresentation(encData.data(),16).c_str());
-//    }
 }
 
 
@@ -382,8 +362,6 @@ vector<QueryResult> CashClient::search(string imgPath, string textPath, bool ran
     //process img object
     timespec start = getTime();                     //start feature extraction benchmark
     map<int,int> vws;
-//    char* fname = (char*)malloc(120);
-//    sprintf(fname, "%sDatasets/%s/im%d.jpg", homePath, imgDataset, id);
     Mat image = imread(imgPath);
     vector<KeyPoint> keypoints;
     Mat bowDesc;
@@ -401,8 +379,6 @@ vector<QueryResult> CashClient::search(string imgPath, string textPath, bool ran
     //process text object
     start = getTime();                              //start feature extraction benchmark
     map<string,int> kws;
-//    bzero(fname, 120);
-//    sprintf(fname, "%sDatasets/%s/tags%d.txt", homePath, textDataset, id);
     vector<string> keywords = analyzer->extractFile(textPath.c_str());
     featureTime += diffSec(start, getTime());       //end benchmark
     start = getTime();                              //start index time benchmark
@@ -414,7 +390,6 @@ vector<QueryResult> CashClient::search(string imgPath, string textPath, bool ran
             queryTf->second++;
     }
     indexTime += diffSec(start, getTime());         //end benchmark
-//    free(fname);
     if (randomOracle)
         return queryRO(&vws, &kws);
     else
@@ -445,10 +420,6 @@ vector<QueryResult> CashClient::queryRO(map<int,int>* vws, map<string,int>* kws)
         crypto->deriveKey(&append, sizeof(int), &vw, sizeof(int), k2);
         addToArr(k2, CashCrypt::Ksize * sizeof(unsigned char), buff, &pos);
         addIntToArr (it->second, buff, &pos);
-//        if (vw == 0) {
-//            LOGI("vw 0 k1: %s\n",getHexRepresentation(k1,CashCrypt::Ksize).c_str());
-//            LOGI("vw 0 k2: %s\n",getHexRepresentation(k2,CashCrypt::Ksize).c_str());
-//        }
     }
     for (map<string,int>::iterator it=kws->begin(); it!=kws->end(); ++it) {
         string kw = it->first;

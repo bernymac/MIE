@@ -35,25 +35,10 @@
 static const std::string homePath = "/localssd/a28300/";
 static const int clusters = 1000;
 
-/*
-struct cmp_hash {
-    bool operator()(std::vector<unsigned char> a, std::vector<unsigned char> b) {
-        if (a.size() != b.size())
-            return false;
-        for (int i = 0; i < a.size(); i++)
-            if (a[i] != b[i])
-                return false;
-        return true;
-    }
-};
-struct cmp_QueryResult {
- bool operator() (const QueryResult& lhs, const QueryResult& rhs) const {return lhs.score>rhs.score;}
- };
-*/
 
 struct QueryResult {
     int docId;
-    float score;
+    double score;
 };
 
 
@@ -107,6 +92,8 @@ void addToArr (void* val, int size, char* arr, int* pos);
 void addIntToArr (int val, char* arr, int* pos);
 
 void addFloatToArr (float val, char* arr, int* pos);
+
+void addDoubleToArr (double val, char* arr, int* pos);
 
 void readFromArr (void* val, int size, char* arr, int* pos);
 
