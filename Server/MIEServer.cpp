@@ -216,7 +216,6 @@ bool MIEServer::readOrPersistFeatures(map<int,Mat>& imgFeatures,
             aux2.resize(nKeywords);
             size_t buffSize = nKeywords*keywordSize*sizeof(unsigned char);
             char* buff2 = new char[buffSize];
-//            bzero(buff2,buffSize);
             fread(buff2, 1, buffSize, f);
             pos = 0;
             for (int j = 0; j < nKeywords; j++) {
@@ -395,7 +394,6 @@ bool MIEServer::readIndex(vector<map<int,int> >& imgIndex,
             imgIndex[i] = aux;
             size_t buffSize = postingListSize * 2 * sizeof(int) + sizeof(int);
             char* buff2 = new char[buffSize];
-            bzero(buff2, buffSize);
             fread (buff2, 1, buffSize, f1);
             pos = 0;
             for (int j = 0; j < postingListSize; j++) {
@@ -419,7 +417,6 @@ bool MIEServer::readIndex(vector<map<int,int> >& imgIndex,
         for (int i = 0; i < indexSize; i++) {
             size_t buffSize = keywordSize * sizeof(unsigned char) + postingListSize*2*sizeof(int) + sizeof(int);
             char* buff2 = new char[buffSize];
-            bzero(buff2, buffSize);
             fread (buff2, 1, buffSize, f2);
             pos = 0;
             vector<unsigned char> key;

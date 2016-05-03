@@ -303,7 +303,7 @@ void sendQueryResponse(int newsockfd, std::set<QueryResult,cmp_QueryResult>* mer
     if (mergedResults->size() < resultsSize || resultsSize < 0)
         resultsSize = (int)mergedResults->size();
     long size = sizeof(int) + resultsSize * (sizeof(int) + sizeof(uint64_t));
-    char* buff = (char*)malloc(size);
+    char* buff = new char[size];
     bzero(buff,size);
     int pos = 0;
     addIntToArr (resultsSize, buff, &pos);
@@ -320,12 +320,12 @@ void sendQueryResponse(int newsockfd, std::set<QueryResult,cmp_QueryResult>* mer
     }
     socketSend (newsockfd, buff, size);
     printf("Search Network Traffic part 2: %ld\n",size);
-    free(buff);
+    delete[] buff;
 }
 
 void zipAndSend(int sockfd, char* buff, long size) {
     unsigned long zipSize = compressBound(size);
-    char* zip = (char*)malloc(zipSize + 2*sizeof(uint64_t));
+    char* zip = new char[zipSize + 2*sizeof(uint64_t)];
     int result = compress((unsigned char*)zip + 2*sizeof(uint64_t), &zipSize, (unsigned char*)buff, size);
     if (result != Z_OK)
         switch(result) {
@@ -343,15 +343,14 @@ void zipAndSend(int sockfd, char* buff, long size) {
     memcpy(zip + sizeof(uint64_t), &serializedDataSize, sizeof(uint64_t));
     
     socketSend (sockfd, zip, zipSize + 2*sizeof(uint64_t)) ;
-    free(zip);
+    delete[] zip;
 }
 
 void receiveAndUnzip(int newsockfd, char* data, unsigned long* dataSize, unsigned long zipSize) {
-    char* zip = (char*)malloc(zipSize);
-    if (zip == NULL) pee("malloc error in receiveAndUnzip");
+    char* zip = new char[zipSize];
     socketReceive(newsockfd, zip, zipSize);
     int result = uncompress((unsigned char*)data, dataSize, (unsigned char*)zip, zipSize);
-    free(zip);
+    delete[] zip;
     if (result != Z_OK)
         switch(result) {
             case Z_MEM_ERROR:
