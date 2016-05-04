@@ -123,19 +123,18 @@ void CashServer::search(int newsockfd) {
     
     //if RO
     buffSize = (vwsSize + kwsSize) * (2*Ksize + sizeof(int));
-    char* buff = (char*)malloc(buffSize);
-    if (buff == NULL) pee("malloc error in CashServer::search receive vws and kws");
+    char* buff = new char[buffSize];
     receiveAll(newsockfd, buff, buffSize);
     pos = 0;
     set<QueryResult,cmp_QueryResult> imgQueryResults = calculateQueryResultsRO( vwsSize, Ksize, buff, &pos, encImgIndex);
-    set<QueryResult,cmp_QueryResult> textQueryResults = calculateQueryResultsRO( kwsSize, Ksize, buff, &pos, encTextIndex);
-    free(buff);
+//    set<QueryResult,cmp_QueryResult> textQueryResults = calculateQueryResultsRO( kwsSize, Ksize, buff, &pos, encTextIndex);
+    delete[] buff;
     
     //if std
 //    set<QueryResult,cmp_QueryResult> imgQueryResults = calculateQueryResults(newsockfd, vwsSize, Ksize, encImgIndex);
 //    set<QueryResult,cmp_QueryResult> textQueryResults = calculateQueryResults(newsockfd, kwsSize, Ksize, encTextIndex);
     
-    set<QueryResult,cmp_QueryResult> mergedResults = mergeSearchResults(&imgQueryResults, &textQueryResults);
+//    set<QueryResult,cmp_QueryResult> mergedResults = mergeSearchResults(&imgQueryResults, &textQueryResults);
     sendQueryResponse(newsockfd, &imgQueryResults/*mergedResults*/, -1);
 }
 
@@ -204,14 +203,14 @@ set<QueryResult,cmp_QueryResult> CashServer::calculateQueryResultsRO(int kwsSize
         map<vector<unsigned char>,vector<unsigned char> >::iterator it = index->find(encCounter);
         while (it != index->end()) {
             int ciphertextSize = (int)it->second.size();
-            unsigned char* rawPosting = (unsigned char*)malloc(ciphertextSize);
+            unsigned char* rawPosting = new unsigned char[ciphertextSize];
             dec(k2, it->second.data(), ciphertextSize, rawPosting);
             int x = 0;
             int id = readIntFromArr((char*)rawPosting, &x);
             int tf = readIntFromArr((char*)rawPosting, &x);
             postingList[id] = tf;
             c++;
-            free(rawPosting);
+            delete[] rawPosting;
             encCounter = f(k1, Ksize, (unsigned char*)&c, sizeof(int));
             it = index->find(encCounter);
         }

@@ -27,7 +27,7 @@ CashClient::CashClient() {
     //extractor = xfeatures2d::SurfDescriptorExtractor::create();
     detector = FeatureDetector::create( /*"Dense"*/ /*"PyramidDense"*/ /*"SIFT"*/ "SURF");
     extractor = DescriptorExtractor::create( "SURF"/*"SIFT"*/ );
-    Ptr<DescriptorMatcher> matcher = DescriptorMatcher::create( "BruteForce" );
+    Ptr<DescriptorMatcher> matcher = DescriptorMatcher::create( "FlannBased" /*"BruteForce"*/ );
     bowExtractor = new BOWImgDescriptorExtractor( extractor, matcher );
     analyzer = new EnglishAnalyzer;
     crypto = new CashCrypt;
@@ -212,7 +212,8 @@ void CashClient::addDocs(const char* imgDataset, const char* textDataset, int fi
         detector->detect( image, keypoints );
         featureTime += diffSec(start, getTime());   //end benchmark
         start = getTime();                          //start index benchmark
-        bowExtractor->compute( image, keypoints, bowDesc );
+//        vector<vector<int> >* clusterIndexes;
+        bowExtractor->compute( image, keypoints, bowDesc);//, clusterIndexes );
         indexTime += diffSec(start, getTime());     //end benchmark
         
         //extract text features
@@ -327,6 +328,7 @@ void* CashClient::encryptAndIndexImgsThread(void* threadData) {
     struct encThreadData* data = (struct encThreadData*) threadData;
     for (int j=data->first; j<data->last; j++) {
         int val = denormalize(data->bowDesc->at<float>(j),data->nDescriptors);
+//        int val = data->bowDesc->at<int>(j);
         if (val > 0) {
             int c = data->obj->imgDcount[j];
             data->obj->encryptAndIndex(&j, sizeof(int), c, data->docId, val, data->index);

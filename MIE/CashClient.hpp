@@ -24,7 +24,7 @@
 using namespace std;
 using namespace cv;
 
-#define CLUSTERS 1000
+#define CLUSTERS 10000
 
 class CashClient {
     

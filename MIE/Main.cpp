@@ -82,7 +82,7 @@ void runMIEClientHolidayQueries() {
     string fName = homePath;
     fName += "Data/Client/MIE/mieHoliday.dat";
     printHolidayResults(fName, queries);
-
+    LOGI("Search results writen to disk!\n");
 }
 
 //deprecated
@@ -156,6 +156,7 @@ void runCashClientHolidayQueries() {
     string fName = homePath;
     fName += "Data/Client/Cash/cashHoliday.dat";
     printHolidayResults(fName, queries);
+    LOGI("Search results writen to disk!\n");
 }
 
 void runPaillierCashClient() {
