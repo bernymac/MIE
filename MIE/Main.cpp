@@ -179,7 +179,7 @@ void runPaillierCashClient() {
     LOGI("%s total_time:%.6f\n",cash.printTime().c_str(),total_time);
     printQueryResults(queryResults);
 }
- 
+
 int main(int argc, const char * argv[]) {
     setvbuf(stdout, NULL, _IONBF, 0);
     if (argc != 2) {
@@ -212,3 +212,28 @@ int main(int argc, const char * argv[]) {
         return 0;
     }
 }
+
+/*
+int main(int argc, const char * argv[]) {
+    Mat image = imread("/Users/bernardo/Datasets/inriaHolidays/100000.jpg");
+    SurfFeatureDetector detector;
+    vector<KeyPoint> keypoints;
+    detector.detect(image,keypoints);
+    SurfDescriptorExtractor extractor;
+    Mat descriptors;
+    extractor.compute(image, keypoints, descriptors);
+    SBE(descriptors.cols);
+    //lm distance
+    int m = 1;
+    for (int w = 0; w < descriptors.cols-1; w++) {
+        float total = 0.0;
+        for (int i = 0; i < descriptors.rows; i++) {
+            const float x = descriptors.at<float>(w,i);
+            const float y = descriptors.at<float>(w+1,i);
+            total += pow(fabs(x -y), m);
+        }
+        total = pow(total,1.0/m);
+        LOGI("%f\n",total);
+    }
+    
+}*/
