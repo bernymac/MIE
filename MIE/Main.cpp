@@ -213,8 +213,8 @@ int main(int argc, const char * argv[]) {
     }
 }
 
-/*
-int main(int argc, const char * argv[]) {
+
+/*int main(int argc, const char * argv[]) {
     Mat image = imread("/Users/bernardo/Datasets/inriaHolidays/100000.jpg");
     SurfFeatureDetector detector;
     vector<KeyPoint> keypoints;
@@ -222,18 +222,21 @@ int main(int argc, const char * argv[]) {
     SurfDescriptorExtractor extractor;
     Mat descriptors;
     extractor.compute(image, keypoints, descriptors);
-    SBE(descriptors.cols);
+//    SBE(descriptors.cols);
     //lm distance
-    int m = 1;
-    for (int w = 0; w < descriptors.cols-1; w++) {
+    int m = 2;
+    int count = 0;
+    for (int w = 0; w < descriptors.rows-1; w++) {
         float total = 0.0;
-        for (int i = 0; i < descriptors.rows; i++) {
+        for (int i = 0; i < descriptors.cols; i++) {
             const float x = descriptors.at<float>(w,i);
             const float y = descriptors.at<float>(w+1,i);
             total += pow(fabs(x -y), m);
         }
         total = pow(total,1.0/m);
-        LOGI("%f\n",total);
+        if (total < 0.5)
+            count++;
     }
+    printf("total descriptors:%d count:%d\n",descriptors.rows,count);
     
 }*/

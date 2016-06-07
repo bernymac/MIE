@@ -153,4 +153,6 @@ void extractFlickrTagsFileNames (int nImgs, std::map<int,std::string>& docs);
 
 void printHolidayResults (std::string fPath, std::map<int,std::vector<QueryResult> > results);
 
+float lmDistance (std::vector<float> array1, std::vector<float> array2, float m);
+
 #endif /* defined(__MIE__Util__) */

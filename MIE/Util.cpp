@@ -566,3 +566,12 @@ void printHolidayResults (std::string fPath, std::map<int,std::vector<QueryResul
     ofs.close();
 }
 
+float lmDistance (std::vector<float> array1, std::vector<float> array2, float m) {
+    if (array1.size() == array2.size())
+        pee("Util::lmDistance ERROR: Mimatch in input sizes.");
+    double total = 0.0;
+    for (int i = 0; i < array1.size(); i++) {
+        total += pow(fabs(array1[i]-array2[i]), m);
+    }
+    return pow(total,1.0/m);
+}

@@ -19,7 +19,7 @@ SBE::SBE (int dimensions) {
     string keyFilename = homePath;
     FILE* f = fopen((keyFilename+"Data/Client/MIE/sbeKey").c_str(), "rb");
     size_t buffSize = m * k * sizeof(float) + m * sizeof(float);
-    char* buff = (char*)malloc(buffSize);
+    char* buff = new char[buffSize];
     if (buff == NULL) pee("malloc error in SBE::SBE (int dimensions)");
     if (f != NULL)
         fread (buff, 1, buffSize, f);
@@ -51,7 +51,7 @@ SBE::SBE (int dimensions) {
         f = fopen((keyFilename+"Data/Client/MIE/sbeKey").c_str(), "wb");
         fwrite(buff, 1, buffSize, f);
     }
-    free(buff);
+    delete[] buff;
     fclose(f);
 //} else {
 //        random_device rd;
