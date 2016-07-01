@@ -121,7 +121,7 @@ void MIEServerMT::receiveDoc(int newsockfd, int* id, Mat* mat, vector<vector<uns
     int featureSize = readIntFromArr(data, &pos);
     int nKeywords = readIntFromArr(data, &pos);
     int keywordSize = readIntFromArr(data, &pos);
-    
+
 //    int dataSize = nFeatures*featureSize*sizeof(int) + nKeywords*keywordSize*sizeof(unsigned char);
 //    char* data2 = (char*)malloc(dataSize);
 //    socketReceive(newsockfd, data2, dataSize);            //without zip
@@ -150,17 +150,18 @@ bool MIEServerMT::readOrPersistFeatures(string dataPath) {
     if (nImgs == 0 && f != NULL) {
         char buff[3*sizeof(int)];
         fread (buff, 1, 3*sizeof(int), f);
-        int nFeatures=0, featureSize=0, pos = 0;
+        int featureSize=0, pos = 0;
         readFromArr(&nImgs, sizeof(int), buff, &pos);
-        readFromArr(&nFeatures, sizeof(int), buff, &pos);
         readFromArr(&featureSize, sizeof(int), buff, &pos);
         size_t buffSize = featureSize*sizeof(float);
         char* buff2 = (char*)malloc(buffSize);
         bzero(buff2,buffSize);
         imgFeaturesLock.lock();
         for (int i = 0; i < nImgs; i++) {
+            int id = readIntFromArr(buff, &pos);
+            int nFeatures = readIntFromArr(buff, &pos);
             Mat aux2(nFeatures,featureSize,CV_32F);
-            imgFeatures[i] = aux2;
+            imgFeatures[id] = aux2;
             for (int j = 0; j < nFeatures; j++) {
                 fread (buff2, 1, buffSize, f);
                 pos = 0;
@@ -177,26 +178,30 @@ bool MIEServerMT::readOrPersistFeatures(string dataPath) {
         f = fopen((dataPath+"/imgFeatures").c_str(), "wb");
 //        int nImgs = (int)imgFeatures.size();
         imgFeaturesLock.lock();
-        int nFeatures = imgFeatures[0].rows;
         int featureSize = imgFeatures[0].cols;
         imgFeaturesLock.unlock();
         char buff[3*sizeof(int)];
         int pos = 0;
         addToArr(&nImgs, sizeof(int), buff, &pos);
-        addToArr(&nFeatures, sizeof(int), buff, &pos);
         addToArr(&featureSize, sizeof(int), buff, &pos);
         fwrite(buff, 1, 3*sizeof(int), f);
         size_t buffSize = featureSize*sizeof(float);
         char* buff2 = (char*)malloc(buffSize);
         bzero(buff2,buffSize);
         imgFeaturesLock.lock();
-        for (int i = 0; i < nImgs; i++)
-            for (int j = 0; j < nFeatures; j++) {
+        for (map<int,Mat>::iterator it=imgFeatures.begin(); it!=imgFeatures.end(); ++it) {
+            char imgIdBuff[2*sizeof(int)];
+            pos = 0;
+            addIntToArr(it->first, imgIdBuff, &pos);
+            addIntToArr(it->second.rows, imgIdBuff, &pos);
+            fwrite(imgIdBuff, 1, 2*sizeof(int), f);
+            for (int j = 0; j < it->second.rows; j++) {
                 pos = 0;
                 for (int k = 0; k < featureSize; k++)
-                    addToArr(&imgFeatures[i].at<float>(j,k), sizeof(float), buff2, &pos);
+                    addToArr(&(it->second.at<float>(j,k)), sizeof(float), buff2, &pos);
                 fwrite(buff2, 1, buffSize, f);
             }
+        }
         imgFeaturesLock.unlock();
         free(buff2);
     }
@@ -372,24 +377,24 @@ void MIEServerMT::persistTextIndex(string dataPath) {
     int keywordSize = (int)textIndex.begin()->first.size();
     char buff[3*sizeof(int)];
     int pos = 0;
-    addIntToArr(nDocs, buff, &pos);
-    addIntToArr(indexSize, buff, &pos);
-    addIntToArr(keywordSize, buff, &pos);
+    addToArr(&nDocs, sizeof(int), buff, &pos);
+    addToArr(&indexSize,sizeof(int), buff, &pos);
+    addToArr(&keywordSize, sizeof(int), buff, &pos);
     fwrite(buff, 1, 3*sizeof(int), f);
     for (map<vector<unsigned char>,map<int,int> >::iterator it=textIndex.begin(); it!=textIndex.end(); ++it) {
         int postingListSize = (int)it->second.size();
         size_t buffSize = keywordSize * sizeof(unsigned char) + sizeof(int) + postingListSize*2*sizeof(int);
         char* buff2 = (char*)malloc(buffSize);
         pos = 0;
-        addIntToArr(postingListSize, buff2, &pos);
+        addToArr(&postingListSize,sizeof(int), buff2, &pos);
         for (int i = 0; i < keywordSize; i++) {
             unsigned char val = it->first[i];
             addToArr(&val, sizeof(unsigned char), buff2, &pos);
         }
         for (map<int,int>::iterator it2=it->second.begin(); it2!=it->second.end(); ++it2) {
             int first = it2->first;
-            addIntToArr(first, buff2, &pos);
-            addIntToArr(it2->second, buff2, &pos);
+            addToArr(&first,sizeof(int), buff2, &pos);
+            addToArr(&(it2->second),sizeof(int), buff2, &pos);
         }
         fwrite(buff2, 1, buffSize, f);
         free(buff2);

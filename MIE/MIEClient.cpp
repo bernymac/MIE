@@ -76,6 +76,7 @@ void MIEClient::processDoc(int id, const char* imgDataset, const char* textDatas
     bzero(fname, 120);
     sprintf(fname, "%s/%s/tags%d.txt", datasetsPath, textDataset, id);
     vector<string> keywords = analyzer->extractFile(fname);
+
     featureTime += diffSec(start, getTime());       //end benchmark
     free(fname);
     
@@ -96,7 +97,7 @@ void MIEClient::processDoc(int id, const char* imgDataset, const char* textDatas
     for (int i = 0; i < numCPU; i++) {
         struct sbeThreadData data;
         data.first = i * descPerCPU;
-        const int last = i*descPerCPU + descPerCPU-1;
+        const int last = i*descPerCPU + descPerCPU;
         if (last < descriptors.rows)
             data.last = last;
         else
