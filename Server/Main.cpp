@@ -6,24 +6,33 @@
 //  Copyright (c) 2015 NovaSYS. All rights reserved.
 //
 
+#include "Server.h"
 #include "MIEServer.h"
 #include "MIEServerMT.h"
 #include "SSEServer.h"
 #include "CashServer.hpp"
+#include "PaillierCashServer.hpp"
 
 int main(int argc, const char * argv[]) {
     setvbuf(stdout, NULL, _IONBF, 0);
-    if (argc != 2)
-        printf("Incorrect number of arguments. Please give a server name, e.g. \"MIE\", \"SSE\" or \"Cash\"");
-    else if (strcasecmp(argv[1], "mie") == 0)
-        MIEServer server;
+    Server* server;
+    if (argc != 2) {
+        printf("Incorrect number of arguments. Please give a server name, e.g. \"mie\", \"mieMT\", \"sse\", \"Cash\" and \"PaillierCash\"\n");
+        return 0;
+    } else if (strcasecmp(argv[1], "mie") == 0)
+        server = new MIEServer();
     else if (strcasecmp(argv[1], "mieMT") == 0)
-        MIEServerMT server;
+        server = new MIEServerMT();
     else if (strcasecmp(argv[1], "sse") == 0)
-        SSEServer server;
+        server = new SSEServer();
     else if (strcasecmp(argv[1], "cash") == 0)
-        CashServer server;
-    else
-        printf("Server command not recognized! Available Servers: \"mie\", \"mieMT\", \"sse\" and \"Cash\"\n");
+        server = new CashServer();
+    else if (strcasecmp(argv[1], "PaillierCash") == 0)
+        server = new PaillierCashServer();
+    else {
+        printf("Server command not recognized! Available Servers: \"mie\", \"mieMT\", \"sse\", \"Cash\" and \"PaillierCash\"\n");
+        return 0;
+    }
+    server->startServer();
 }
 

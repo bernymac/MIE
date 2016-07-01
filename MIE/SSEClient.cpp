@@ -16,8 +16,8 @@ SSEClient::SSEClient() {
     cloudTime = 0;
     indexTime = 0;
     trainTime = 0;
-    detector = FeatureDetector::create( "PyramidDense" );
-    extractor = DescriptorExtractor::create( "SURF" );
+    FeatureDetector::create( /*"Dense"*/ /*"PyramidDense"*/ "SURF" );//detector = xfeatures2d::SurfFeatureDetector::create();
+    DescriptorExtractor::create( "SURF" );//extractor = xfeatures2d::SurfDescriptorExtractor::create();
     Ptr<DescriptorMatcher> matcher = DescriptorMatcher::create( "BruteForce" );
     bowExtractor = new BOWImgDescriptorExtractor( extractor, matcher );
     analyzer = new EnglishAnalyzer;
@@ -32,8 +32,8 @@ SSEClient::~SSEClient() {
 }
 
 void SSEClient::train() {
-    string s = dataPath;
-    s += "/SSE/dictionary.yml";
+    string s = homePath;
+    s += "Data/SSE/dictionary.yml";
     if ( access(s.c_str(), F_OK ) != -1 ) {
         FileStorage fs;
         Mat codebook;
@@ -53,7 +53,8 @@ void SSEClient::train() {
         for (unsigned i = 0; i < DOCS; i++) {
             if (rng.uniform(0.f,1.f) <= 0.1f) {
                 bzero(fname, 120);
-                sprintf(fname, "%s/wang/%d.jpg", datasetsPath, i);
+                sprintf(fname, "%sDatasets/wang/%d.jpg", homePath, i);
+//                String fname = homePath; fname += "Datasets/wang/"; fname += to_string(i); fname += ".jpg";
                 Mat image = imread(fname);
                 vector<KeyPoint> keypoints;
                 Mat descriptors;
@@ -94,7 +95,8 @@ void SSEClient::addDocs(const char* imgDataset, const char* textDataset, bool fi
     if (fname == NULL) pee("malloc error in SSEClient::addDocs fname");
     for (unsigned i=first; i<=last; i++) {
         bzero(fname, 120);
-        sprintf(fname, "%s/%s/im%d.txt.jpg", datasetsPath, imgDataset, i);
+//        string fname = homePath; fname += "Datasets/"; fname += imgDataset; fname += "/im"; fname += to_string(i); fname += ".jpg";
+        sprintf(fname, "%sDatasets/%s/im%d.jpg", homePath, imgDataset, i);
         Mat image = imread(fname);
         vector<KeyPoint> keypoints;
         Mat bowDesc;
@@ -113,7 +115,8 @@ void SSEClient::addDocs(const char* imgDataset, const char* textDataset, bool fi
     //index text
     for (unsigned i=first; i<=last; i++) {
         bzero(fname, 120);
-        sprintf(fname, "%s/%s/tags%d.txt", datasetsPath, textDataset, i);
+        sprintf(fname, "%sDatasets/%s/tags%d.txt", homePath, textDataset, i);
+//        string fname = homePath; fname += "Datasets/"; fname += imgDataset; fname += "/tags"; fname += to_string(i); fname += ".txt";
         vector<string> keywords = analyzer->extractFile(fname);
         for (int j = 0; j < keywords.size(); j++) {
             timespec start = getTime();     //start crypto benchmark
@@ -271,7 +274,8 @@ set<QueryResult,cmp_QueryResult> SSEClient::search(int id) {
     //process img object
     map<int,int> vws;
     char* fname = (char*)malloc(120);
-    sprintf(fname, "%s/wang/%d.jpg", datasetsPath, id);
+    sprintf(fname, "%sDatasets/wang/%d.jpg", homePath, id);
+//    string fname = homePath; fname += "Datasets/wang/"; fname += to_string(id); fname += ".jpg";
     Mat image = imread(fname);
     vector<KeyPoint> keypoints;
     Mat bowDesc;
@@ -289,7 +293,8 @@ set<QueryResult,cmp_QueryResult> SSEClient::search(int id) {
     //process text object
     map<vector<unsigned char>,int> encKeywords;
     bzero(fname, 120);
-    sprintf(fname, "%s/docs/tags%d.txt", datasetsPath, id+1);
+    sprintf(fname, "%sDatasets/docs/tags%d.txt", homePath, id+1);
+//    fname = homePath; fname += "Datasets/docs/tags"; fname += to_string(id+1); fname += ".txt";
     vector<string> keywords = analyzer->extractFile(fname);
     for (int j = 0; j < keywords.size(); j++) {
         start = getTime();                  //start crypto time benchmark
@@ -346,17 +351,17 @@ set<QueryResult,cmp_QueryResult> SSEClient::calculateQueryResults(int sockfd, ma
     
     //calculate img query results
     timespec start = getTime();                    //start index time benchmark
-    map<int,float>* imgQueryResults = new map<int,float>;
+    map<int,double>* imgQueryResults = new map<int,double>;
 //    for (map<int,map<int,int> >::iterator it=imgPostingLists.begin(); it!=imgPostingLists.end(); ++it) {
     for (int i = 0; i < imgPostingLists.size(); i++) {
 //        float idf = getIdf(DOCS, it->size());
         if (imgPostingLists[i].size() > 0) {
-            const float idf = getIdf(DOCS, imgPostingLists[i].size());
+            const double idf = getIdf(DOCS, imgPostingLists[i].size());
 //          for (map<int,int>::iterator it2 = it->begin(); it2!=it->end(); ++it2) {
             for (map<int,int>::iterator it2 = imgPostingLists[i].begin(); it2!=imgPostingLists[i].end(); ++it2) {
 //              const int queryTf = (*vws)[it->first];
                 const int queryTf = (*vws)[i];
-                const float score = queryTf * getTfIdf(it2->second, idf);
+                const double score = queryTf * getTfIdf(it2->second, idf);
                 if (imgQueryResults->count(it2->first) == 0)
                     (*imgQueryResults)[it2->first] = score;
                 else
@@ -368,12 +373,12 @@ set<QueryResult,cmp_QueryResult> SSEClient::calculateQueryResults(int sockfd, ma
     free(imgQueryResults);
     
     //calculate text query results
-    map<int,float>* textQueryResults = new map<int,float>;
+    map<int,double>* textQueryResults = new map<int,double>;
     for (map<vector<unsigned char>,map<int,int> >::iterator it=textPostingLists.begin(); it!=textPostingLists.end(); ++it) {
-        float idf = getIdf(DOCS, it->second.size());
+        double idf = getIdf(DOCS, it->second.size());
         for (map<int,int>::iterator it2 = it->second.begin(); it2!=it->second.end(); ++it2) {
             const int queryTf = (*encKeywords)[it->first];
-            const float score = queryTf * getTfIdf(it2->second, idf);
+            const double score = queryTf * getTfIdf(it2->second, idf);
             if (textQueryResults->count(it2->first) == 0)
                 (*textQueryResults)[it2->first] = score;
             else
@@ -432,9 +437,9 @@ set<QueryResult,cmp_QueryResult> SSEClient::mergeSearchResults(set<QueryResult,c
                 rank->second.imgRank = i++;
         }
     }
-    map<int,float> queryResults;
+    map<int,double> queryResults;
     for (map<int,Rank>::iterator it=ranks.begin(); it!=ranks.end(); ++it) {
-        float score = 0.f, df = 0.f;
+        double score = 0.f, df = 0.f;
         if (it->second.textRank > 0) {
             score =  1 / pow(it->second.textRank,2);
             df++;
@@ -465,8 +470,8 @@ string SSEClient::printTime() {
 #define READ_QUERIES 0 // set READ to 1 to read from disk. 0 to compute and write
 
 void sse_bovwDOCS() {
-    Ptr<FeatureDetector> detector = FeatureDetector::create( "PyramidDense" );
-    Ptr<DescriptorExtractor> extractor = DescriptorExtractor::create( "SURF" );
+    Ptr<FeatureDetector> detector = FeatureDetector::create( "PyramidDense" ); //xfeatures2d::SurfFeatureDetector::create();
+    Ptr<DescriptorExtractor> extractor = DescriptorExtractor::create( "SURF" ); //xfeatures2d::SurfDescriptorExtractor::create();
     Ptr<DescriptorMatcher> matcher = DescriptorMatcher::create( "BruteForce" );
     Ptr<BOWImgDescriptorExtractor> bowExtractor = new BOWImgDescriptorExtractor( extractor, matcher );
     string dataset = "/Users/bernardo/Dropbox/WorkspacePHD/MUSE/datasets/wang/";

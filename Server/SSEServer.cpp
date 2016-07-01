@@ -10,6 +10,45 @@
 
 using namespace std;
 
+SSEServer::SSEServer() {
+//    startServer();
+}
+
+SSEServer::~SSEServer() {
+    free(encImgIndex);
+    free(encTextIndex);
+}
+
+void SSEServer::startServer() {
+    encImgIndex = new vector<vector<unsigned char> >;
+    encTextIndex = new map<vector<unsigned char>,vector<unsigned char> >;
+    int sockfd = initServer();
+    printf("SSE server started!\n");
+    while (true) {
+        struct sockaddr_in cli_addr;
+        socklen_t clilen = sizeof(cli_addr);
+        int newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);
+        if (newsockfd < 0) pee("ERROR on accept");
+        char buffer[1];
+        if (read(newsockfd,buffer,1) < 0) pee("ERROR reading from socket");
+        //        printf("command received: %c\n",buffer[0]);
+        switch (buffer[0]) {
+            case 'a':
+                receiveDocs(newsockfd);
+                break;
+            case 'd':
+                returnIndex(newsockfd);
+                break;
+            case 's':
+                search(newsockfd);
+                break;
+            default:
+                pee("unkonwn command!\n");
+        }
+        ack(newsockfd);
+    }
+}
+
 void SSEServer::receiveDocs(int newsockfd) {
     int buffSize = 4*sizeof(int);
     char buffer[buffSize];
@@ -171,41 +210,3 @@ void SSEServer::sendPostingLists(int newsockfd, vector<vector<unsigned char> >* 
     free(buff);
 }
 
-SSEServer::SSEServer() {
-    startServer();
-}
-
-SSEServer::~SSEServer() {
-    free(encImgIndex);
-    free(encTextIndex);
-}
-
-void SSEServer::startServer() {
-    encImgIndex = new vector<vector<unsigned char> >;
-    encTextIndex = new map<vector<unsigned char>,vector<unsigned char> >;
-    int sockfd = initServer();
-    printf("SSE server started!\n");
-    while (true) {
-        struct sockaddr_in cli_addr;
-        socklen_t clilen = sizeof(cli_addr);
-        int newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);
-        if (newsockfd < 0) pee("ERROR on accept");
-        char buffer[1];
-        if (read(newsockfd,buffer,1) < 0) pee("ERROR reading from socket");
-//        printf("command received: %c\n",buffer[0]);
-        switch (buffer[0]) {
-            case 'a':
-                receiveDocs(newsockfd);
-                break;
-            case 'd':
-                returnIndex(newsockfd);
-                break;
-            case 's':
-                search(newsockfd);
-                break;
-            default:
-                pee("unkonwn command!\n");
-        }
-        ack(newsockfd);
-    }
-}

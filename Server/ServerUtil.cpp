@@ -191,35 +191,49 @@ void addFloatToArr (float val, char* arr, int* pos) {
     addToArr (&x, sizeof(uint64_t), arr, pos);
 }
 
+void addDoubleToArr (double val, char* arr, int* pos) {
+    uint64_t x = pack754_64(val);
+    addToArr (&x, sizeof(uint64_t), arr, pos);
+}
+
 void readFromArr (void* val, int size, char* arr, int* pos) {
     memcpy(val, &arr[*pos], size);
     *pos += size;
 }
 
 int readIntFromArr (char* arr, int* pos) {
-    int x = -1;
-    readFromArr(&x, sizeof(int), arr, pos);
+    uint32_t x;
+    readFromArr(&x, sizeof(uint32_t), arr, pos);
     return ntohl(x);
 }
 
 float readFloatFromArr (char* arr, int* pos) {
-    float x = -1.f;
-    readFromArr(&x, sizeof(float), arr, pos);
+    uint64_t x;
+    readFromArr(&x, sizeof(uint64_t), arr, pos);
     return unpack754_32(x);
+}
+
+double readDoubleFromArr (char* arr, int* pos) {
+    uint64_t x;
+    readFromArr(&x, sizeof(uint64_t), arr, pos);
+    return unpack754_64(x);
 }
 
 #include <math.h>
 
-float getTfIdf (float qtf, float tf, float idf) {
-/*    if (tf != 0)
+double scaledTfIdf (double qtf, double tf, double idf) {
+    if (tf != 0)
         return qtf * (1+log10(tf))* idf;
     else
         return 0;
- */
+}
+
+double getTfIdf (double qtf, double tf, double idf) {
+
     return qtf * tf * idf;
 }
 
-float getIdf (float nDocs, float df) {
+double getIdf (double nDocs, double df) {
     return log10(nDocs / df);
 }
 
@@ -241,9 +255,9 @@ int denormalize(float val, int size) {
     return round(val * size);
 }
 
-std::set<QueryResult,cmp_QueryResult> sort (std::map<int,float> queryResults) {
+std::set<QueryResult,cmp_QueryResult> sort (std::map<int,double>* queryResults) {
     std::set<QueryResult,cmp_QueryResult> orderedResults;
-    for (std::map<int,float>::iterator it=queryResults.begin(); it!=queryResults.end(); ++it) {
+    for (std::map<int,double>::iterator it=queryResults->begin(); it!=queryResults->end(); ++it) {
         struct QueryResult qr;
         qr.docId = it->first;
         qr.score = it->second;
@@ -279,9 +293,9 @@ std::set<QueryResult,cmp_QueryResult> mergeSearchResults(std::set<QueryResult,cm
                 rank->second.imgRank = i++;
         }
     }
-    std::map<int,float> queryResults;
+    std::map<int,double> queryResults;
     for (std::map<int,Rank>::iterator it=ranks.begin(); it!=ranks.end(); ++it) {
-        float score = 0.f, df = 0.f;
+        double score = 0.f, df = 0.f;
         if (it->second.textRank > 0) {
             score =  1 / pow(it->second.textRank,2);
             df++;
@@ -293,25 +307,23 @@ std::set<QueryResult,cmp_QueryResult> mergeSearchResults(std::set<QueryResult,cm
         score *= log(df+sigma);
         queryResults[it->first] = score;
     }
-    return sort(queryResults);
+    return sort(&queryResults);
 }
 
-//mudar isto para k como deve ser!
-void sendQueryResponse(int newsockfd, std::set<QueryResult,cmp_QueryResult>* mergedResults) {
-    int resultsSize = 20;               //Should be parameter k, number of query results
-    if (mergedResults->size() < 20)
+void sendQueryResponse(int newsockfd, std::set<QueryResult,cmp_QueryResult>* mergedResults, int resultsSize) {
+    if (mergedResults->size() < resultsSize || resultsSize < 0)
         resultsSize = (int)mergedResults->size();
     long size = sizeof(int) + resultsSize * (sizeof(int) + sizeof(uint64_t));
-    char* buff = (char*)malloc(size);
+    char* buff = new char[size];
     bzero(buff,size);
     int pos = 0;
     addIntToArr (resultsSize, buff, &pos);
     int i = 1;
     for (std::set<QueryResult,cmp_QueryResult>::iterator it = mergedResults->begin(); it != mergedResults->end(); ++it) {
         int docId = it->docId;
-        float score = it->score;
+        double score = it->score;
         addIntToArr(docId, buff, &pos);
-        addFloatToArr(score, buff, &pos);
+        addDoubleToArr(score, buff, &pos);
         if (i == resultsSize)
             break;
         else
@@ -319,12 +331,12 @@ void sendQueryResponse(int newsockfd, std::set<QueryResult,cmp_QueryResult>* mer
     }
     socketSend (newsockfd, buff, size);
     printf("Search Network Traffic part 2: %ld\n",size);
-    free(buff);
+    delete[] buff;
 }
 
 void zipAndSend(int sockfd, char* buff, long size) {
     unsigned long zipSize = compressBound(size);
-    char* zip = (char*)malloc(zipSize + 2*sizeof(uint64_t));
+    char* zip = new char[zipSize + 2*sizeof(uint64_t)];
     int result = compress((unsigned char*)zip + 2*sizeof(uint64_t), &zipSize, (unsigned char*)buff, size);
     if (result != Z_OK)
         switch(result) {
@@ -342,15 +354,14 @@ void zipAndSend(int sockfd, char* buff, long size) {
     memcpy(zip + sizeof(uint64_t), &serializedDataSize, sizeof(uint64_t));
     
     socketSend (sockfd, zip, zipSize + 2*sizeof(uint64_t)) ;
-    free(zip);
+    delete[] zip;
 }
 
 void receiveAndUnzip(int newsockfd, char* data, unsigned long* dataSize, unsigned long zipSize) {
-    char* zip = (char*)malloc(zipSize);
-    if (zip == NULL) pee("malloc error in receiveAndUnzip");
+    char* zip = new char[zipSize];
     socketReceive(newsockfd, zip, zipSize);
     int result = uncompress((unsigned char*)data, dataSize, (unsigned char*)zip, zipSize);
-    free(zip);
+    delete[] zip;
     if (result != Z_OK)
         switch(result) {
             case Z_MEM_ERROR:

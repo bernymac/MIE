@@ -12,8 +12,8 @@ SSECrypt::SSECrypt() {
 //    ERR_load_crypto_strings();
 //    OpenSSL_add_all_algorithms();
 //    OPENSSL_config(NULL);
-    string keyFilename = dataPath;
-    FILE* f = fopen((keyFilename+"/SSE/aesKey").c_str(), "rb");
+    string keyFilename = homePath;
+    FILE* f = fopen((keyFilename+"Data/SSE/aesKey").c_str(), "rb");
     aesKey = (unsigned char*)malloc(aesKeySize);
     if (aesKey == NULL) pee("malloc error in SSECrypt::SSECrypt()");
     if (f != NULL)

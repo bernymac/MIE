@@ -8,6 +8,10 @@
 #ifndef __MIE__Util__
 #define __MIE__Util__
 
+#include <pthread.h>
+#include <iostream>
+#include <fstream>
+#include <dirent.h>
 #include <set>
 #include <map>
 #include <vector>
@@ -16,7 +20,7 @@
 #include <openssl/rand.h>
 #include <stdio.h>
 #include <limits.h>
-#include <string>
+#include <string.h>
 #include <sstream>
 #include <iomanip>
 #include <sys/types.h>
@@ -34,9 +38,9 @@
 #include "portable_endian.h"
 
 //desktop
-static const char* dataPath = "/Users/bernardo/Data";
-static const char* datasetsPath = "/Users/bernardo/Datasets";
-static const char* serverIP = "52.19.25.178"; //"127.0.0.1";
+static const char* homePath = "/localssd/a28300/";
+//static const char* homePath = "/Users/bernardo/";
+static const char* serverIP = "127.0.0.1";//"54.194.253.119";
 #define  LOGI(...)  fprintf(stdout,__VA_ARGS__)
 //mobile
 //static const char* dataPath = "/sdcard/Data";
@@ -47,7 +51,7 @@ static const char* serverIP = "52.19.25.178"; //"127.0.0.1";
 
 struct QueryResult {
     int docId;
-    float score;
+    double score;
 };
 
 struct cmp_QueryResult {
@@ -114,13 +118,20 @@ int readIntFromArr (char* arr, int* pos);
 
 float readFloatFromArr (char* arr, int* pos);
 
+double readDoubleFromArr (char* arr, int* pos);
+
 bool wangIsRelevant(int queryID, int resultID);
 
-float getTfIdf (float tf, float idf);
+double scaledTfIdf (double qtf, double tf, double idf);
 
-float getIdf (float nDocs, float df);
+double getTfIdf (double tf, double idf);
 
-std::set<QueryResult,cmp_QueryResult> sort (std::map<int,float>* queryResults);
+double getIdf (double nDocs, double df);
+
+std::set<QueryResult,cmp_QueryResult> sort (std::map<int,double>* queryResults);
+
+std::set<QueryResult,cmp_QueryResult> mergeSearchResults(std::set<QueryResult,cmp_QueryResult>* imgResults,
+                                                         std::set<QueryResult,cmp_QueryResult>* textResults);
 
 std::vector<QueryResult> receiveQueryResults(int sockfd);
 
@@ -129,5 +140,19 @@ std::string exec(const char* cmd);
 void zipAndSend(int sockfd, char* buff, long size);
 
 long receiveAndUnzip(int sockfd, char* data);
+
+std::vector<std::string>& split(const std::string& s, char delim, std::vector<std::string>& elems);
+
+void extractFileNames (const char* imgDataset, const char* textDataset, int first, int last, std::map<int,std::string>& imgs, std::map<int,std::string>& docs);
+
+void extractHolidayFileNames (int nImgs, std::map<int,std::string>& imgs);
+
+void extractFlickrImgsFileNames (int nImgs, std::map<int,std::string>& imgs);
+
+void extractFlickrTagsFileNames (int nImgs, std::map<int,std::string>& docs);
+
+void printHolidayResults (std::string fPath, std::map<int,std::vector<QueryResult> > results);
+
+float lmDistance (std::vector<float> array1, std::vector<float> array2, float m);
 
 #endif /* defined(__MIE__Util__) */

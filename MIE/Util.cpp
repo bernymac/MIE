@@ -220,8 +220,8 @@ void readFromArr (void* val, int size, char* arr, int* pos) {
 }
 
 int readIntFromArr (char* arr, int* pos) {
-    int x;
-    readFromArr(&x, sizeof(int), arr, pos);
+    uint32_t x;
+    readFromArr(&x, sizeof(uint32_t), arr, pos);
     return ntohl(x);
 }
 
@@ -229,6 +229,12 @@ float readFloatFromArr (char* arr, int* pos) {
     uint64_t x;
     readFromArr(&x, sizeof(uint64_t), arr, pos);
     return (float)unpack754_32(x);
+}
+
+double readDoubleFromArr (char* arr, int* pos) {
+    uint64_t x;
+    readFromArr(&x, sizeof(uint64_t), arr, pos);
+    return unpack754_64(x);
 }
 
 bool wangIsRelevant(int queryID, int resultID) {
@@ -266,28 +272,74 @@ bool wangIsRelevant(int queryID, int resultID) {
     return false;
 }
 
-float getTfIdf (float tf, float idf) {
-    /*    if (tf != 0)
-     return (1+log10(tf))* idf;
-     else
-     return 0;
-     */
+double scaledTfIdf (double qtf, double tf, double idf) {
+    if (tf != 0)
+        return qtf * (1+log10(tf))* idf;
+    else
+        return 0;
+}
+
+double getTfIdf (double tf, double idf) {
     return tf*idf;
 }
 
-float getIdf (float nDocs, float df) {
+double getIdf (double nDocs, double df) {
     return log10(nDocs / df);
 }
 
-std::set<QueryResult,cmp_QueryResult> sort (std::map<int,float>* queryResults) {
+std::set<QueryResult,cmp_QueryResult> sort (std::map<int,double>* queryResults) {
     std::set<QueryResult,cmp_QueryResult> orderedResults;
-    for (std::map<int,float>::iterator it=queryResults->begin(); it!=queryResults->end(); ++it) {
+    for (std::map<int,double>::iterator it=queryResults->begin(); it!=queryResults->end(); ++it) {
         struct QueryResult qr;
         qr.docId = it->first;
         qr.score = it->second;
         orderedResults.insert(qr);
     }
     return orderedResults;
+}
+
+std::set<QueryResult,cmp_QueryResult> mergeSearchResults(std::set<QueryResult,cmp_QueryResult>* imgResults,
+                                                         std::set<QueryResult,cmp_QueryResult>* textResults) {
+    const float sigma = 0.01f;
+    //prepare ranks
+    std::map<int,Rank> ranks;
+    if (textResults != NULL) {
+        int i = 1;
+        for (std::set<QueryResult,cmp_QueryResult>::iterator it=textResults->begin(); it!=textResults->end(); ++it) {
+            struct Rank qr;
+            qr.textRank = i++;
+            qr.imgRank = 0;
+            ranks[it->docId] = qr;
+        }
+    }
+    if (imgResults != NULL) {
+        int i = 1;
+        for (std::set<QueryResult,cmp_QueryResult>::iterator it=imgResults->begin(); it!=imgResults->end(); ++it) {
+            std::map<int,Rank>::iterator rank = ranks.find(it->docId);
+            if (rank == ranks.end()) {
+                struct Rank qr;
+                qr.textRank = 0;
+                qr.imgRank = i++;
+                ranks[it->docId] = qr;
+            } else
+                rank->second.imgRank = i++;
+        }
+    }
+    std::map<int,double> queryResults;
+    for (std::map<int,Rank>::iterator it=ranks.begin(); it!=ranks.end(); ++it) {
+        double score = 0.f, df = 0.f;
+        if (it->second.textRank > 0) {
+            score =  1 / pow(it->second.textRank,2);
+            df++;
+        }
+        if (it->second.imgRank > 0) {
+            score +=  1 / pow(it->second.imgRank,2);
+            df++;
+        }
+        score *= log(df+sigma);
+        queryResults[it->first] = score;
+    }
+    return sort(&queryResults);
 }
 
 std::vector<QueryResult> receiveQueryResults(int sockfd) {
@@ -311,7 +363,7 @@ std::vector<QueryResult> receiveQueryResults(int sockfd) {
     for (int i = 0; i < resultsSize; i++) {
         struct QueryResult qr;
         qr.docId = readIntFromArr(buff2, &pos);
-        qr.score = readFloatFromArr(buff2, &pos);
+        qr.score = readDoubleFromArr(buff2, &pos);
         queryResults[i] = qr;
     }
     free(buff2);
@@ -386,4 +438,140 @@ long receiveAndUnzip(int sockfd, char* data) {
                 break;
         }
     return dataSize;
+}
+
+std::vector<std::string>& split(const std::string& s, char delim, std::vector<std::string>& elems) {
+    std::stringstream ss(s);
+    std::string item;
+    while (std::getline(ss, item, delim)) {
+        elems.push_back(item);
+    }
+    return elems;
+}
+
+
+/*std::vector<int> holidayQueries (char* fName) {
+    std::vector<int> result;
+    result.resize(500);         //could also count nº of lines or use dynamic structure
+    std::string line;
+    std::ifstream fstream (fName);
+    if (fstream.is_open()) {
+        while ( getline (fstream,line) )                  //split file around lines
+            if (line.size() > 0) {
+                std::istringstream lstream(line);
+                std::string queryFileName;
+                getline (lstream,queryFileName);            //split line around spaces
+                std::istringstream wstream(queryFileName);
+                std::string queryId;
+                std::getline(wstream, queryId, '.');   //split word around '.'
+                result.push_back(atoi(queryId.c_str()));
+            }
+        fstream.close();
+    } else
+        pee("Util::holidayQueries Unable to open file");
+    
+    
+    return result;
+}*/
+
+void extractFileNames (const char* imgDataset, const char* textDataset, int first, int last, std::map<int,std::string>& imgs, std::map<int,std::string>& docs) {
+    extractFlickrTagsFileNames(last-first+1, docs);
+    if (strcmp(imgDataset,"flickr_imgs") == 0)
+        extractFlickrImgsFileNames(last-first+1, imgs);
+    else if (strcmp(imgDataset,"inriaHolidays") == 0)
+        extractHolidayFileNames(last-first+1, imgs);
+}
+
+void extractHolidayFileNames (int nImgs, std::map<int,std::string>& imgs) {
+    std::string holidayDir = homePath;
+    holidayDir += "Datasets/inriaHolidays/";
+    DIR* dir;
+    struct dirent* ent;
+    int i = 0;
+    if ((dir = opendir (holidayDir.c_str())) != NULL) {
+        while ((ent = readdir (dir)) != NULL && i < nImgs) {
+            std::string fname = ent->d_name;
+            const size_t pos = fname.find(".jpg");
+            if (pos != std::string::npos) {
+                std::string idString = fname.substr(0,pos);
+                const int id = atoi(idString.c_str());
+                std::string path = holidayDir;
+                path += fname;
+                imgs[id] = path;
+                i++;
+            }
+        }
+        closedir (dir);
+    } else
+        pee ("Util::processHolidayDataset couldn't open dir");
+}
+
+void extractFlickrImgsFileNames (int nImgs, std::map<int,std::string>& imgs) {
+    std::string holidayDir = homePath;
+    holidayDir += "Datasets/flickr_imgs/";
+    DIR* dir;
+    struct dirent* ent;
+    int i = 0;
+    if ((dir = opendir (holidayDir.c_str())) != NULL) {
+        while ((ent = readdir (dir)) != NULL && i < nImgs) {
+            std::string fname = ent->d_name;
+            const size_t pos = fname.find(".jpg");
+            if (pos != std::string::npos) {
+                std::string idString = fname.substr(2,pos-2);
+                const int id = atoi(idString.c_str());
+                std::string path = holidayDir;
+                path += fname;
+                imgs[id] = path;
+                i++;
+            }
+        }
+        closedir (dir);
+    } else
+        pee ("Util::processFlickrImgsDataset couldn't open dir");
+}
+
+void extractFlickrTagsFileNames (int nImgs, std::map<int,std::string>& docs) {
+    std::string holidayDir = homePath;
+    holidayDir += "Datasets/flickr_tags/";
+    DIR* dir;
+    struct dirent* ent;
+    int i = 0;
+    if ((dir = opendir (holidayDir.c_str())) != NULL) {
+        while ((ent = readdir (dir)) != NULL && i < nImgs) {
+            std::string fname = ent->d_name;
+            const size_t pos = fname.find(".txt");
+            if (pos != std::string::npos) {
+                std::string idString = fname.substr(4,pos-4);
+                const int id = atoi(idString.c_str());
+                std::string path = holidayDir;
+                path += fname;
+                docs[id] = path;
+                i++;
+            }
+        }
+        closedir (dir);
+    } else
+        pee ("Util::processFlickrTagsDataset couldn't open dir");
+}
+
+void printHolidayResults (std::string fPath, std::map<int,std::vector<QueryResult> > results) {
+    std::ofstream ofs (fPath.c_str());
+    for (std::map<int,std::vector<QueryResult> >::iterator it = results.begin(); it != results.end(); ++it) {
+        ofs << it->first << ".jpg";
+        for (int i = 0; i < it->second.size(); i++) {
+            ofs << " " << i << " " << it->second.at(i).docId << ".jpg";
+        }
+        ofs << std::endl;
+    }
+    ofs.close();
+}
+
+float lmDistance (std::vector<float> array1, std::vector<float> array2, float m) {
+    if (array1.size() == array2.size())
+        pee("Util::lmDistance ERROR: Mimatch in input sizes.");
+    double total = 0.0;
+    for (int i = 0; i < array1.size(); i++) {
+        total += pow(fabs(array1[i]-array2[i]), m);
+    }
+    return pow(total,1.0/m);
 }

@@ -13,8 +13,9 @@ MIEClient::MIEClient() {
     indexTime = 0;
     cryptoTime = 0;
     cloudTime = 0;
-    detector = FeatureDetector::create( /*"Dense"*/ "PyramidDense" );
-    extractor = DescriptorExtractor::create( "SURF" );
+    initModule_nonfree();
+    detector = FeatureDetector::create( "SURF" /*"Dense"*/ /*"PyramidDense"*/ );//xfeatures2d::SurfFeatureDetector::create();
+    extractor = DescriptorExtractor::create( "SURF" );//xfeatures2d::SurfDescriptorExtractor::create(); 
     analyzer = new EnglishAnalyzer;
     sbe = new SBE(extractor->descriptorSize());
     textCrypto = new TextCrypt;
@@ -24,22 +25,31 @@ MIEClient::MIEClient() {
 MIEClient::~MIEClient() {
     detector.release();
     extractor.release();
-    free(analyzer);
-    free(sbe);
-    free(textCrypto);
+    delete analyzer;
+    delete sbe;
+    delete textCrypto;
 //    pthread_mutex_destroy(&lock);
 }
 
 void MIEClient::addDocs(const char* imgDataset, const char* textDataset, int first, int last, int prefix) {
-    for (int id = first; id <= last; id++) {
+    map<int,string> tags;
+    map<int,string> imgs;
+    extractFileNames(imgDataset, textDataset, first, last, imgs, tags);
+    
+    map<int,string>::iterator imgs_it=imgs.begin();
+    map<int,string>::iterator tags_it=tags.begin();
+    while (imgs_it != imgs.end() && tags_it != tags.end()) {
         vector< vector<float> > imgFeatures;
         vector< vector<unsigned char> > encKeywords;
-        processDoc(id, imgDataset, textDataset, &imgFeatures, &encKeywords);
+        processDoc(imgs_it->first, imgs_it->second, tags_it->second, &imgFeatures, &encKeywords);
         
         timespec start = getTime();
-        int sockfd = sendDoc('a', id+prefix, &imgFeatures, &encKeywords);
+        int sockfd = sendDoc('a', imgs_it->first+prefix, &imgFeatures, &encKeywords);
         close(sockfd);
         cloudTime += diffSec(start, getTime());
+        ++imgs_it;
+        ++tags_it;
+        
 //        socketReceiveAck(sockfd);
         
 //        pthread_t t;
@@ -55,14 +65,10 @@ void MIEClient::addDocs(const char* imgDataset, const char* textDataset, int fir
     }
 }
 
-void MIEClient::processDoc(int id, const char* imgDataset, const char* textDataset, vector< vector<float> >* features, vector<vector<unsigned char> >* encKeywords) {
+void MIEClient::processDoc(int id, string imgPath, string textPath, vector< vector<float> >* features, vector<vector<unsigned char> >* encKeywords) {
     //extract img features
     timespec start = getTime();                     //start feature benchmark
-    char* fname = (char*)malloc(120);
-    if (fname == NULL) pee("malloc error in MIEClient::processDoc");
-    bzero(fname, 120);
-    sprintf(fname, "%s/%s/im%d.jpg", datasetsPath, imgDataset, id);
-    Mat image = imread(fname);
+    Mat image = imread(imgPath);
     vector<KeyPoint> keypoints;
     Mat descriptors;
     detector->detect(image, keypoints);
@@ -73,12 +79,8 @@ void MIEClient::processDoc(int id, const char* imgDataset, const char* textDatas
     
     //extract text features
     start = getTime();                              //start feature benchmark
-    bzero(fname, 120);
-    sprintf(fname, "%s/%s/tags%d.txt", datasetsPath, textDataset, id);
-    vector<string> keywords = analyzer->extractFile(fname);
-
+    vector<string> keywords = analyzer->extractFile(textPath.c_str());
     featureTime += diffSec(start, getTime());       //end benchmark
-    free(fname);
     
     //encrypt img features
     start = getTime();                              //start crypto benchmark
@@ -135,17 +137,19 @@ void* MIEClient::sbeEncryptionThread(void* threadData) {
 
 int MIEClient::sendDoc(char op, int id, vector< vector<float> >* features, vector< vector<unsigned char> >* encKeywords) {
     long size = 5*sizeof(int) + sizeof(int)*features->size()*(*features)[0].size() + encKeywords->size()*TextCrypt::keysize;
-    char* buff = (char*)malloc(size);
-    if (buff == NULL) pee("malloc error in MIEClient::sendDoc");
+    char* buff = new char[size];
     int pos = 0;
     addIntToArr (id, buff, &pos);
     addIntToArr (int(features->size()), buff, &pos);
     addIntToArr (int((*features)[0].size()), buff, &pos);
     addIntToArr (int(encKeywords->size()), buff, &pos);
     addIntToArr (TextCrypt::keysize, buff, &pos);
-    for (int i = 0; i < features->size(); i++)
+    for (int i = 0; i < features->size(); i++) {
+        if ((*features)[i].size() != (*features)[0].size())         //debug check
+            pee("Unexpected error; feature of uniform size");
         for (int j = 0; j < (*features)[i].size(); j++)
             addIntToArr ((int)(*features)[i][j], buff, &pos);
+    }
     //and text features
     for (int i = 0; i < encKeywords->size(); i++) {
         for (int j = 0; j < (*encKeywords)[i].size(); j++) {
@@ -163,7 +167,7 @@ int MIEClient::sendDoc(char op, int id, vector< vector<float> >* features, vecto
     zipAndSend(sockfd, buff, size);     //send zipped
     
 //    LOGI("Search network traffic part 1: %ld\n",size);
-    free(buff);
+    delete[] buff;
     return sockfd;
 }
 
@@ -175,8 +179,7 @@ void* MIEClient::sendThread(void* threadData) {
     vector< vector<unsigned char> >* encKeywords = data->textFeatures;
     
     long size = 5*sizeof(int) + sizeof(int)*features->size()*(*features)[0].size() + encKeywords->size()*TextCrypt::keysize;
-    char* buff = (char*)malloc(size);
-    if (buff == NULL) pee("malloc error in MIEClient::sendDoc");
+    char* buff = new char[size];
     int pos = 0;
     addIntToArr (data->id, buff, &pos);
     addIntToArr (int(features->size()), buff, &pos);
@@ -200,7 +203,7 @@ void* MIEClient::sendThread(void* threadData) {
     zipAndSend(sockfd, buff, size);
     //    int sockfd = connectAndSend (buff, size) ;
     //    LOGI("Search network traffic part 1: %ld\n",size);
-    free(buff);
+    delete[] buff;
     close(sockfd);
     timespec end = getTime();     //end benchmark
     *(data->cloudTime) += diffSec(start, end);
@@ -218,10 +221,10 @@ void MIEClient::index() {
     close(sockfd);
 }
 
-vector<QueryResult> MIEClient::search(int id, const char* imgDataset, const char* textDataset) {
+vector<QueryResult> MIEClient::search(int id, string imgPath, string textPath) {
     vector< vector<float> > features;
     vector< vector<unsigned char> > encKeywords;
-    processDoc(id, imgDataset, textDataset, &features, &encKeywords);
+    processDoc(id, imgPath, textPath, &features, &encKeywords);
     
     timespec start = getTime();     //start cloud time benchmark
     int sockfd = sendDoc('s', id, &features, &encKeywords);

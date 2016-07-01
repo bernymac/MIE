@@ -31,29 +31,14 @@
 #include "portable_endian.h"
 
 
-//static const std::string dataPath = "/Users/bernardo/Data/MAC_MIE";
-static const std::string dataPath = "/home/ubuntu/Data/MIE";
+//static const std::string homePath = "/Users/bernardo/";
+static const std::string homePath = "/localssd/a28300/";
 static const int clusters = 1000;
 
-/*
-struct cmp_hash {
-    bool operator()(std::vector<unsigned char> a, std::vector<unsigned char> b) {
-        if (a.size() != b.size())
-            return false;
-        for (int i = 0; i < a.size(); i++)
-            if (a[i] != b[i])
-                return false;
-        return true;
-    }
-};
-struct cmp_QueryResult {
- bool operator() (const QueryResult& lhs, const QueryResult& rhs) const {return lhs.score>rhs.score;}
- };
-*/
 
 struct QueryResult {
     int docId;
-    float score;
+    double score;
 };
 
 
@@ -108,26 +93,30 @@ void addIntToArr (int val, char* arr, int* pos);
 
 void addFloatToArr (float val, char* arr, int* pos);
 
+void addDoubleToArr (double val, char* arr, int* pos);
+
 void readFromArr (void* val, int size, char* arr, int* pos);
 
 int readIntFromArr (char* arr, int* pos);
 
 float readFloatFromArr (char* arr, int* pos);
 
-float getTfIdf (float qtf, float tf, float idf);
+double scaledTfIdf (double qtf, double tf, double idf);
 
-float getIdf (float nDocs, float df);
+double getTfIdf (double qtf, double tf, double idf);
+
+double getIdf (double nDocs, double df);
 
 float bm25L(float rawTF, float queryTF, float idf, float docLength, float avgDocLength);
 
 int denormalize(float val, int size);
 
-std::set<QueryResult,cmp_QueryResult> sort (std::map<int,float> queryResults);
+std::set<QueryResult,cmp_QueryResult> sort (std::map<int,double>* queryResults);
 
 std::set<QueryResult,cmp_QueryResult> mergeSearchResults(std::set<QueryResult,cmp_QueryResult>* imgResults,
                                                          std::set<QueryResult,cmp_QueryResult>* textResults);
 
-void sendQueryResponse(int newsockfd, std::set<QueryResult,cmp_QueryResult>* mergedResults);
+void sendQueryResponse(int newsockfd, std::set<QueryResult,cmp_QueryResult>* mergedResults, int resultsSize);
 
 void zipAndSend(int sockfd, char* buff, long size);
 

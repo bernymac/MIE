@@ -26,37 +26,38 @@
 #include <opencv2/features2d/features2d.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include "ServerUtil.h"
+#include "Server.h"
 
 using namespace std;
 using namespace cv;
 
-class MIEServer {
+class MIEServer : public Server {
     void startServer();
-    void receiveDoc(int newsockfd, int* id, Mat* mat,
-                    vector<vector<unsigned char> >* keywords);
-    void addDoc(int newsockfd, map<int,Mat>* imgFeatures,
-                map<int,vector<vector<unsigned char> > >* textFeatures);
-    bool readOrPersistFeatures(string dataPath, map<int,cv::Mat>* imgFeatures,
-                               map<int,vector<vector<unsigned char> > >* textFeatures);
-    void indexImgs(map<int,Mat>* imgFeatures, vector<map<int,int> >* imgIndex,
-                   BOWImgDescriptorExtractor* bowExtr, int* nImgs);
-    void indexText(map<int,vector<vector<unsigned char> > >* textFeatures,
-                   map<vector<unsigned char>,map<int,int> >* textIndex, int* nTextDocs);
-    void persistImgIndex(string dataPath, vector<map<int,int> >* imgIndex, int nImgs);
-    void persistTextIndex(string dataPath, map<vector<unsigned char>,map<int,int> >* textIndex, int nTextDocs);
-    void persistIndex(string dataPath, vector<map<int,int> >* imgIndex,
-                      map<vector<unsigned char>,map<int,int> >* textIndex, int nImgs, int nTextDocs);
-    bool readIndex(string dataPath, vector<map<int,int> >* imgIndex,
-                   map<vector<unsigned char>,map<int,int> >* textIndex, int* nImgs, int* nTextDocs);
-    set<QueryResult,cmp_QueryResult> imgSearch (Mat* features, BOWImgDescriptorExtractor* bowExtr,
-                                                           vector<map<int,int> >* imgIndex, int* nImgs);
-    set<QueryResult,cmp_QueryResult> textSearch(vector<vector<unsigned char> >* keywords,
-                                                map<vector<unsigned char>,map<int,int> >* textIndex, int* nTextDocs);
+    void receiveDoc(int newsockfd, int& id, Mat& mat,
+                    vector<vector<unsigned char> >& keywords);
+    void addDoc(int newsockfd, map<int,Mat>& imgFeatures,
+                map<int,vector<vector<unsigned char> > >& textFeatures);
+    bool readOrPersistFeatures(map<int,cv::Mat>& imgFeatures,
+                               map<int,vector<vector<unsigned char>>>& textFeatures);
+    void indexImgs(map<int,Mat>& imgFeatures, vector<map<int,int> >& imgIndex,
+                   BOWImgDescriptorExtractor& bowExtr, int& nImgs);
+    void indexText(map<int,vector<vector<unsigned char> > >& textFeatures,
+                   map<vector<unsigned char>,map<int,int> >& textIndex, int& nTextDocs);
+    void persistImgIndex(vector<map<int,int> >& imgIndex, int nImgs);
+    void persistTextIndex(map<vector<unsigned char>,map<int,int> >& textIndex, int nTextDocs);
+    void persistIndex(vector<map<int,int> >& imgIndex,
+                      map<vector<unsigned char>,map<int,int> >& textIndex, int nImgs, int nTextDocs);
+    bool readIndex(vector<map<int,int> >& imgIndex,
+                   map<vector<unsigned char>,map<int,int> >& textIndex, int& nImgs, int& nTextDocs);
+    set<QueryResult,cmp_QueryResult> imgSearch (Mat& features, BOWImgDescriptorExtractor& bowExtr,
+                                                           vector<map<int,int> >& imgIndex, int& nImgs);
+    set<QueryResult,cmp_QueryResult> textSearch(vector<vector<unsigned char> >& keywords,
+                                                map<vector<unsigned char>,map<int,int> >& textIndex, int& nTextDocs);
 //    set<QueryResult,cmp_QueryResult> mergeSearchResults(set<QueryResult,cmp_QueryResult>* imgResults,
 //                                                                   set<QueryResult,cmp_QueryResult>* textResults);
 //    void sendQueryResponse(int newsockfd, set<QueryResult,cmp_QueryResult>* mergedResults);
-    void search(int newsockfd, BOWImgDescriptorExtractor* bowExtr, vector<map<int,int> >* imgIndex,
-                int* nImgs, map<vector<unsigned char>,map<int,int> >* textIndex, int* nTextDocs);
+    void search(int newsockfd, BOWImgDescriptorExtractor& bowExtr, vector<map<int,int> >& imgIndex,
+                int& nImgs, map<vector<unsigned char>,map<int,int> >& textIndex, int& nTextDocs);
 public:
     MIEServer();
 };

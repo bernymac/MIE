@@ -1,4 +1,4 @@
-//
+ //
 //  CashServer.cpp
 //  MIE
 //
@@ -11,7 +11,7 @@
 using namespace std;
 
 CashServer::CashServer() {
-    startServer();
+//    startServer();
 }
 
 CashServer::~CashServer() {
@@ -30,7 +30,7 @@ void CashServer::startServer() {
         socklen_t clilen = sizeof(cli_addr);
         int newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);
         if (newsockfd < 0) {
-            pee("ERROR on accept\n");
+            printf("ERROR on accept\n");
             continue;
         }
         char buffer[1];
@@ -45,7 +45,7 @@ void CashServer::startServer() {
                 receiveDocs(newsockfd);
                 break;
             case 's':
-                search(newsockfd);
+                this->search(newsockfd);
                 break;
             default:
                 printf("unkonwn command!\n");
@@ -81,7 +81,7 @@ void CashServer::receiveDocs(int newsockfd) {
         for (int j = 0; j < postingSize; j++)
             readFromArr(&posting[j], sizeof(unsigned char), buff, &pos);
         postingSize = readIntFromArr(buff, &pos);
-        if (encImgIndex->find(vw)!=encImgIndex->end())                  //debug
+        if (encImgIndex->find(vw)!=encImgIndex->end())                  //debug - not supposed to happen
             pee("Found an unexpected collision in encImgIndex");
         (*encImgIndex)[vw] = posting;
         free(buff);
@@ -115,36 +115,87 @@ void CashServer::search(int newsockfd) {
     //initialize and read variables
     long buffSize = 3*sizeof(int);
     char buffer[buffSize];
-    if (read(newsockfd,buffer,buffSize) < 0) pee("CashServer::search error reading from socket");
+    receiveAll(newsockfd, buffer, buffSize);
     int pos = 0;
     const int vwsSize = readIntFromArr(buffer, &pos);
     const int kwsSize = readIntFromArr(buffer, &pos);
     const int Ksize = readIntFromArr(buffer, &pos);
     
+    //if RO
     buffSize = (vwsSize + kwsSize) * (2*Ksize + sizeof(int));
-    char* buff = (char*)malloc(buffSize);
-    if (buff == NULL) pee("malloc error in CashServer::search receive vws and kws");
+    char* buff = new char[buffSize];
     receiveAll(newsockfd, buff, buffSize);
     pos = 0;
-    set<QueryResult,cmp_QueryResult> imgQueryResults = calculateQueryResults(vwsSize, Ksize, buff, &pos, encImgIndex);
-    set<QueryResult,cmp_QueryResult> textQueryResults = calculateQueryResults(kwsSize, Ksize, buff, &pos, encTextIndex);
-    free(buff);
-    set<QueryResult,cmp_QueryResult> mergedResults = mergeSearchResults(&imgQueryResults, &textQueryResults);
-    sendQueryResponse(newsockfd, &mergedResults);
+    set<QueryResult,cmp_QueryResult> imgQueryResults = calculateQueryResultsRO( vwsSize, Ksize, buff, &pos, encImgIndex);
+//    set<QueryResult,cmp_QueryResult> textQueryResults = calculateQueryResultsRO( kwsSize, Ksize, buff, &pos, encTextIndex);
+    delete[] buff;
+    
+    //if std
+//    set<QueryResult,cmp_QueryResult> imgQueryResults = calculateQueryResults(newsockfd, vwsSize, Ksize, encImgIndex);
+//    set<QueryResult,cmp_QueryResult> textQueryResults = calculateQueryResults(newsockfd, kwsSize, Ksize, encTextIndex);
+    
+//    set<QueryResult,cmp_QueryResult> mergedResults = mergeSearchResults(&imgQueryResults, &textQueryResults);
+    sendQueryResponse(newsockfd, &imgQueryResults/*mergedResults*/, -1);
 }
 
-    
-set<QueryResult,cmp_QueryResult> CashServer::calculateQueryResults(int kwsSize, int Ksize, char* buff, int* pos,
+//search in std model
+set<QueryResult,cmp_QueryResult> CashServer::calculateQueryResults(int newsockfd, int kwsSize, int Ksize, /*char* buff, int* pos,*/
                                                  map<vector<unsigned char>,vector<unsigned char> >* index) {
-    map<int,float> queryResults;
+    map<int,double> queryResults;
+    for (int i = 0; i < kwsSize; i++) {
+        map<int,int> postingList;
+        char smallBuff[sizeof(int)];
+        receiveAll(newsockfd, smallBuff, sizeof(int));
+        int pos = 0;
+        
+        int counter = readIntFromArr(smallBuff, &pos);
+        int buffSize = Ksize + sizeof(int) + counter*Ksize;
+        char* buff = new char[buffSize];
+        receiveAll(newsockfd, buff, buffSize);
+        pos = 0;
+        unsigned char k2[Ksize];
+        readFromArr(k2, Ksize*sizeof(unsigned char), buff, &pos);
+        const int queryTf = readIntFromArr(buff, &pos);
+        const double idf = getIdf(nDocs, counter);
+        
+        for (int j = 0; j < counter; j++) {
+            vector<unsigned char> encCounter;
+            encCounter.resize(Ksize);
+            for (int z = 0; z < Ksize; z++) {
+                readFromArr(&encCounter[z], sizeof(unsigned char), buff, &pos);
+            }
+            map<vector<unsigned char>,vector<unsigned char> >::iterator it = index->find(encCounter);
+            if (it == index->end()) pee("CashServer::search received vw index position doesn't exist");
+            int ciphertextSize = (int)it->second.size();
+            unsigned char* rawPosting = (unsigned char*)malloc(ciphertextSize);
+            dec(k2, it->second.data(), ciphertextSize, rawPosting);
+            int pos2 = 0;
+            int id = readIntFromArr((char*)rawPosting, &pos2);
+            int tf = readIntFromArr((char*)rawPosting, &pos2);
+            free(rawPosting);
+            
+            const double score = getTfIdf(queryTf, tf, idf);
+            map<int,double>::iterator docScoreIt = queryResults.find(id);
+            if (docScoreIt == queryResults.end())
+                queryResults[id] = score;
+            else
+                docScoreIt->second += score;
+        }
+        delete[] buff;
+    }
+    return sort(&queryResults);
+}
+
+//search with Random Oracles
+set<QueryResult,cmp_QueryResult> CashServer::calculateQueryResultsRO(int kwsSize, int Ksize, char* buff, int* pos,
+                                                                   map<vector<unsigned char>,vector<unsigned char> >* index) {
+    map<int,double> queryResults;
     for (int i = 0; i < kwsSize; i++) {
         unsigned char k1[Ksize];
         readFromArr(k1, Ksize*sizeof(unsigned char), buff, pos);
         unsigned char k2[Ksize];
         readFromArr(k2, Ksize*sizeof(unsigned char), buff, pos);
         const int queryTf = readIntFromArr(buff, pos);
-//        printf("vw 0 k1: %s\n",getHexRepresentation(k1,Ksize).c_str());
-//        printf("vw 0 k2: %s\n",getHexRepresentation(k2,Ksize).c_str());
         
         map<int,int> postingList;
         int c = 0;
@@ -152,29 +203,22 @@ set<QueryResult,cmp_QueryResult> CashServer::calculateQueryResults(int kwsSize, 
         map<vector<unsigned char>,vector<unsigned char> >::iterator it = index->find(encCounter);
         while (it != index->end()) {
             int ciphertextSize = (int)it->second.size();
-//            unsigned char* ciphertext = (unsigned char*)malloc(ciphertextSize);
-//            for(int j = 0; j < ciphertextSize; j++)
-//                ciphertext[j] = it->second[j];
-            unsigned char* rawPosting = (unsigned char*)malloc(ciphertextSize);
+            unsigned char* rawPosting = new unsigned char[ciphertextSize];
             dec(k2, it->second.data(), ciphertextSize, rawPosting);
             int x = 0;
             int id = readIntFromArr((char*)rawPosting, &x);
             int tf = readIntFromArr((char*)rawPosting, &x);
-//            printf("docId: %i tf: %i\n",id,tf);
             postingList[id] = tf;
             c++;
-//            free(ciphertext);
-            free(rawPosting);
-//            printf("vw 0 counter 0 EncCounter: %s\n",getHexRepresentation(encCounter.data(),Ksize).c_str());
-//            printf("vw 0 counter 0 EncData: %s\n",getHexRepresentation(it->second.data(),16).c_str());
+            delete[] rawPosting;
             encCounter = f(k1, Ksize, (unsigned char*)&c, sizeof(int));
             it = index->find(encCounter);
         }
         if (c != 0) {
-            const float idf = getIdf(nDocs, c);
+            const double idf = getIdf(nDocs, c);
             for (map<int,int>::iterator it=postingList.begin(); it != postingList.end(); ++it) {
-                const float score = getTfIdf(queryTf, it->second, idf);
-                map<int,float>::iterator docScoreIt = queryResults.find(it->first);
+                const double score = scaledTfIdf/*getTfIdf*/(queryTf, it->second, idf);
+                map<int,double>::iterator docScoreIt = queryResults.find(it->first);
                 if (docScoreIt == queryResults.end())
                     queryResults[it->first] = score;
                 else
@@ -182,5 +226,5 @@ set<QueryResult,cmp_QueryResult> CashServer::calculateQueryResults(int kwsSize, 
             }
         }
     }
-    return sort(queryResults);
+    return sort(&queryResults);
 }

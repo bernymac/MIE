@@ -12,14 +12,14 @@
 using namespace std;
 
 SBE::SBE (int dimensions) {
-    m = 64;//256;
+    m = 64;//128;256;
     delta = 0.5f;
     k = dimensions;
     
-    string keyFilename = dataPath;
-    FILE* f = fopen((keyFilename+"/MIE/sbeKey").c_str(), "rb");
+    string keyFilename = homePath;
+    FILE* f = fopen((keyFilename+"Data/Client/MIE/sbeKey").c_str(), "rb");
     size_t buffSize = m * k * sizeof(float) + m * sizeof(float);
-    char* buff = (char*)malloc(buffSize);
+    char* buff = new char[buffSize];
     if (buff == NULL) pee("malloc error in SBE::SBE (int dimensions)");
     if (f != NULL)
         fread (buff, 1, buffSize, f);
@@ -48,10 +48,10 @@ SBE::SBE (int dimensions) {
         }
     }
     if (f == NULL) {
-        f = fopen((keyFilename+"/MIE/sbeKey").c_str(), "wb");
+        f = fopen((keyFilename+"Data/Client/MIE/sbeKey").c_str(), "wb");
         fwrite(buff, 1, buffSize, f);
     }
-    free(buff);
+    delete[] buff;
     fclose(f);
 //} else {
 //        random_device rd;
@@ -74,17 +74,19 @@ SBE::SBE (int dimensions) {
 
 
 vector<float> SBE::encode (vector<float> x) {
-        vector<float> encoded (m,0);
-        for (int i = 0; i < m; i++) {
-            for (int j = 0; j < k; j++)
-                encoded[i] += a[i][j] * x[j];			//multiply input with random matrix a
-            encoded[i] += w[i];						//add dither
-            encoded[i] /= delta;						// divide by delta
-            if (int(encoded[i]) % 2)
-                encoded[i] = 0;
-            else
-                encoded[i] = 1;
-        }
-        return encoded;
+    return x;
+/*    vector<float> encoded (m,0);
+    for (int i = 0; i < m; i++) {
+        for (int j = 0; j < k; j++)
+            encoded[i] += a[i][j] * x[j];			//multiply input with random matrix a
+        encoded[i] += w[i];						//add dither
+        encoded[i] /= delta;						// divide by delta
+        if (int(encoded[i]) % 2)
+            encoded[i] = 0;
+        else
+            encoded[i] = 1;
+    }
+    return encoded;
+ */
 }
     

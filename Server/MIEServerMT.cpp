@@ -21,7 +21,7 @@ BOWImgDescriptorExtractor* MIEServerMT::bowExtr;
 mutex MIEServerMT::imgFeaturesLock, MIEServerMT::textFeaturesLock, MIEServerMT::imgIndexLock, MIEServerMT::textIndexLock;
 
 MIEServerMT::MIEServerMT() {
-    startServer();
+//    startServer();
 }
 
 MIEServerMT::~MIEServerMT() {
@@ -33,10 +33,10 @@ void MIEServerMT::startServer() {
     nImgs = 0;
     nDocs = 0;
     bowExtr = new BOWImgDescriptorExtractor (DescriptorMatcher::create("BruteForce-L1"));
-    if ( access((dataPath+"/codebook.yml").c_str(), F_OK ) != -1 ) {
+    if ( access((homePath+"Data/Server/MIE/codebook.yml").c_str(), F_OK ) != -1 ) {
         FileStorage fs;
         Mat codebook;
-        fs.open(dataPath+"/codebook.yml", FileStorage::READ);
+        fs.open(homePath+"Data/Server/MIE/codebook.yml", FileStorage::READ);
         fs["codebook"] >> codebook;
         fs.release();
         bowExtr->setVocabulary(codebook);
@@ -68,12 +68,12 @@ void MIEServerMT::clientThread(int newsockfd) {
             break;
         case 'i':
             //try to read index from disk
-            if (!readIndex(dataPath))
+            if (!readIndex())
                 //try to read features if not in memory, persist them otherwise
-                if (readOrPersistFeatures(dataPath)) {
+                if (readOrPersistFeatures()) {
                     indexImgs();
                     indexText();
-                    persistIndex(dataPath);
+                    persistIndex();
                 }
             break;
         case 's':
@@ -141,9 +141,9 @@ void MIEServerMT::receiveDoc(int newsockfd, int* id, Mat* mat, vector<vector<uns
     free(data);
 }
 
-bool MIEServerMT::readOrPersistFeatures(string dataPath) {
+bool MIEServerMT::readOrPersistFeatures() {
     // read/persist images
-    FILE* f = fopen((dataPath+"/imgFeatures").c_str(), "rb");
+    FILE* f = fopen((homePath+"Data/Server/MIE/imgFeatures").c_str(), "rb");
     imgFeaturesLock.lock();
     nImgs = (int)imgFeatures.size();
     imgFeaturesLock.unlock();
@@ -175,7 +175,7 @@ bool MIEServerMT::readOrPersistFeatures(string dataPath) {
     } else if (nImgs > 0) {
         if (f != NULL)
             fclose(f);
-        f = fopen((dataPath+"/imgFeatures").c_str(), "wb");
+        f = fopen((homePath+"Data/Server/MIE/imgFeatures").c_str(), "wb");
 //        int nImgs = (int)imgFeatures.size();
         imgFeaturesLock.lock();
         int featureSize = imgFeatures[0].cols;
@@ -207,7 +207,7 @@ bool MIEServerMT::readOrPersistFeatures(string dataPath) {
     }
     fclose(f);
     // read/persist text
-    f = fopen((dataPath+"/textFeatures").c_str(), "rb");
+    f = fopen((homePath+"Data/Server/MIE/textFeatures").c_str(), "rb");
     textFeaturesLock.lock();
     nDocs = (int)textFeatures.size();
     textFeaturesLock.unlock();
@@ -251,7 +251,7 @@ bool MIEServerMT::readOrPersistFeatures(string dataPath) {
         addToArr(&keywordSize, sizeof(int), buff, &pos);
         if (f != NULL)
             fclose(f);
-        f = fopen((dataPath+"/textFeatures").c_str(), "wb");
+        f = fopen((homePath+"Data/Server/MIE/textFeatures").c_str(), "wb");
         fwrite(buff, 1, 2*sizeof(int), f);
         textFeaturesLock.lock();
         for (int i = 0; i < nDocs; i++) {
@@ -294,7 +294,7 @@ void MIEServerMT::indexImgs() {
         printf("build codebook with %d descriptors!\n",bowTrainer.descriptorsCount());
         Mat codebook = bowTrainer.cluster();
         FileStorage fs;
-        fs.open(dataPath+"/codebook.yml", FileStorage::WRITE);
+        fs.open(homePath+"Data/Server/MIE/codebook.yml", FileStorage::WRITE);
         fs << "codebook" << codebook;
         fs.release();
         imgFeaturesLock.lock();
@@ -342,9 +342,9 @@ void MIEServerMT::indexText() {
     textIndexLock.unlock();
 }
 
-void MIEServerMT::persistImgIndex(string dataPath) {
+void MIEServerMT::persistImgIndex() {
     imgIndexLock.lock();
-    FILE* f = fopen((dataPath+"/imgIndex").c_str(), "wb");
+    FILE* f = fopen((homePath+"Data/Server/MIE/imgIndex").c_str(), "wb");
     int indexSize = (int)imgIndex.size();
     char buff[2*sizeof(int)];
     int pos = 0;
@@ -369,10 +369,10 @@ void MIEServerMT::persistImgIndex(string dataPath) {
     imgIndexLock.unlock();
 }
 
-void MIEServerMT::persistTextIndex(string dataPath) {
+void MIEServerMT::persistTextIndex() {
     // read/persist text
     textIndexLock.lock();
-    FILE* f = fopen((dataPath+"/textIndex").c_str(), "wb");
+    FILE* f = fopen((homePath+"Data/Server/MIE/textIndex").c_str(), "wb");
     int indexSize = (int)textIndex.size();
     int keywordSize = (int)textIndex.begin()->first.size();
     char buff[3*sizeof(int)];
@@ -403,14 +403,14 @@ void MIEServerMT::persistTextIndex(string dataPath) {
     textIndexLock.unlock();
 }
 
-void MIEServerMT::persistIndex(string dataPath) {
-    persistImgIndex(dataPath);
-    persistTextIndex(dataPath);
+void MIEServerMT::persistIndex() {
+    persistImgIndex();
+    persistTextIndex();
 }
 
-bool MIEServerMT::readIndex(string dataPath) {
-    FILE* f1 = fopen((dataPath+"/imgIndex").c_str(), "rb");
-    FILE* f2 = fopen((dataPath+"/textIndex").c_str(), "rb");
+bool MIEServerMT::readIndex() {
+    FILE* f1 = fopen((homePath+"Data/Server/MIE/imgIndex").c_str(), "rb");
+    FILE* f2 = fopen((homePath+"Data/Server/MIE/textIndex").c_str(), "rb");
     if (f1==NULL || f2==NULL)
         return false;
     if (f1 != NULL) {
@@ -482,7 +482,7 @@ bool MIEServerMT::readIndex(string dataPath) {
 }
 
 set<QueryResult,cmp_QueryResult> MIEServerMT::imgSearch (Mat* features) {
-    map<int,float> queryResults;
+    map<int,double> queryResults;
     Mat bowDesc;
     bowExtr->compute(*features,bowDesc);
     for (int i = 0; i < clusters; i++) {
@@ -491,9 +491,9 @@ set<QueryResult,cmp_QueryResult> MIEServerMT::imgSearch (Mat* features) {
             imgIndexLock.lock();
             map<int,int> postingList = imgIndex[i];
             imgIndexLock.unlock();
-            float idf = getIdf(nImgs, postingList.size());
+            double idf = getIdf(nImgs, postingList.size());
             for (map<int,int>::iterator it=postingList.begin(); it!=postingList.end(); ++it) {
-                float score = getTfIdf(queryTf, it->second, idf);
+                double score = getTfIdf(queryTf, it->second, idf);
                 if (queryResults.count(it->first) == 0)
                     queryResults[it->first] = score;
                 else
@@ -501,7 +501,7 @@ set<QueryResult,cmp_QueryResult> MIEServerMT::imgSearch (Mat* features) {
             }
         }
     }
-    return sort(queryResults);
+    return sort(&queryResults);
 }
 
 set<QueryResult,cmp_QueryResult> MIEServerMT::textSearch(vector<vector<unsigned char> >* keywords) {
@@ -512,22 +512,22 @@ set<QueryResult,cmp_QueryResult> MIEServerMT::textSearch(vector<vector<unsigned 
         else
             query[(*keywords)[i]]++;
     }
-    map<int,float> queryResults;
+    map<int,double> queryResults;
     for (map<vector<unsigned char>,int>::iterator queryTerm = query.begin(); queryTerm != query.end(); ++queryTerm) {
         textIndexLock.lock();
         map<int,int> postingList = textIndex[queryTerm->first];
         textIndexLock.unlock();
-        float idf = getIdf(nDocs, postingList.size());
+        double idf = getIdf(nDocs, postingList.size());
         for (map<int,int>::iterator posting = postingList.begin(); posting != postingList.end(); ++posting) {
             //float score = bm25L(posting->second, queryTerm->second, idf, docLength, avgDocLength);
-            float score =  getTfIdf(queryTerm->second, posting->second, idf);
+            double score =  getTfIdf(queryTerm->second, posting->second, idf);
             if (queryResults.count(posting->first) == 0)
                 queryResults[posting->first] = score;
             else
                 queryResults[posting->first] += score;
         }
     }
-    return sort(queryResults);
+    return sort(&queryResults);
 }
 
 void MIEServerMT::search(int newsockfd) {
@@ -538,6 +538,6 @@ void MIEServerMT::search(int newsockfd) {
     set<QueryResult,cmp_QueryResult> imgResults = imgSearch(&mat);
     set<QueryResult,cmp_QueryResult> textResults = textSearch(&keywords);
     set<QueryResult,cmp_QueryResult> mergedResults = mergeSearchResults(&imgResults, &textResults);
-    sendQueryResponse(newsockfd, &mergedResults);
+    sendQueryResponse(newsockfd, &mergedResults, 20);
 }
 

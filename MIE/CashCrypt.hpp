@@ -18,6 +18,7 @@
 #include "Util.h"
 
 
+
 using namespace std;
 
 class CashCrypt {
@@ -36,7 +37,7 @@ public:
     void deriveKey (void* append, int appendSize, void* data, int dataSize, unsigned char* md);
     vector<unsigned char> encData (unsigned char* key, unsigned char* data, int size);
 //    int decData (unsigned char* key, unsigned char* ciphertext, int ciphertextSize, unsigned char* plaintext);
-
+    
     
 };
 

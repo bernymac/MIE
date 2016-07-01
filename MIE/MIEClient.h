@@ -20,6 +20,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/features2d/features2d.hpp>
+#include <opencv2/nonfree/nonfree.hpp> //#include <opencv2/xfeatures2d/nonfree.hpp>
 #include "EnglishAnalyzer.h"
 #include "SBE.h"
 #include "TextCrypt.h"
@@ -56,7 +57,7 @@ class MIEClient {
     TextCrypt* textCrypto;
 //    pthread_mutex_t lock;
     
-    void processDoc(int id, const char* imgDataset, const char* textDataset, vector< vector<float> >* features, vector< vector<unsigned char> >* encKeywords);
+    void processDoc(int id, string imgPath, string textPath, vector< vector<float> >* features, vector< vector<unsigned char> >* encKeywords);
     int sendDoc(char op, int id, vector< vector<float> >* features, vector< vector<unsigned char> >* encKeywords);
     static void* sbeEncryptionThread(void* threadData);
     static void* sendThread(void* threadData);
@@ -67,7 +68,7 @@ public:
     ~MIEClient();
     void addDocs(const char* imgDataset, const char* textDataset, int first, int last, int prefix);
     void index();
-    vector<QueryResult> search(int id, const char* imgDataset, const char* textDataset);
+    vector<QueryResult> search(int id, string imgPath, string textPath);
     string printTime();
     
 };
