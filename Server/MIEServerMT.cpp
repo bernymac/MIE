@@ -178,7 +178,7 @@ bool MIEServerMT::readOrPersistFeatures() {
         f = fopen((homePath+"Data/Server/MIE/imgFeatures").c_str(), "wb");
 //        int nImgs = (int)imgFeatures.size();
         imgFeaturesLock.lock();
-        int featureSize = imgFeatures[0].cols;
+        int featureSize = imgFeatures.begin()->second.cols;
         imgFeaturesLock.unlock();
         char buff[3*sizeof(int)];
         int pos = 0;
@@ -243,7 +243,7 @@ bool MIEServerMT::readOrPersistFeatures() {
         }
     } else if (nDocs > 0) {
         textFeaturesLock.lock();
-        int keywordSize = (int)textFeatures[0][0].size();
+        int keywordSize = (int)(textFeatures.begin()->second)[0].size();
         textFeaturesLock.unlock();
         char buff[2*sizeof(int)];
         int pos = 0;
@@ -287,9 +287,9 @@ void MIEServerMT::indexImgs() {
         BOWKMeansTrainer bowTrainer (clusters, terminate_criterion, 3, KMEANS_PP_CENTERS );
         RNG& rng = theRNG();
         imgFeaturesLock.lock();
-        for (int i = 0; i < nImgs; i++)
+        for (map<int,Mat>::iterator it=imgFeatures.begin(); it!=imgFeatures.end(); ++it)
             if (rng.uniform(0.f,1.f) <= 0.1f)
-                bowTrainer.add(imgFeatures[i]);
+                bowTrainer.add(it->second);
         imgFeaturesLock.unlock();
         printf("build codebook with %d descriptors!\n",bowTrainer.descriptorsCount());
         Mat codebook = bowTrainer.cluster();
