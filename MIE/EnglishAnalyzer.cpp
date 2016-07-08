@@ -24,8 +24,8 @@ void EnglishAnalyzer::increase_s() {
     s = new_s;
 }
 
-vector<string> EnglishAnalyzer::extractFile(const char* fname) {
-    FILE* f = fopen(fname,"r");
+vector<string> EnglishAnalyzer::extractFile(string fname) {
+    FILE* f = fopen(fname.c_str(),"r");
     vector<string> words;
     while(true) {
         int ch = getc(f);
@@ -53,7 +53,7 @@ vector<string> EnglishAnalyzer::extractFile(const char* fname) {
     }
 }
 
-bool EnglishAnalyzer::isStopWord(char* word) {
+bool EnglishAnalyzer::isStopWord(string word) {
     return stopWords.count(word);
 }
 
