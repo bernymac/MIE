@@ -49,6 +49,7 @@ vector<string> EnglishAnalyzer::extractFile(string fname) {
                 s[stem(s,0,i-1)+1] = 0;/* calls the stemmer and uses its result to zero-terminate the string in s */
                 words.push_back(/*crypto.encode(*/ s);
             }
+            memset(s,0,i);
         }
     }
 }
