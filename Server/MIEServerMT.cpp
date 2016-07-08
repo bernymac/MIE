@@ -153,7 +153,7 @@ bool MIEServerMT::readOrPersistFeatures() {
         int featureSize=0, pos = 0;
         readFromArr(&nImgs, sizeof(int), buff, &pos);
         readFromArr(&featureSize, sizeof(int), buff, &pos);
-        size_t buffSize = featureSize*sizeof(float);
+        size_t buffSize = featureSize*sizeof(uint64_t);
         char* buff2 = (char*)malloc(buffSize);
         bzero(buff2,buffSize);
         imgFeaturesLock.lock();
@@ -166,7 +166,7 @@ bool MIEServerMT::readOrPersistFeatures() {
                 fread (buff2, 1, buffSize, f);
                 pos = 0;
                 for (int k = 0; k < featureSize; k++)
-                    readFromArr(&imgFeatures[i].at<float>(j,k), sizeof(float), buff2, &pos);
+                    imgFeatures[i].at<float>(j,k) = readFloatFromArr(buff2, &pos);
             }
 
         }
@@ -185,7 +185,7 @@ bool MIEServerMT::readOrPersistFeatures() {
         addToArr(&nImgs, sizeof(int), buff, &pos);
         addToArr(&featureSize, sizeof(int), buff, &pos);
         fwrite(buff, 1, 3*sizeof(int), f);
-        size_t buffSize = featureSize*sizeof(float);
+        size_t buffSize = featureSize*sizeof(uint64_t);
         char* buff2 = (char*)malloc(buffSize);
         bzero(buff2,buffSize);
         imgFeaturesLock.lock();
@@ -198,7 +198,7 @@ bool MIEServerMT::readOrPersistFeatures() {
             for (int j = 0; j < it->second.rows; j++) {
                 pos = 0;
                 for (int k = 0; k < featureSize; k++)
-                    addToArr(&(it->second.at<float>(j,k)), sizeof(float), buff2, &pos);
+                    addFloatToArr(it->second.at<float>(j,k), buff2, &pos);
                 fwrite(buff2, 1, buffSize, f);
             }
         }

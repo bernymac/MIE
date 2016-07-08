@@ -63,14 +63,14 @@ void MIEServer::startServer() {
                 //try to read index from disk
                 if (!readIndex(imgIndex, textIndex, nImgs, nTextDocs)) {
                     //try to read features if not in memory, persist them otherwise
-//                    if (readOrPersistFeatures(imgFeatures, textFeatures)) {
+                    if (readOrPersistFeatures(imgFeatures, textFeatures)) {
                         indexImgs(imgFeatures, imgIndex, bowExtr, nImgs);
                         indexText(textFeatures,textIndex, nTextDocs);
                         persistIndex(imgIndex, textIndex, nImgs, nTextDocs);
-//                    } else {
-//                        printf("no features to index!\n");
-//                        break;
-//                    }
+                    } else {
+                        printf("no features to index!\n");
+                        break;
+                    }
                 }
                 printf("finished indexing!\n");
                 break;
@@ -148,7 +148,7 @@ bool MIEServer::readOrPersistFeatures(map<int,Mat>& imgFeatures,
         int pos = 0;
         const int nImgs = readIntFromArr(buff, &pos);
         const int featureSize = readIntFromArr(buff, &pos);
-        size_t buffSize = featureSize*sizeof(float);
+        size_t buffSize = featureSize*sizeof(uint64_t);
         char* featureBuff = new char[buffSize];
         for (int i = 0; i < nImgs; i++) {
             char imgIdBuff[2*sizeof(int)];    //read imgId
@@ -178,7 +178,7 @@ bool MIEServer::readOrPersistFeatures(map<int,Mat>& imgFeatures,
         addIntToArr(nImgs, buff, &pos);
         addIntToArr(featureSize, buff, &pos);
         fwrite(buff, 1, 2*sizeof(int), f);
-        size_t buffSize = featureSize*sizeof(float);
+        size_t buffSize = featureSize*sizeof(uint64_t);
         char* featureBuff = new char[buffSize];
         for (map<int,Mat>::iterator it=imgFeatures.begin(); it!=imgFeatures.end(); ++it) {
             bzero(buff, 2*sizeof(int));
