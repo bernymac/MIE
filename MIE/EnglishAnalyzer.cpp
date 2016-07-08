@@ -24,8 +24,8 @@ void EnglishAnalyzer::increase_s() {
     s = new_s;
 }
 
-vector<string> EnglishAnalyzer::extractFile(const char* fname) {
-    FILE* f = fopen(fname,"r");
+vector<string> EnglishAnalyzer::extractFile(string fname) {
+    FILE* f = fopen(fname.c_str(),"r");
     vector<string> words;
     while(true) {
         int ch = getc(f);
@@ -49,11 +49,12 @@ vector<string> EnglishAnalyzer::extractFile(const char* fname) {
                 s[stem(s,0,i-1)+1] = 0;/* calls the stemmer and uses its result to zero-terminate the string in s */
                 words.push_back(/*crypto.encode(*/ s);
             }
+            memset(s,0,i);
         }
     }
 }
 
-bool EnglishAnalyzer::isStopWord(char* word) {
+bool EnglishAnalyzer::isStopWord(string word) {
     return stopWords.count(word);
 }
 

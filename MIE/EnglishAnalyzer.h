@@ -24,7 +24,7 @@ class EnglishAnalyzer {
     #define INC 50
     char * s;
     int i_max;
-    set<const char*> stopWords;
+    set<string> stopWords;
     
     void increase_s();
     
@@ -32,8 +32,8 @@ public:
     
     EnglishAnalyzer();
     ~EnglishAnalyzer();
-    vector<string> extractFile(const char* fname);
-    bool isStopWord(char* word);
+    vector<string> extractFile(string fname);
+    bool isStopWord(string word);
     
 };
 #endif /* defined(__MIE__EnglishAnalyzer__) */
