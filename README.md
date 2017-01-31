@@ -3,6 +3,3 @@ MIE is a searchable encryption framework for multimodal data (i.e. data containi
 Requirements: 
 OpenCV 3.0.0 (server)
 OpenCV 2.4.0 (client)
-Jerasure
-GF-Complete
-RamCloud
