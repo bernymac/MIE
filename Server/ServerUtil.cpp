@@ -83,6 +83,40 @@ void LOGI(const char* msg) {
     fflush(stdout);
 }
 
+struct timespec getTime() {
+    struct timespec ts;
+#ifdef __MACH__ // OS X does not have clock_gettime, use clock_get_time
+    clock_serv_t cclock;
+    mach_timespec_t mts;
+    host_get_clock_service(mach_host_self(), CALENDAR_CLOCK, &cclock);
+    clock_get_time(cclock, &mts);
+    mach_port_deallocate(mach_task_self(), cclock);
+    ts.tv_sec = mts.tv_sec;
+    ts.tv_nsec = mts.tv_nsec;
+#else
+    clock_gettime(CLOCK_REALTIME, &ts);
+#endif
+    return ts;
+}
+
+struct timespec diff(struct timespec start, struct timespec end) {
+    struct timespec temp;
+    if ((end.tv_nsec-start.tv_nsec)<0) {
+        temp.tv_sec = end.tv_sec-start.tv_sec-1;
+        temp.tv_nsec = 1000000000+end.tv_nsec-start.tv_nsec;
+    } else {
+        temp.tv_sec = end.tv_sec-start.tv_sec;
+        temp.tv_nsec = end.tv_nsec-start.tv_nsec;
+    }
+    return temp;
+}
+
+double diffSec(struct timespec start, struct timespec end) {
+    double startNano = start.tv_sec+(start.tv_nsec/1000000000.0);
+    double endNano = end.tv_sec+(end.tv_nsec/1000000000.0);
+    return endNano - startNano;
+}
+
 int initServer() {
     int sockfd, portno;
     struct sockaddr_in serv_addr;
@@ -330,7 +364,7 @@ void sendQueryResponse(int newsockfd, std::set<QueryResult,cmp_QueryResult>* mer
             i++;
     }
     socketSend (newsockfd, buff, size);
-    printf("Search Network Traffic part 2: %ld\n",size);
+//    printf("Search Network Traffic part 2: %ld\n",size);
     delete[] buff;
 }
 

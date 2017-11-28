@@ -26,6 +26,7 @@ void CashServer::startServer() {
     int sockfd = initServer();
     printf("Cash server started!\n");
     while (true) {
+        resetTime();
         struct sockaddr_in cli_addr;
         socklen_t clilen = sizeof(cli_addr);
         int newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);
@@ -52,6 +53,7 @@ void CashServer::startServer() {
         }
 //        ack(newsockfd);
         close(newsockfd);
+        printf("%s\n",printTime().c_str());
     }
 }
 
@@ -112,6 +114,7 @@ void CashServer::receiveDocs(int newsockfd) {
 }
 
 void CashServer::search(int newsockfd) {
+    timespec start = getTime(); 
     //initialize and read variables
     long buffSize = 3*sizeof(int);
     char buffer[buffSize];
@@ -126,16 +129,23 @@ void CashServer::search(int newsockfd) {
     char* buff = new char[buffSize];
     receiveAll(newsockfd, buff, buffSize);
     pos = 0;
+    cloudTime += diffSec(start, getTime());
+    
     set<QueryResult,cmp_QueryResult> imgQueryResults = calculateQueryResultsRO( vwsSize, Ksize, buff, &pos, encImgIndex);
-//    set<QueryResult,cmp_QueryResult> textQueryResults = calculateQueryResultsRO( kwsSize, Ksize, buff, &pos, encTextIndex);
+    set<QueryResult,cmp_QueryResult> textQueryResults = calculateQueryResultsRO( kwsSize, Ksize, buff, &pos, encTextIndex);
     delete[] buff;
     
     //if std
 //    set<QueryResult,cmp_QueryResult> imgQueryResults = calculateQueryResults(newsockfd, vwsSize, Ksize, encImgIndex);
 //    set<QueryResult,cmp_QueryResult> textQueryResults = calculateQueryResults(newsockfd, kwsSize, Ksize, encTextIndex);
+
+    start = getTime();
+    set<QueryResult,cmp_QueryResult> mergedResults = mergeSearchResults(&imgQueryResults, &textQueryResults);
+    indexTime += diffSec(start, getTime());
     
-//    set<QueryResult,cmp_QueryResult> mergedResults = mergeSearchResults(&imgQueryResults, &textQueryResults);
+    start = getTime();
     sendQueryResponse(newsockfd, &imgQueryResults/*mergedResults*/, -1);
+    cloudTime += diffSec(start, getTime());
 }
 
 //search in std model
@@ -189,13 +199,17 @@ set<QueryResult,cmp_QueryResult> CashServer::calculateQueryResults(int newsockfd
 //search with Random Oracles
 set<QueryResult,cmp_QueryResult> CashServer::calculateQueryResultsRO(int kwsSize, int Ksize, char* buff, int* pos,
                                                                    map<vector<unsigned char>,vector<unsigned char> >* index) {
+    timespec start;
     map<int,double> queryResults;
     for (int i = 0; i < kwsSize; i++) {
+        start = getTime();
         unsigned char k1[Ksize];
         readFromArr(k1, Ksize*sizeof(unsigned char), buff, pos);
         unsigned char k2[Ksize];
         readFromArr(k2, Ksize*sizeof(unsigned char), buff, pos);
         const int queryTf = readIntFromArr(buff, pos);
+        cloudTime += diffSec(start, getTime());
+        start = getTime();
         
         map<int,int> postingList;
         int c = 0;
@@ -214,6 +228,9 @@ set<QueryResult,cmp_QueryResult> CashServer::calculateQueryResultsRO(int kwsSize
             encCounter = f(k1, Ksize, (unsigned char*)&c, sizeof(int));
             it = index->find(encCounter);
         }
+        cryptoTime += diffSec(start, getTime());
+        start = getTime();
+        
         if (c != 0) {
             const double idf = getIdf(nDocs, c);
             for (map<int,int>::iterator it=postingList.begin(); it != postingList.end(); ++it) {
@@ -225,6 +242,25 @@ set<QueryResult,cmp_QueryResult> CashServer::calculateQueryResultsRO(int kwsSize
                     docScoreIt->second += score;
             }
         }
+        indexTime += diffSec(start, getTime());
     }
-    return sort(&queryResults);
+    start = getTime();
+    std::set<QueryResult,cmp_QueryResult> sortedResults = sort(&queryResults);
+    indexTime += diffSec(start, getTime());
+    return sortedResults;
+}
+
+void CashServer::resetTime() {
+    featureTime = 0;
+    cryptoTime = 0;
+    cloudTime = 0;
+    indexTime = 0;
+}
+
+string CashServer::printTime() {
+    char char_time[120];
+    sprintf(char_time, "featureTime:%f cryptoTime:%f indexTime:%f cloudTime:%f",
+            featureTime, cryptoTime, indexTime, cloudTime);
+    string time = char_time;
+    return time;
 }

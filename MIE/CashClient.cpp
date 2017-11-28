@@ -68,7 +68,7 @@ void CashClient::train(const char* dataset, int first, int last) {
         BOWKMeansTrainer bowTrainer ( CLUSTERS, terminate_criterion, 3, KMEANS_PP_CENTERS );
         RNG& rng = theRNG();
         for (map<int,string>::iterator it = imgs.begin(); it != imgs.end(); ++it) {
-            if (rng.uniform(0.f,1.f) <= 0.1f) {
+            if (rng.uniform(0.f,1.f) <= 0.75f) {
                 Mat image = imread(it->second);//fname);
                 vector<KeyPoint> keypoints;
                 Mat descriptors;
@@ -436,14 +436,14 @@ vector<QueryResult> CashClient::queryRO(map<int,int>* vws, map<string,int>* kws)
         addIntToArr (it->second, buff, &pos);
     }
     cryptoTime += diffSec(start, getTime());        //end benchmark
-    start = getTime();                              //start cloud time benchmark
+//    start = getTime();                              //start cloud time benchmark
     int sockfd = connectAndSend(buff, buffSize);
     //    const int x = (int)encKeywords.size()*TextCrypt::keysize+2*sizeof(int);
     //    LOGI("Text Search network traffic part 1: %d\n",x);
     
     free(buff);
     vector<QueryResult> queryResults = this->receiveResults(sockfd);
-    cloudTime += diffSec(start, getTime());            //end benchmark
+//    cloudTime += diffSec(start, getTime());            //end benchmark
     close(sockfd);
     return queryResults;
 }

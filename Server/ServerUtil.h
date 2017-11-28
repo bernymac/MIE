@@ -27,12 +27,17 @@
 #include <netdb.h>
 #include <unistd.h>
 #include <sys/time.h>
+#include <time.h>
+#ifdef __MACH__
+#include <mach/clock.h>
+#include <mach/mach.h>
+#endif
 #include "zlib.h"
 #include "portable_endian.h"
 
 
-//static const std::string homePath = "/Users/bernardo/";
-static const std::string homePath = "/localssd/a28300/";
+static const std::string homePath = "/Users/bernardo/";
+//static const std::string homePath = "/localssd/a28300/";
 static const int clusters = 1000;
 
 
@@ -64,6 +69,12 @@ long double unpack754(uint64_t i, unsigned bits, unsigned expbits);
 
 //#define  LOGI(...)  fprintf(stdout,__VA_ARGS__)
 void LOGI(const char* msg);
+
+struct timespec getTime();
+
+struct timespec diff(struct timespec start, struct timespec end);
+
+double diffSec(struct timespec start, struct timespec end);
 
 int initServer();
 
@@ -126,9 +137,6 @@ std::vector<unsigned char> f(unsigned char* key, int keySize, unsigned char* dat
 
 int dec (unsigned char* key, unsigned char* ciphertext, int ciphertextSize, unsigned char* plaintext);
 
-//struct timespec getTime();
-//struct timespec diff(struct timespec start, struct timespec end);
-//double diffSec(struct timespec start, struct timespec end);
 //unsigned char *spc_rand(unsigned char *buf, int l);
 //unsigned int spc_rand_uint();
 //float spc_rand_real(void);

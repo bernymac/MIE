@@ -38,8 +38,8 @@
 #include "portable_endian.h"
 
 //desktop
-static const char* homePath = "/localssd/a28300/";
-//static const char* homePath = "/Users/bernardo/";
+//static const char* homePath = "/localssd/a28300/";
+static const char* homePath = "/Users/bernardo/";
 static const char* serverIP = "127.0.0.1";//"54.194.253.119";
 #define  LOGI(...)  fprintf(stdout,__VA_ARGS__)
 //mobile

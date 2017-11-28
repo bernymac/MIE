@@ -31,6 +31,8 @@ using namespace std;
 class CashServer : public Server {
     
 protected:
+    double featureTime, cryptoTime, cloudTime, indexTime;
+    
 //    atomic<map<vector<unsigned char>,vector<unsigned char> > >* encImgIndex;
 //    atomic<map<vector<unsigned char>,vector<unsigned char> > >* encTextIndex;
     map<vector<unsigned char>,vector<unsigned char> >* encImgIndex;
@@ -45,6 +47,9 @@ protected:
 
     set<QueryResult,cmp_QueryResult> calculateQueryResults(int newsockfd, int kwsSize, int Ksize,                      map<vector<unsigned char>,vector<unsigned char> >* index);
     set<QueryResult,cmp_QueryResult> calculateQueryResultsRO(int kwsSize, int Ksize, char* buff, int* pos,                                                                        map<vector<unsigned char>,vector<unsigned char> >* index);
+    
+    void resetTime();
+    string printTime();
 public:
     CashServer();
     ~CashServer();

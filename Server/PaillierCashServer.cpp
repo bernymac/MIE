@@ -30,6 +30,7 @@ PaillierCashServer::~PaillierCashServer() {
 
 
 void PaillierCashServer::search(int newsockfd) {
+    timespec start = getTime();
     //initialize and read variables
     long buffSize = 3*sizeof(int);
     char buffer[buffSize];
@@ -38,6 +39,7 @@ void PaillierCashServer::search(int newsockfd) {
     const int vwsSize = readIntFromArr(buffer, &pos);
     const int kwsSize = readIntFromArr(buffer, &pos);
     const int Ksize = readIntFromArr(buffer, &pos);
+    cloudTime += diffSec(start, getTime());
     
     //    buffSize = (vwsSize + kwsSize) * (2*Ksize + sizeof(int));
     //    char* buff = (char*)malloc(buffSize);
@@ -48,14 +50,19 @@ void PaillierCashServer::search(int newsockfd) {
     map<int,paillier_ciphertext_t> textQueryResults = calculateQueryResults(newsockfd, kwsSize, Ksize, encTextIndex);
     //    free(buff);
 //    set<QueryResult,cmp_QueryResult> mergedResults = mergeSearchResults(&imgQueryResults, &textQueryResults);
+    
+    start = getTime();
     sendPaillierQueryResponse(newsockfd, {&imgQueryResults, &textQueryResults} );
+    cloudTime += diffSec(start, getTime());
 }
 
 
 map<int,paillier_ciphertext_t> PaillierCashServer::calculateQueryResults(int newsockfd, int kwsSize, int Ksize,
                                                                            map<vector<unsigned char>,vector<unsigned char> >* index) {
+    timespec start;
     map<int,paillier_ciphertext_t> queryResults;
     for (int i = 0; i < kwsSize; i++) {
+        start = getTime();
         map<int,int> postingList;
         char smallBuff[sizeof(int)];
         receiveAll(newsockfd, smallBuff, sizeof(int));
@@ -70,6 +77,8 @@ map<int,paillier_ciphertext_t> PaillierCashServer::calculateQueryResults(int new
         readFromArr(k2, Ksize*sizeof(unsigned char), buff, &pos);
         const int queryTf = readIntFromArr(buff, &pos);
         const float idf = getIdf(nDocs, counter);
+        cloudTime += diffSec(start, getTime());
+        start = getTime();
         
         paillier_ciphertext_t tf;
         mpz_init(tf.c);
@@ -111,6 +120,8 @@ map<int,paillier_ciphertext_t> PaillierCashServer::calculateQueryResults(int new
                 paillier_mul(homPub, &docScoreIt->second, &tf, &docScoreIt->second);
 
         }
+        cryptoTime += diffSec(start, getTime());
+        
         free(buff);
 //        mpz_clear(ptx.m);
 //        mpz_clear(tf.c);
@@ -139,7 +150,7 @@ void PaillierCashServer::sendPaillierQueryResponse(int newsockfd, initializer_li
         }
     }
     socketSend (newsockfd, buff, size);
-    printf("Search Network Traffic part 2: %ld\n",size);
+//    printf("Search Network Traffic part 2: %ld\n",size);
     free(buff);
 }
 

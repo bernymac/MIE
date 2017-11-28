@@ -8,8 +8,6 @@
 
 #include "PaillierCashClient.hpp"
 
-#define CLUSTERS 1000
-
 PaillierCashClient::PaillierCashClient() {
     //automatically runs super() at start
     const string keyFilename = homePath;
@@ -33,10 +31,10 @@ PaillierCashClient::PaillierCashClient() {
         delete[] privHex;
     } else {
         paillier_keygen(1024, &homPub, &homPriv, paillier_get_rand_devurandom);
-        fHomPub = fopen((keyFilename+"/Cash/homPub").c_str(), "wb");
+        fHomPub = fopen((keyFilename+"Data/Client/Cash/homPub").c_str(), "wb");
         char* pubHex = paillier_pubkey_to_hex(homPub);
         fwrite(pubHex, 1, strlen(pubHex), fHomPub);
-        fHomPriv = fopen((keyFilename+"/Cash/homPriv").c_str(), "wb");
+        fHomPriv = fopen((keyFilename+"Data/Client/Cash/homPriv").c_str(), "wb");
         char* privHex = paillier_prvkey_to_hex(homPriv);
         fwrite(privHex, 1, strlen(privHex), fHomPriv);
     }
@@ -101,6 +99,8 @@ void PaillierCashClient::encryptAndIndex(void* keyword, int keywordSize, int cou
 vector<QueryResult> PaillierCashClient::receiveResults(int sockfd) {
     set<QueryResult,cmp_QueryResult> imgQueryResults = calculateQueryResults(sockfd);
     set<QueryResult,cmp_QueryResult> textQueryResults = calculateQueryResults(sockfd);
+    
+    timespec start = getTime(); 
     set<QueryResult,cmp_QueryResult> mergedResults = mergeSearchResults(&imgQueryResults, &textQueryResults);
     
     vector<QueryResult> results;
@@ -113,10 +113,12 @@ vector<QueryResult> PaillierCashClient::receiveResults(int sockfd) {
         results[i] = *it;
         i++;
     }
+    indexTime += diffSec(start, getTime());
     return results;
 }
 
 set<QueryResult,cmp_QueryResult> PaillierCashClient::calculateQueryResults(int sockfd) {
+    timespec start = getTime();
     const int homEncSize = paillier_get_ciphertext_size(homPub);
     char resultsSizeBuff[sizeof(int)];
     socketReceive(sockfd, resultsSizeBuff, sizeof(int));
@@ -129,6 +131,8 @@ set<QueryResult,cmp_QueryResult> PaillierCashClient::calculateQueryResults(int s
     if (buff == NULL) pee("malloc error in PaillierCashClient::receiveResults");
     socketReceive(sockfd, buff, buffSize);
     pos = 0;
+    cloudTime += diffSec(start, getTime());
+    start = getTime();
     
     for (int i = 0; i < nResults; i++) {
         const int docId = readIntFromArr(buff, &pos);
@@ -151,6 +155,12 @@ set<QueryResult,cmp_QueryResult> PaillierCashClient::calculateQueryResults(int s
         queryResults[docId] = tf; 
     }
     delete[] buff;
-    return sort(&queryResults);
+    cryptoTime += diffSec(start, getTime());
+    start = getTime();
+    
+    std::set<QueryResult,cmp_QueryResult> sortedResults = sort(&queryResults);
+    indexTime += diffSec(start, getTime());
+    
+    return sortedResults;
 
 }

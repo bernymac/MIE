@@ -5,34 +5,34 @@ $(eval $(RUN_ARGS):;@:)
 endif
 
 Server : Main.o MIEServer.o MIEServerMT.o SSEServer.o ServerUtil.o CashServer.o PaillierCashServer.o paillier.o
-	g++ -o Server Main.o MIEServer.o MIEServerMT.o SSEServer.o ServerUtil.o CashServer.o PaillierCashServer.o paillier.o -L/usr/local/opencv/opencv3.1/lib -lopencv_core -lopencv_features2d -lcrypto -lz -lgmp -ldl -pthread
+	g++ -o Server Main.o MIEServer.o MIEServerMT.o SSEServer.o ServerUtil.o CashServer.o PaillierCashServer.o paillier.o -L/usr/local/lib -L/usr/local/opencv/opencv3.1/lib -lopencv_core -lopencv_features2d -lcrypto -lz -lgmp -ldl
 
 debug : Main.debug MIEServer.debug MIEServerMT.debug SSEServer.debug ServerUtil.debug CashServer.debug PaillierCashServer.debug paillier.debug
-	g++ -o Server Main.o MIEServer.o MIEServerMT.o SSEServer.o ServerUtil.o CashServer.o PaillierCashServer.o paillier.o -L/usr/local/opencv/opencv3.1/lib -lopencv_core -lopencv_features2d -lcrypto -lz -lgmp -ldl -pthread
+	g++ -o Server Main.o MIEServer.o MIEServerMT.o SSEServer.o ServerUtil.o CashServer.o PaillierCashServer.o paillier.o -L/usr/local/opencv/opencv3.1/lib -lopencv_core -lopencv_features2d -lcrypto -lz -lgmp -ldl
 
 Main.o : Main.cpp
-	g++ -std=c++11 -I /usr/local/opencv/opencv3.1/include -pthread -c Main.cpp
+	g++ -std=c++11 -I/usr/local/opencv/opencv3.1/include -I/usr/local/include -pthread -c Main.cpp
 
 MIEServer.o : MIEServer.cpp
-	g++ -std=c++11 -I /usr/local/opencv/opencv3.1/include -pthread -c MIEServer.cpp
+	g++ -std=c++11 -I /usr/local/opencv/opencv3.1/include -I/usr/local/include -pthread -c MIEServer.cpp
 
 MIEServerMT.o : MIEServerMT.cpp
-	g++ -std=c++11 -I /usr/local/opencv/opencv3.1/include -pthread -c MIEServerMT.cpp
+	g++ -std=c++11 -I /usr/local/opencv/opencv3.1/include -I/usr/local/include -pthread -c MIEServerMT.cpp
 
 SSEServer.o : SSEServer.cpp
-	g++ -std=c++11 -I /usr/local/opencv/opencv3.1/include -pthread -c SSEServer.cpp
+	g++ -std=c++11 -I /usr/local/opencv/opencv3.1/include -I/usr/local/include -pthread -c SSEServer.cpp
 
 ServerUtil.o : ServerUtil.cpp
-	g++ -std=c++11 -I /usr/local/opencv/opencv3.1/include -pthread -c ServerUtil.cpp
+	g++ -std=c++11 -I /usr/local/opencv/opencv3.1/include -I/usr/local/include -pthread -c ServerUtil.cpp
 
 CashServer.o : CashServer.cpp
-	g++ -std=c++11 -I /usr/local/opencv/opencv3.1/include -pthread -c CashServer.cpp
+	g++ -std=c++11 -I /usr/local/opencv/opencv3.1/include -I/usr/local/include -pthread -c CashServer.cpp
 
 PaillierCashServer.o : PaillierCashServer.cpp
-	g++ -std=c++11 -I /usr/local/opencv/opencv3.1/include -pthread -c PaillierCashServer.cpp
+	g++ -std=c++11 -I /usr/local/opencv/opencv3.1/include -I/usr/local/include -pthread -c PaillierCashServer.cpp
 
 paillier.o : paillier.c
-	gcc -pthread -c paillier.c
+	gcc -I/usr/local/include -pthread -c paillier.c
 
 Main.debug : Main.cpp
 	g++ -std=c++11 -I /usr/local/opencv/opencv3.1/include -pthread -g -O0 -c Main.cpp
@@ -62,6 +62,6 @@ clean :
 	rm Server Main.o MIEServer.o MIEServerMT.o SSEServer.o ServerUtil.o CashServer.o PaillierCashServer.o paillier.o core
 
 run : Server
-	LD_LIBRARY_PATH=/usr/local/opencv/opencv3.1/lib/:$$LD_LIBRARY_PATH ./Server $(RUN_ARGS) >teste.txt 2>&1 &
+	DYLD_LIBRARY_PATH=/usr/local/opencv/opencv3.1/lib/:$$LD_LIBRARY_PATH ./Server $(RUN_ARGS) >teste.txt 2>&1 &
 
 .PHONY: run clean
