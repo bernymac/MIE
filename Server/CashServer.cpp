@@ -114,7 +114,6 @@ void CashServer::receiveDocs(int newsockfd) {
 }
 
 void CashServer::search(int newsockfd) {
-    timespec start = getTime(); 
     //initialize and read variables
     long buffSize = 3*sizeof(int);
     char buffer[buffSize];
@@ -129,7 +128,6 @@ void CashServer::search(int newsockfd) {
     char* buff = new char[buffSize];
     receiveAll(newsockfd, buff, buffSize);
     pos = 0;
-    cloudTime += diffSec(start, getTime());
     
     set<QueryResult,cmp_QueryResult> imgQueryResults = calculateQueryResultsRO( vwsSize, Ksize, buff, &pos, encImgIndex);
     set<QueryResult,cmp_QueryResult> textQueryResults = calculateQueryResultsRO( kwsSize, Ksize, buff, &pos, encTextIndex);
@@ -139,7 +137,7 @@ void CashServer::search(int newsockfd) {
 //    set<QueryResult,cmp_QueryResult> imgQueryResults = calculateQueryResults(newsockfd, vwsSize, Ksize, encImgIndex);
 //    set<QueryResult,cmp_QueryResult> textQueryResults = calculateQueryResults(newsockfd, kwsSize, Ksize, encTextIndex);
 
-    start = getTime();
+    timespec start = getTime();
     set<QueryResult,cmp_QueryResult> mergedResults = mergeSearchResults(&imgQueryResults, &textQueryResults);
     indexTime += diffSec(start, getTime());
     
@@ -202,15 +200,13 @@ set<QueryResult,cmp_QueryResult> CashServer::calculateQueryResultsRO(int kwsSize
     timespec start;
     map<int,double> queryResults;
     for (int i = 0; i < kwsSize; i++) {
-        start = getTime();
         unsigned char k1[Ksize];
         readFromArr(k1, Ksize*sizeof(unsigned char), buff, pos);
         unsigned char k2[Ksize];
         readFromArr(k2, Ksize*sizeof(unsigned char), buff, pos);
         const int queryTf = readIntFromArr(buff, pos);
-        cloudTime += diffSec(start, getTime());
-        start = getTime();
         
+        start = getTime();
         map<int,int> postingList;
         int c = 0;
         vector<unsigned char> encCounter = f(k1, Ksize, (unsigned char*)&c, sizeof(int));
