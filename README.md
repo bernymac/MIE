@@ -10,7 +10,9 @@ OpenCV 2.4.X (client)
 
 Build Instructions (assuming a new Ubuntu machine):
 
--First Steps:
+
+- First Steps:
+
 sudo apt-get update
 sudo apt-get upgrade
 sudo apt-get install unzip
@@ -19,10 +21,14 @@ sudo apt-get install cmake git libgtk2.0-dev pkg-config libavcodec-dev libavform
 sudo apt-get install python-dev python-numpy libtbb2 libtbb-dev libjpeg-dev libpng-dev libtiff-dev libjasper-dev libdc1394-22-dev
 sudo apt-get install m4
 
+
 - Building OpenCV for the client:
+
+TODO
 
 
 - Building OpenCV for the server:
+
 wget https://github.com/opencv/opencv/archive/3.1.0.zip
 unzip 3.1.0.zip
 cd opencv-3.1.0/
@@ -32,7 +38,9 @@ cmake -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=/usr/local/opencv/open
 make -j7
 sudo make install
 
+
 - Building OpenSSL:
+
 wget https://www.openssl.org/source/openssl-1.0.2o.tar.gz
 tar -xzvf openssl-1.0.2o.tar.gz
 cd openssl-1.0.2o/
@@ -41,7 +49,9 @@ make
 make test
 sudo make install
 
--Building GMP:
+
+- Building GMP:
+
 wget https://gmplib.org/download/gmp/gmp-6.1.2.tar.xz
 tar -zxfv gmp-6.1.2.tar.xz
 cd gmp-6.1.2
@@ -50,13 +60,17 @@ make
 make check
 sudo make install
 
+
 - Building and running the Server:
+
 git clone https://github.com/bernymac/MIE.git
 cd MIE/Server/
 make
 make run X
 
-- Building and running the Client
+
+- Building and running the Client:
+
 (if not done already for the server) git clone https://github.com/bernymac/MIE.git
 cd MIE/MIE/
 make
