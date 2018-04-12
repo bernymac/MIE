@@ -32,6 +32,8 @@ using namespace std;
 using namespace cv;
 
 class MIEServer : public Server {
+    double featureTime, cryptoTime, cloudTime, indexTime;
+    
     void startServer();
     void receiveDoc(int newsockfd, int& id, Mat& mat,
                     vector<vector<unsigned char> >& keywords);
@@ -58,6 +60,9 @@ class MIEServer : public Server {
 //    void sendQueryResponse(int newsockfd, set<QueryResult,cmp_QueryResult>* mergedResults);
     void search(int newsockfd, BOWImgDescriptorExtractor& bowExtr, vector<map<int,int> >& imgIndex,
                 int& nImgs, map<vector<unsigned char>,map<int,int> >& textIndex, int& nTextDocs);
+    
+    void resetTime();
+    string printTime();
 public:
     MIEServer();
 };

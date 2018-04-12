@@ -17,6 +17,10 @@ MIEServer::MIEServer() {
 }
 
 void MIEServer::startServer() {
+    featureTime = 0;
+    cryptoTime = 0;
+    cloudTime = 0;
+    indexTime = 0;
     map<int,Mat> imgFeatures;
     map<int,vector<vector<unsigned char> > > textFeatures;
     vector<map<int,int> > imgIndex;
@@ -73,10 +77,14 @@ void MIEServer::startServer() {
                     }
                 }
                 printf("finished indexing!\n");
+                printf("%s\n",printTime().c_str());
+                resetTime();
                 break;
             case 's':
                 //print error message if index empty?
                 search(newsockfd, bowExtr, imgIndex, nImgs, textIndex, nTextDocs);
+                printf("%s\n",printTime().c_str());
+                resetTime();
                 break;
             default:
                 printf("unkonwn command!\n");
@@ -281,6 +289,7 @@ void MIEServer::indexImgs(map<int,Mat>& imgFeatures, vector<map<int,int> >& imgI
         bowExtr.setVocabulary(codebook);
     }
     //index images
+    timespec start = getTime();
     for (map<int,Mat>::iterator it=imgFeatures.begin(); it!=imgFeatures.end(); ++it) {
         Mat bowDesc;
         bowExtr.compute(it->second,bowDesc);
@@ -290,10 +299,12 @@ void MIEServer::indexImgs(map<int,Mat>& imgFeatures, vector<map<int,int> >& imgI
                 imgIndex[i][it->first] = val;
         }
     }
+    indexTime += diffSec(start, getTime());
 }
 
 void MIEServer::indexText(map<int,vector<vector<unsigned char> > >& textFeatures,
                map<vector<unsigned char>,map<int,int> >& textIndex, int& nTextDocs) {
+    timespec start = getTime();
     nTextDocs = (int)textFeatures.size();
     for (map<int,vector<vector<unsigned char> > >::iterator it=textFeatures.begin(); it!=textFeatures.end(); ++it) {
         for (int i = 0; i < it->second.size(); i++) {
@@ -311,6 +322,7 @@ void MIEServer::indexText(map<int,vector<vector<unsigned char> > >& textFeatures
             }
         }
     }
+    indexTime += diffSec(start, getTime());     //end benchmark
 }
 
 void MIEServer::persistImgIndex(vector<map<int,int> >& imgIndex, int nImgs) {
@@ -491,9 +503,30 @@ void MIEServer::search(int newsockfd, BOWImgDescriptorExtractor& bowExtr, vector
     Mat mat;
     vector<vector<unsigned char> > keywords;
     receiveDoc(newsockfd, id, mat, keywords);
+    
+    timespec start = getTime();
     set<QueryResult,cmp_QueryResult> imgResults = imgSearch(mat,bowExtr,imgIndex,nImgs);
     set<QueryResult,cmp_QueryResult> textResults = textSearch(keywords,textIndex, nTextDocs);
     set<QueryResult,cmp_QueryResult> mergedResults = mergeSearchResults(&imgResults, &textResults);
+    indexTime += diffSec(start, getTime());
+    
+    start = getTime();
     sendQueryResponse(newsockfd, &imgResults/*&mergedResults*/, -1);
+    cloudTime += diffSec(start, getTime());
+}
+
+void MIEServer::resetTime() {
+    featureTime = 0;
+    cryptoTime = 0;
+    cloudTime = 0;
+    indexTime = 0;
+}
+
+string MIEServer::printTime() {
+    char char_time[120];
+    sprintf(char_time, "featureTime:%f cryptoTime:%f indexTime:%f cloudTime:%f",
+            featureTime, cryptoTime, indexTime, cloudTime);
+    string time = char_time;
+    return time;
 }
 

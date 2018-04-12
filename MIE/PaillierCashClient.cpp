@@ -97,11 +97,15 @@ void PaillierCashClient::encryptAndIndex(void* keyword, int keywordSize, int cou
 }
 
 vector<QueryResult> PaillierCashClient::receiveResults(int sockfd) {
+//    LOGI("Receiving img results...\n");
     set<QueryResult,cmp_QueryResult> imgQueryResults = calculateQueryResults(sockfd);
+//    LOGI("Receiving text results...\n");
     set<QueryResult,cmp_QueryResult> textQueryResults = calculateQueryResults(sockfd);
+//    LOGI("Merging img and text results...\n");
     
     timespec start = getTime(); 
     set<QueryResult,cmp_QueryResult> mergedResults = mergeSearchResults(&imgQueryResults, &textQueryResults);
+//    LOGI("Finished merging...\n");
     
     vector<QueryResult> results;
     size_t resultsSize = mergedResults.size() < 20 ? mergedResults.size() : 20;
@@ -134,27 +138,29 @@ set<QueryResult,cmp_QueryResult> PaillierCashClient::calculateQueryResults(int s
     cloudTime += diffSec(start, getTime());
     start = getTime();
     
+    paillier_ciphertext_t encTf;
+    paillier_plaintext_t plaintextTf;
+    mpz_init(encTf.c);
+    mpz_init(plaintextTf.m);
+    char* encTFBuff = new char[homEncSize];
+    char* decTFBuff = new char [homEncSize];
     for (int i = 0; i < nResults; i++) {
         const int docId = readIntFromArr(buff, &pos);
-//        char encTFBuff[homEncSize];
-//        readFromArr(encTFBuff, homEncSize, buff, &pos);
-        paillier_ciphertext_t encTf;
-        mpz_init(encTf.c);
-        mpz_import(encTf.c, homEncSize, 1, 1, 0, 0, /*encTFBuff*/buff+pos);
-        pos += homEncSize;
+        readFromArr(encTFBuff, homEncSize, buff, &pos);
+        mpz_import(encTf.c, homEncSize, 1, 1, 0, 0, encTFBuff/*buff+pos*/);
+//        pos += homEncSize;
         //decrypt paillier scores
-        paillier_plaintext_t plaintextTf;
-        mpz_init(plaintextTf.m);
         paillier_dec(&plaintextTf, homPub, homPriv, &encTf);
-        mpz_clear(encTf.c);
-        size_t len;
         int tf = 0;
-        char* buf = (char*) mpz_export(0, &len, 1, 1, 0, 0, plaintextTf.m);
-        mpz_clear(plaintextTf.m);
-        memcpy(&tf, buf, len);
+        mpz_export(decTFBuff, 0, 1, 1, 0, 0, plaintextTf.m);
+        memcpy(&tf, decTFBuff, sizeof(int));
         queryResults[docId] = tf; 
     }
+    mpz_clear(encTf.c);
+    mpz_clear(plaintextTf.m);
     delete[] buff;
+    delete[] encTFBuff;
+    delete[] decTFBuff;
     cryptoTime += diffSec(start, getTime());
     start = getTime();
     

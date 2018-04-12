@@ -85,14 +85,14 @@ void MIEClient::processDoc(int id, string imgPath, string textPath, vector< vect
     //encrypt img features
     start = getTime();                              //start crypto benchmark
     features->resize(descriptors.rows);
-//    for (int i = 0; i < descriptors.rows; i++) {          //single threaded
-//        vector<float> feature;
-//        feature.resize(descriptors.cols);
-//        for (int j = 0; j < descriptors.cols; j++)
-//            feature[j] = descriptors.at<float>(i, j);
-//        (*features)[i] = sbe->encode(feature);
-//    }
-    const long numCPU = sysconf(_SC_NPROCESSORS_ONLN);    //hand made threads equal to cpus
+    for (int i = 0; i < descriptors.rows; i++) {          //single threaded
+        vector<float> feature;
+        feature.resize(descriptors.cols);
+        for (int j = 0; j < descriptors.cols; j++)
+            feature[j] = descriptors.at<float>(i, j);
+        (*features)[i] = sbe->encode(feature);
+    }
+/*    const long numCPU = sysconf(_SC_NPROCESSORS_ONLN);    //hand made threads equal to cpus
     const int descPerCPU = ceil((float)descriptors.rows/(float)numCPU);
     pthread_t sbeThreads[numCPU];
     struct sbeThreadData sbeThreadsData[numCPU];
@@ -111,14 +111,14 @@ void MIEClient::processDoc(int id, string imgPath, string textPath, vector< vect
         if (pthread_create(&sbeThreads[i], NULL, sbeEncryptionThread, (void*)&sbeThreadsData[i]))
             pee("Error: unable to create sbeEncryptionThread");
     }
-    
+*/
     //encrypt text features
     encKeywords->resize(keywords.size());
     for (int i = 0; i < keywords.size(); i++)
         (*encKeywords)[i] = textCrypto->encode(keywords[i]);
     //wait for sbe threads
-    for (int i = 0; i < numCPU; i++)
-        if (pthread_join (sbeThreads[i], NULL)) pee("Error:unable to join thread");
+//    for (int i = 0; i < numCPU; i++)
+//        if (pthread_join (sbeThreads[i], NULL)) pee("Error:unable to join thread");
 
     cryptoTime += diffSec(start, getTime());        //end crypto benchmark
 }
@@ -228,8 +228,9 @@ vector<QueryResult> MIEClient::search(int id, string imgPath, string textPath) {
     
     timespec start = getTime();     //start cloud time benchmark
     int sockfd = sendDoc('s', id, &features, &encKeywords);
-    vector<QueryResult> queryResults = receiveQueryResults(sockfd);
     cloudTime += diffSec(start, getTime()); //end
+    
+    vector<QueryResult> queryResults = receiveQueryResults(sockfd);
     
 //    socketReceiveAck(sockfd);
     close(sockfd);

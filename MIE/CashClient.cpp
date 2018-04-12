@@ -194,13 +194,13 @@ void CashClient::train(const char* dataset, int first, int last) {
 }*/
 
 void CashClient::addDocs(const char* imgDataset, const char* textDataset, int first, int last, int prefix) {
+    timespec start;
     map<int,string> tags;
     map<int,string> imgs;
     extractFileNames(imgDataset, textDataset, first, last, imgs, tags);
     
     map<vector<unsigned char>,vector<unsigned char> > encImgIndex;
     map<vector<unsigned char>,vector<unsigned char> > encTextIndex;
-    timespec start;
     map<int,string>::iterator imgs_it=imgs.begin();
     map<int,string>::iterator tags_it=tags.begin();
     while (imgs_it != imgs.end() && tags_it != tags.end()) {
@@ -437,10 +437,11 @@ vector<QueryResult> CashClient::queryRO(map<int,int>* vws, map<string,int>* kws)
     }
     cryptoTime += diffSec(start, getTime());        //end benchmark
 //    start = getTime();                              //start cloud time benchmark
+    LOGI("Sending query...\n");
     int sockfd = connectAndSend(buff, buffSize);
     //    const int x = (int)encKeywords.size()*TextCrypt::keysize+2*sizeof(int);
     //    LOGI("Text Search network traffic part 1: %d\n",x);
-    
+    LOGI("Query sent, awaiting results...\n");
     free(buff);
     vector<QueryResult> queryResults = this->receiveResults(sockfd);
 //    cloudTime += diffSec(start, getTime());            //end benchmark
@@ -507,12 +508,14 @@ vector<QueryResult> CashClient::queryStd(map<int,int>* vws, map<string,int>* kws
 //    const int x = (int)encKeywords.size()*TextCrypt::keysize+2*sizeof(int);
 //    LOGI("Text Search network traffic part 1: %d\n",x);
     cryptoTime += diffSec(start, getTime());        //end benchmark
+    
     start = getTime();                              //start cloud time benchmark
     int sockfd = connectAndSend(buff, buffSize);
     free(buff);
+    cloudTime += diffSec(start, getTime());            //end benchmark
+    
     vector<QueryResult> queryResults = this->receiveResults(sockfd);
     close(sockfd);
-    cloudTime += diffSec(start, getTime());            //end benchmark
     return queryResults;
 }
 

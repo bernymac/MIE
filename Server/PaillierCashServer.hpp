@@ -20,8 +20,8 @@ class PaillierCashServer : public CashServer {
     paillier_pubkey_t* homPub;
     
     void search(int newsockfd);
-    map<int,paillier_ciphertext_t> calculateQueryResults(int newsockfd, int kwsSize, int Ksize, /*char* buff, int* pos,*/
-                                                           map<vector<unsigned char>,vector<unsigned char> >* index);
+    map<int,paillier_ciphertext_t> calculateQueryResults(int kwsSize, int Ksize, char* buff, int* pos,
+                                                         map<vector<unsigned char>,vector<unsigned char> >* index);
     void sendPaillierQueryResponse (int newsockfd, initializer_list< map<int,paillier_ciphertext_t>* > queryResults);
     
 public:

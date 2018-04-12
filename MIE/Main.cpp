@@ -62,11 +62,24 @@ void runMIEClientHolidaySingleSearch() {
     printQueryResults(queryResults);
 }
 
+void runMIEClientFlickrSingleSearch() {
+    LOGI("begin MIE index!\n");
+    MIEClient mie;
+    timespec start = getTime();
+    string imgPath = homePath;
+    imgPath += "Datasets/flickr_imgs/im1.jpg";
+    string textPath = homePath;
+    textPath += "Datasets/flickr_tags/tags1.txt";
+    vector<QueryResult> queryResults = mie.search(1, imgPath, textPath);
+    double total_time = diffSec(start, getTime());
+    LOGI("%s total_time:%.6f\n",mie.printTime().c_str(),total_time);
+    printQueryResults(queryResults);
+}
+
 
 void runMIEClientHolidayQueries() {
     LOGI("begin MIE Holiday Queries!\n");
     MIEClient mie;
-    timespec start = getTime();
     map<int,vector<QueryResult> > queries;
     char* imgPath = new char[120];
     char* textPath = new char[120];
@@ -111,8 +124,8 @@ void runCashClientHolidayAdd() {
 void runCashClientFlickrAdd() {
     LOGI("begin Cash Flickr Add!\n");
     int first = 1;
-    int last = 1;
-    int groupsize = 1;
+    int last = 1000;
+    int groupsize = 1000;
     CashClient cash;
     cash.train("flickr_imgs",first,last);
     timespec start = getTime();
@@ -125,7 +138,7 @@ void runCashClientFlickrAdd() {
 void runCashClientFlickrSingleSearch() {
     LOGI("begin Cash Flickr Queries!\n");
     CashClient cash;
-    cash.train("inriaHolidays",1,1000);
+    cash.train("flickr_imgs",1,1000);
     string imgPath = homePath;
     imgPath += "Datasets/flickr_imgs/im1.jpg";
     string textPath = homePath;
@@ -177,21 +190,21 @@ void runCashClientHolidayQueries() {
 void runPaillierCashClient() {
     LOGI("begin Paillier Cash SSE!\n");
     int first = 1;
-    int last = 3000;
-    int groupsize = 3000;
+    int last = 2000;
+    int groupsize = 2000;
     PaillierCashClient cash;
     cash.train("flickr_imgs",first,last);
     timespec start;
     double total_time;
-    
-//    start = getTime();
-//    for (unsigned i=first; i<=last; i+=groupsize)
-//        cash.addDocs("flickr_imgs","flickr_tags",i,i+groupsize-1,0);
-//    double total_time = diffSec(start, getTime());
-//    LOGI("%s total_time:%.6f\n",cash.printTime().c_str(),total_time);
-    
-//    cash.cleanTime();
-//    start = getTime();
+
+    start = getTime();
+    for (unsigned i=first; i<=last; i+=groupsize)
+        cash.addDocs("flickr_imgs","flickr_tags",i,i+groupsize-1,0);
+    total_time = diffSec(start, getTime());
+    LOGI("%s total_time:%.6f\n",cash.printTime().c_str(),total_time);
+    cash.cleanTime();
+
+    start = getTime();
     string imgPath = homePath;
     imgPath += "Datasets/flickr_imgs/im1.jpg";
     string textPath = homePath;
@@ -200,6 +213,7 @@ void runPaillierCashClient() {
     total_time = diffSec(start, getTime());
     LOGI("%s total_time:%.6f\n",cash.printTime().c_str(),total_time);
     printQueryResults(queryResults);
+ 
 }
 
 int main(int argc, const char * argv[]) {
@@ -217,6 +231,8 @@ int main(int argc, const char * argv[]) {
         runMIEClientHolidayQueries();
     else if (strcasecmp(argv[1], "mieHolidaySingleSearch") == 0)
         runMIEClientHolidaySingleSearch();
+    else if (strcasecmp(argv[1], "mieFlickrSingleSearch") == 0)
+        runMIEClientFlickrSingleSearch();
     else if (strcasecmp(argv[1], "sse") == 0)
         runSSEClient();
     else if (strcasecmp(argv[1], "cashHolidayAdd") == 0)
